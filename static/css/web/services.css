@@ -1,0 +1,35 @@
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Slight shadow */
+  border: none; /* Remove default border */
+  border-radius: 10px; /* Rounded corners */
+  transition: box-shadow 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Slightly larger shadow on hover */
+}
+
+.card-header {
+    background-color: aqua;
+}
+.card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.card-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555; /* Slightly darker text for better readability */
+}
+
+/* Optional Custom CSS */
+.bg-dark {
+  background-color: #343a40 !important; /* Ensures the dark background matches the navbar */
+}
+
+.lead {
+  font-size: 1.2rem;
+  color: #343a40;
+}
