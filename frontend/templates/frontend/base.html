@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <!-- MD Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+    
+    
+    {% block css %}{% endblock css %}
+    
+    <title>Digitizing Plus</title>
+</head>
+<body>
+
+<style>
+  body {
+    font-family: 'Raleway', sans-serif;
+  }
+</style>
+<div class="container">
+    {% include "frontend/navbar.html" %}
+    {% block content %}{% endblock content %}
+
+    {% include "frontend/footer.html" %}
+</div>
+
+
+<!-- MD Bootstrap JS -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
+
+{% block js %}{% endblock js %}
+
+
+</body>
+</html>
