@@ -7,5 +7,73 @@
 
 
 {% block content %}
-    <h3>Payment Page</h3>
+  <!-- Main -->
+<center>
+  <h1 class="mt-4">PAYMENT METHOD</h1>
+  <h4>We have several payment methods.</h4>
+</center>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <center>
+            <div class="col-lg-6">
+                <img style="height: 100px;" src="{% static "images/authorizenet_logo.png" %}" alt="">
+            </div>
+            <div class="col-lg-6">
+                <h2>Credit Card</h2>
+                <h6>We accept all types of Credit Cards Logo, Master, Visa, American Express, Discover. Secure transactions via Authorize.Net</h6>
+            </div>
+        </center>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <center>
+            <div class="col-lg-6">
+                <img style="height: 100px;" src="{% static "images/pp_cc_mark_111x69.png" %}" alt="">
+            </div>
+            <div class="col-lg-6">
+                <h2>PayPal</h2>
+                <h6>We accept PayPal for secure payments.Your transactions are 100% secure through PayPal’s trusted system.</h6>
+            </div>
+        </center>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <center>
+            <div class="col-lg-6">
+                <img style="height: 100px;" src="{% static "images/logo-ssl.png" %}" alt="">
+            </div>
+            <div class="col-lg-6">
+                <h2>Online</h2>
+                <h6>Customer can pay the invoices online 100% secure.</h6>
+            </div>
+        </center>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <center>
+            <div class="col-lg-6">
+                <img style="height: 100px;" src="{% static "images/po.png" %}" alt="">
+            </div>
+            <div class="col-lg-6">
+                <h2>Check</h2>
+                <h6>Customer can write a check on our billing address.
+                    <br>
+                    <strong>Top S Digitizing LLC.</strong>
+                    <br>
+                    P.O Box #2614 Ashburn,
+                    VA 20146.
+                    </h6>
+            </div>
+        </center>
+        </div>
+    </div>
+</div>
 {% endblock content %}
