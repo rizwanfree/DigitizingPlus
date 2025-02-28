@@ -23,13 +23,53 @@
   body {
     font-family: 'Poppins', sans-serif;
   }
+
+  .bg-maroon {
+    background-color: maroon;
+  }
+  .contact-info div {
+    line-height: 1.5; /* Adjust line height for better spacing */
+  } 
 </style>
-<div class="container">
+
+<div class="container" style="background: white;">
+
+  <!-- Contact Info Bar -->
+  <div class="container-fluid bg-maroon text-white py-2">
+      <div class="container d-flex justify-content-between align-items-center">
+          <!-- Logo on the left -->
+          <div>
+              <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 80px;">
+          </div>
+
+          <!-- Contact Info on the right (stacked vertically) -->
+          <div class="text-start">
+              <div class="mb-1">
+                  <i class="fas fa-envelope me-2"></i> info@digitizingplus.com
+              </div>
+              <div class="mb-1">
+                  <i class="fas fa-phone me-2"></i> +1-234-567-890
+              </div>
+              <div class="mb-1">
+                  <i class="fas fa-phone-volume me-2"></i> Toll Free: 1-800-123-4567
+              </div>
+              <div class="mb-1">
+                  <i class="fab fa-whatsapp me-2"></i> +1-234-567-890
+              </div>
+              <div>
+                  <i class="fas fa-fax me-2"></i> +1-234-567-890
+              </div>
+          </div>
+      </div>
+  </div>
+
     {% include "frontend/navbar.html" %}
     {% block content %}{% endblock content %}
 
     {% include "frontend/footer.html" %}
 </div>
+
+
 
 
 <!-- MD Bootstrap JS -->
