@@ -13,4 +13,6 @@ urlpatterns = [
     path('pricing/', views.pricing, name='pricing'),
     path('payment/', views.payment, name='payment'),
     path('contact/', views.contact, name='contact'),
+    path('vector-digitizing/', views.vector, name='vector'),
+    path('patches/', views.patches, name='patches'),
 ]

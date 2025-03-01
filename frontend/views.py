@@ -23,3 +23,9 @@ def payment(request):
 
 def contact(request):
     return render(request, "frontend/contact.html")
+
+def vector(request):
+    return render(request, "frontend/vector.html")
+
+def patches(request):
+    return render(request, "frontend/patches.html")

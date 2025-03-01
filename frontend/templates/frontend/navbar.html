@@ -12,11 +12,12 @@
       <!-- Navbar links -->
       <ul class="navbar-nav mb-2 mb-lg-0">
         <li class="nav-item"> <a class="nav-link fz" href={% url "web:index" %}>Home</a> </li>
-        <li class="nav-item"> <a class="nav-link fz" href={% url "web:features" %}>Feature</a> </li>
-        <li class="nav-item"> <a class="nav-link fz" href={% url "web:services" %}>Services</a> </li>
+        <li class="nav-item"> <a class="nav-link fz" href={% url "web:vector" %}>Digitizing/Vector</a> </li>
+        <li class="nav-item"> <a class="nav-link fz" href={% url "web:patches" %}>Patches</a> </li>
         <li class="nav-item"> <a class="nav-link fz" href={% url "web:portfolio" %}>Portfolio</a> </li>
         <li class="nav-item"> <a class="nav-link fz" href={% url "web:pricing" %}>Pricing</a> </li>
-        <li class="nav-item"> <a class="nav-link fz" href={% url "web:payment" %}>Payment</a> </li>
+        {% comment %} <li class="nav-item"> <a class="nav-link fz" href={% url "web:payment" %}>Payment</a> </li> {% endcomment %}
+        {% comment %} <li class="nav-item"> <a class="nav-link fz" href={% url "web:services" %}>Services</a> </li> {% endcomment %}
         <li class="nav-item"> <a class="nav-link fz" href={% url "web:contact" %}>Contact</a> </li>
       </ul>
     </div>

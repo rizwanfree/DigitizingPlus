@@ -9,9 +9,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <!-- MD Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css" rel="stylesheet" />
-  <!-- Poppins Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-    
+    <!-- Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
     
     {% block css %}{% endblock css %}
     
@@ -27,56 +26,77 @@
   .bg-maroon {
     background-color: maroon;
   }
+
   .contact-info div {
     line-height: 1.5; /* Adjust line height for better spacing */
-  } 
+  }
+
+  .container1 {
+    width: 65%;
+    margin: auto; /* Center the container */
+    
+  }
+
+  .bg-image {
+    background-image: url('https://mdbootstrap.com/img/Photos/Others/images/76.jpg');
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+  }
+
+
 </style>
 
-<div class="container" style="background: white;">
-
-  <!-- Contact Info Bar -->
-  <div class="container-fluid bg-maroon text-white py-2">
+<!-- Background Image Section -->
+<div class="bg-image">
+  <div class="container1 mx-auto my-auto" style="background: white;">
+    <!-- Contact Info Bar -->
+    <div class="container-fluid bg-maroon text-white py-2">
       <div class="container d-flex justify-content-between align-items-center">
-          <!-- Logo on the left -->
+        <!-- Logo on the left -->
+        <div>
+          <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 80px;">
+        </div>
+
+        <!-- Contact Info on the right (stacked vertically) -->
+        <div class="text-start">
+          <div class="mb-1">
+            <i class="fas fa-envelope me-2"></i> info@digitizingplus.com
+          </div>
+          <div class="mb-1">
+            <i class="fas fa-phone me-2"></i> +1-234-567-890
+          </div>
+          <div class="mb-1">
+            <i class="fas fa-phone-volume me-2"></i> Toll Free: 1-800-123-4567
+          </div>
+          <div class="mb-1">
+            <i class="fab fa-whatsapp me-2"></i> +1-234-567-890
+          </div>
           <div>
-              <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 80px;">
+            <i class="fas fa-fax me-2"></i> +1-234-567-890
           </div>
-
-          <!-- Contact Info on the right (stacked vertically) -->
-          <div class="text-start">
-              <div class="mb-1">
-                  <i class="fas fa-envelope me-2"></i> info@digitizingplus.com
-              </div>
-              <div class="mb-1">
-                  <i class="fas fa-phone me-2"></i> +1-234-567-890
-              </div>
-              <div class="mb-1">
-                  <i class="fas fa-phone-volume me-2"></i> Toll Free: 1-800-123-4567
-              </div>
-              <div class="mb-1">
-                  <i class="fab fa-whatsapp me-2"></i> +1-234-567-890
-              </div>
-              <div>
-                  <i class="fas fa-fax me-2"></i> +1-234-567-890
-              </div>
-          </div>
+        </div>
       </div>
-  </div>
+    </div>
 
+    <!-- Navbar -->
     {% include "frontend/navbar.html" %}
-    {% block content %}{% endblock content %}
 
+    <div class="mx-3">
+{% block content %}{% endblock content %}
+    </div>
+    <!-- Main Content -->
+    
+
+    <!-- Footer -->
     {% include "frontend/footer.html" %}
+  </div>
 </div>
-
-
-
 
 <!-- MD Bootstrap JS -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
 
 {% block js %}{% endblock js %}
-
 
 </body>
 </html>
