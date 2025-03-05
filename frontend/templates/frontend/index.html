@@ -30,16 +30,17 @@
         <div class="card">
             <h4 class="card-header text-center">Login</h4>
             <div class="card-body">
-                <form>
+                <form method="post">
+                    {% csrf_token %}
                 <!-- Email input -->
                 <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="email" id="form1Example1" class="form-control" />
+                    <input type="email" name="email" class="form-control" required />
                     <label class="form-label" for="form1Example1">Email address</label>
                 </div>
 
                 <!-- Password input -->
                 <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="password" id="form1Example2" class="form-control" />
+                    <input type="password" name="password" class="form-control" required />
                     <label class="form-label" for="form1Example2">Password</label>
                 </div>
 
@@ -61,7 +62,7 @@
 
                 <!-- Submit button -->
                 <button data-mdb-ripple-init type="submit" class="btn btn-primary btn-block">Sign in</button>
-                <button data-mdb-ripple-init type="submit" class="btn btn-primary btn-block">Register</button>
+                <a href='{% url "users:register" %}' data-mdb-ripple-init type="submit" class="btn btn-primary btn-block">Register</a>
                 </form>
             </div>
         </div>
