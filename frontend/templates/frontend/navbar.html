@@ -19,6 +19,10 @@
         {% comment %} <li class="nav-item"> <a class="nav-link fz" href={% url "web:payment" %}>Payment</a> </li> {% endcomment %}
         {% comment %} <li class="nav-item"> <a class="nav-link fz" href={% url "web:services" %}>Services</a> </li> {% endcomment %}
         <li class="nav-item"> <a class="nav-link fz" href={% url "web:contact" %}>Contact</a> </li>
+
+        {% if user.is_authenticated %}
+          <li class="nav-item"> <a class="nav-link fz" href={% url "users:logout" %}>Logout</a> </li>
+        {% endif %}
       </ul>
     </div>
     <!-- Collapsible wrapper -->

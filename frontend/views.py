@@ -1,4 +1,7 @@
 from django.shortcuts import render
+from django.contrib.auth import login
+
+from users.models import User
 
 # Create your views here.
 
@@ -8,7 +11,13 @@ def index(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        print(email, password)
+
+        user = User.objects.filter(email=email, password=password).first()
+
+        if user is not None:
+            print(user.first_name)
+        else:
+            print("Invalid User")
 
     return render(request, "frontend/index.html")
 

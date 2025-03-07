@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.urls import reverse
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 
 from .forms import UserRegistrationForm
 
@@ -19,3 +21,17 @@ def register(request):
     else:
         form = UserRegistrationForm()
     return render(request, 'registration/register.html', {'form': form})
+
+
+def log_out(request):
+    logout(request)
+    return redirect('web:index')
+
+
+@login_required
+def customer_dashboard(request):
+    return render(request, 'customer/dashboard.html')
+
+@login_required
+def admin_dashboard(request):
+    return render(request, 'admin/dashboard.html')
