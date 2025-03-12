@@ -18,6 +18,7 @@ urlpatterns = [
 
     #Customer Panel
     path('customer/dashboard/', views.customer_dashboard, name='customer-dashboard'),
+    path('customer/orders/', views.orders, name='customer-orders'),
 
 
 

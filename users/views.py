@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 
 from .forms import UserRegistrationForm
 
+from crafting.forms import DigitizingOrderFileForm
+
 # Create your views here.
 
 
@@ -28,10 +30,25 @@ def log_out(request):
     return redirect('web:index')
 
 
+# Customer Panel Views
 @login_required
 def customer_dashboard(request):
     return render(request, 'users/customer/dashboard.html')
 
+
+@login_required
+def orders(request):
+    if request.method == "POST":
+        form = DigitizingOrderFileForm(request.POST)
+        if form.is_valid():
+            form.save()
+    else:
+        form = DigitizingOrderFileForm()
+    return render(request, 'users/customer/orders.html', {'form': form})
+
+
+
+# Admin Panel Views
 @login_required
 def admin_dashboard(request):
     return render(request, 'users/admin/dashboard.html')

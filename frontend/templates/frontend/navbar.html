@@ -21,6 +21,11 @@
         <li class="nav-item"> <a class="nav-link fz" href={% url "web:contact" %}>Contact</a> </li>
 
         {% if user.is_authenticated %}
+        {% if user.is_staff %}
+        <li class="nav-item"> <a class="nav-link fz" href={% url "users:admin-dashboard" %}>Dashboard</a> </li>
+        {% else %}
+        <li class="nav-item"> <a class="nav-link fz" href={% url "users:customer-dashboard" %}>Dashboard</a> </li>
+        {% endif %}
           <li class="nav-item"> <a class="nav-link fz" href={% url "users:logout" %}>Logout</a> </li>
         {% endif %}
       </ul>

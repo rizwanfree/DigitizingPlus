@@ -31,7 +31,6 @@
         .content-area {
             width: 80%;
             padding: 20px;
-            background-color: red;
         }
         .footer {
             background-color: #343a40;
@@ -72,12 +71,12 @@
     </header>
 
     <!-- Main Content -->
-    <div class="container main-content mt-3 mb-3">
+    <div class="container main-content mt-3 mb-3 shadow-sm p-3 mb-5 bg-body-tertiary rounded">
         <!-- Side Navigation -->
         <nav class="sidebar">
             <ul class="list-group list-group-flush">
                 <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
-                <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-folder"></i>Order Records</a></li>
+                <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-orders" %}"><i class="bi bi-folder"></i>Order Records</a></li>
                 <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-folder"></i>Quote Records</a></li>
                 <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-file-plus"></i>Place Order</a></li>
                 <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-file-plus"></i>Place Quote</a></li>
