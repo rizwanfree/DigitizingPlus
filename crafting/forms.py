@@ -1,4 +1,4 @@
-from django.forms import forms
+from django import forms
 from .models import DigitizingOrder, DigitizingOrder_Files
 
 from crispy_forms.helper import FormHelper
@@ -26,18 +26,30 @@ class DigitizingOrderForm(forms.ModelForm):
                 Column('logo_placement', css_class='col-md-4'),
             ),
             Row(
-                Column('instruction', css_class='col-md-12'),
+                Column('instructions', css_class='col-md-12'),
                 
             ),
             Row(
                 Column('is_urgent', css_class='col-md-6'),
-                Column(Submit('submit', 'Place Order', css_class='btn btn-primary'), css_class='col-md-6'),
+                Column(Submit('submit', 'Place Order', css_class='btn btn-primary'), css_class='col-md-6 text-end'),
             ),
         )
     
     class Meta:
         model = DigitizingOrder
         fields = '__all__'
+        labels = {
+            'name': 'Design Name',
+            'height': 'Height (in inches)',
+            'width': 'Width (in inches)',
+            'colors': 'Number of Colors',
+            'po_number': 'Purchase Order Number',
+            'file_format': 'File Format',
+            'fabric_type': 'Fabric Type',
+            'logo_placement': 'Logo Placement',
+            'instructions': 'Special Instructions',
+            'is_urgent': 'Is this order urgent?',
+        }
         widgets = {
             'instructions': forms.Textarea(attrs={'rows': 3})
         }
