@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'users.apps.UsersConfig',
+    'users',
     
     'django.contrib.admin',
     'django.contrib.auth',
@@ -143,3 +143,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
+
+
+LOGIN_URL = 'web:index' 

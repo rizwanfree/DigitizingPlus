@@ -1,5 +1,6 @@
-from django.shortcuts import render
-from django.contrib.auth import login
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import login,authenticate
 
 from users.models import User
 
@@ -12,10 +13,15 @@ def index(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        user = User.objects.filter(email=email, password=password).first()
+        user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            print(user.first_name)
+            login(request, user)
+            if user.is_staff:
+                return redirect('users:admin-dashboard')
+            else:
+                return redirect('users:customer-dashboard')
+            
         else:
             print("Invalid User")
 

@@ -30,8 +30,8 @@ def log_out(request):
 
 @login_required
 def customer_dashboard(request):
-    return render(request, 'customer/dashboard.html')
+    return render(request, 'users/customer/dashboard.html')
 
 @login_required
 def admin_dashboard(request):
-    return render(request, 'admin/dashboard.html')
+    return render(request, 'users/admin/dashboard.html')
