@@ -66,6 +66,16 @@ def orders(request):
     }
     return render(request, 'users/customer/orders.html', context)
 
+@login_required
+def order_records(request):
+
+    orders = DigitizingOrder.objects.all()
+
+    context = {
+        'orders': orders
+    }
+    return render(request, 'users/customer/records.html', context)
+
 
 
 # Admin Panel Views
