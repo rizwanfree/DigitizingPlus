@@ -24,17 +24,77 @@ FORMAT_CHOICES = [
     ('Others', 'Others'),
 ]
 
+
 FABRIC_CHOICES = [
-    ('Cotton', 'Cotton'),
-    ('Silk', 'Silk'),
-    ('Wool', 'Wool'),
+    ('Apron', 'Apron'),
+    ('Beanie', 'Beanie'),
+    ('Blanket', 'Blanket'),
+    ('Canvas', 'Canvas'),
+    ('Chenille', 'Chenille'),
+    ('Cotton Woven', 'Cotton Woven'),
+    ('Denim', 'Denim'),
+    ('Felt', 'Felt'),
+    ('Flannel', 'Flannel'),
+    ('Fleece', 'Fleece'),
+    ('Knit Sweater', 'Knit Sweater'),
+    ('Leather', 'Leather'),
+    ('Mesh Knit', 'Mesh Knit'),
+    ('Nylon', 'Nylon'),
+    ('Others', 'Others'),
+    ('Pique', 'Pique'),
+    ('Polar Fleece', 'Polar Fleece'),
+    ('Polyester', 'Polyester'),
 ]
 
+
 LOGO_PLACEMENT = [
-    ('Left', 'Left'),
-    ('Right', 'Right'),
-    ('Back', 'Back'),
+    ('Apron', 'Apron'),
+    ('Back Applique', 'Back Applique'),
+    ('Bags', 'Bags'),
+    ('Beanie Caps', 'Beanie Caps'),
+    ('Cap', 'Cap'),
+    ('Cap Back', 'Cap Back'),
+    ('Cap Puff', 'Cap Puff'),
+    ('Cap Side', 'Cap Side'),
+    ('Chest', 'Chest'),
+    ('Chest Applique', 'Chest Applique'),
+    ('Full Front Chest', 'Full Front Chest'),
+    ('Gloves', 'Gloves'),
+    ('Jacket Back', 'Jacket Back'),
+    ('Others', 'Others'),
+    ('Patches', 'Patches'),
+    ('Sleeve', 'Sleeve'),
+    ('Table Cloth', 'Table Cloth'),
+    ('Towel', 'Towel'),
 ]
+
+
+PATCH_TYPE = [
+    ('3D Puff Patches', '3D Puff Patches'),
+    ('Applique Patches', 'Applique Patches'),
+    ('Blank Patches', 'Blank Patches'),
+    ('Chenille Patches', 'Chenille Patches'),
+    ('Embroidered Patches', 'Embroidered Patches'),
+]
+
+BORDER_TYPE = [
+    ('Hot Cut Border', 'Hot Cut Border'),
+    ('Merrowed Border', 'Merrowed Border'),
+]
+
+
+BACKING_TYPE = [
+    ('Iron On (Heat Seal)', 'Iron On (Heat Seal)'),
+    ('Velcro (Both Hook & Loop)', 'Velcro (Both Hook & Loop)'),
+]
+
+
+EMBROIDERY_FILL = [
+    ('50% Embroidery', '50% Embroidery'),
+    ('75% Embroidery', '75% Embroidery'),
+    ('10% Embroidery', '100% Embroidery'),
+]
+
 
 class DigitizingOrder(models.Model):
     name = models.CharField(max_length=255)
@@ -57,6 +117,41 @@ class DigitizingOrder(models.Model):
 class DigitizingOrder_Files(models.Model):
     order = models.ForeignKey(DigitizingOrder, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='digitizing_order_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for Order #{self.order.name}"
+    
+
+class PatchOrder(models.Model):
+    name = models.CharField(max_length=255)
+    po_number = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField()
+    width = models.IntegerField()
+     
+    patch_type = models.CharField(max_length=50, choices=PATCH_TYPE, null=True, blank=True)
+    backing_type = models.CharField(max_length=50, choices=BACKING_TYPE, null=True, blank=True)
+    border_type = models.CharField(max_length=50, choices=BORDER_TYPE, null=True, blank=True)
+    embroidery_fill = models.CharField(max_length=50, choices=EMBROIDERY_FILL, null=True, blank=True)
+
+    quantity = models.IntegerField(default=1)
+    date = models.DateField()
+    color_details = models.CharField(max_length=255, blank=True, null=True)
+
+    contact_name = models.CharField(max_length=255)
+    contact_number = models.CharField(max_length=50)
+    shipping_address = models.TextField(null=True, blank=True)
+    instructions = models.TextField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+
+class PatchOrder_Files(models.Model):
+    order = models.ForeignKey(PatchOrder, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='patch_order_files/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -40,22 +40,30 @@
     <div class="tab-content" id="orderTabsContent">
         <!-- Digitizing Order Tab -->
         <div class="tab-pane fade show active mt-5" id="digitizing" role="tabpanel" aria-labelledby="digitizing-tab">
-            <form action="" method="post">
+            <form action="" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {% crispy form %}
+                <input type="hidden" name="form_type" value="patch">
+                {% crispy digitizing_form %}
             </form>
         </div>
 
         <!-- Patch Order Tab -->
         <div class="tab-pane fade" id="patch" role="tabpanel" aria-labelledby="patch-tab">
             <h3 class="mt-3">Patch Order Form</h3>
-            <p>Add your patch order form here.</p>
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="patch">
+                {% crispy patch_form %}
+            </form>
         </div>
 
         <!-- Vector Order Tab -->
         <div class="tab-pane fade" id="vector" role="tabpanel" aria-labelledby="vector-tab">
             <h3 class="mt-3">Vector Order Form</h3>
-            <p>Add your vector order form here.</p>
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="vector">
+            </form>
         </div>
     </div>
 {% endblock content %}
