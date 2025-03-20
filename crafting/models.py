@@ -95,6 +95,28 @@ EMBROIDERY_FILL = [
     ('10% Embroidery', '100% Embroidery'),
 ]
 
+STATUS_CHOICES = [
+    ('Processing', 'Processing'),  # Order is being processed
+    ('Pending', 'Pending'),        # Order is pending (optional)
+    ('On Hold', 'On Hold'),        # Order is on hold (optional)
+    ('Delivered', 'Delivered'),    # Order has been delivered
+    ('Cancelled', 'Cancelled'),    # Order has been cancelled (optional)
+]
+
+
+
+VECTOR_ORDER_FORMAT = [
+    ('cdr', 'cdr'),
+    ('ai', 'ai'),
+    ('eps', 'eps'),
+    ('others', 'others'),
+]
+
+VECTOR_ORDER_COLOR_TYPES = [
+    ('PMS', 'PMS'),
+    ('RGB', 'RGB'),
+    ('CMYK', 'CMYK'),
+]
 
 class DigitizingOrder(models.Model):
     name = models.CharField(max_length=255)
@@ -107,7 +129,7 @@ class DigitizingOrder(models.Model):
     logo_placement = models.CharField(max_length=50, choices=LOGO_PLACEMENT, null=True, blank=True)
     instructions = models.TextField(null=True, blank=True)
     is_urgent = models.BooleanField(default=False)
-
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -142,7 +164,7 @@ class PatchOrder(models.Model):
     contact_number = models.CharField(max_length=50)
     shipping_address = models.TextField(null=True, blank=True)
     instructions = models.TextField(null=True, blank=True)
-
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -156,3 +178,82 @@ class PatchOrder_Files(models.Model):
 
     def __str__(self):
         return f"File for Order #{self.order.name}"
+    
+
+
+class VectorOrder(models.Model):
+    name = models.CharField(max_length=255)
+    po_number = models.IntegerField(null=True, blank=True)
+
+    required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
+    color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
+    colors = models.IntegerField(default=1)
+    others = models.CharField(max_length=255, blank=True, null=True)
+    instructions = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+
+class VectorOrder_Files(models.Model):
+    order = models.ForeignKey(VectorOrder, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='vector_order_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for Order #{self.order.name}"
+    
+
+class DigitizingQuote(models.Model):
+    name = models.CharField(max_length=255)
+    height = models.IntegerField()
+    width = models.IntegerField()
+    colors = models.IntegerField(null=True, blank=True)
+    file_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, null=True, blank=True)
+    fabric_type = models.CharField(max_length=50, choices=FABRIC_CHOICES, null=True, blank=True)
+    logo_placement = models.CharField(max_length=50, choices=LOGO_PLACEMENT, null=True, blank=True)
+    instructions = models.TextField(null=True, blank=True)
+    is_urgent = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+
+
+class VectorQuote(models.Model):
+    name = models.CharField(max_length=255)
+    required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
+    color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
+    colors = models.IntegerField(default=1)
+    others = models.CharField(max_length=255, blank=True, null=True)
+    instructions = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+
+class PatchQuote(models.Model):
+    name = models.CharField(max_length=255)
+    height = models.IntegerField()
+    width = models.IntegerField()     
+    patch_type = models.CharField(max_length=50, choices=PATCH_TYPE, null=True, blank=True)
+    backing_type = models.CharField(max_length=50, choices=BACKING_TYPE, null=True, blank=True)
+    border_type = models.CharField(max_length=50, choices=BORDER_TYPE, null=True, blank=True)
+    embroidery_fill = models.CharField(max_length=50, choices=EMBROIDERY_FILL, null=True, blank=True)
+
+    quantity = models.IntegerField(default=1)
+    date = models.DateField()
+    color_details = models.CharField(max_length=255, blank=True, null=True)
+
+    contact_name = models.CharField(max_length=255)
+    contact_number = models.CharField(max_length=50)
+    shipping_address = models.TextField(null=True, blank=True)
+    instructions = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name

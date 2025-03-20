@@ -11,32 +11,28 @@
 
 <script src="{% static "libs/dataTables.js" %}"></script>
     <!-- Custom CSS for Inactive Tabs -->
-    <h1 class="text-center mb-3">Records</h1>
+    <h1 class="text-center mb-3">Quotes Records</h1>
 
     <div class="mt-5">
             <!-- Orders Table -->
-            <table id="digitizeordersTable" class="table table-striped" style="width:100%">
+            <table id="digitizeordersTable" class="table  table-striped" style="width:100%">
                 <thead>
                     <tr>
                         <th class="text-center">S#</th>
-                        <th class="text-center">Order #</th>
                         <th class="text-center">Date In</th>
                         <th class="text-center">Order Type</th>
                         <th class="text-center">Order Name</th>
-                        <th class="text-center">Status</th>
                         <th class="text-center">Details</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order in orders %}
                         <tr>
-                            <td class="text-center align-middle">{{ forloop.counter }}</td>
-                            <td class="align-middle">{{ order.po_number }}</td>
-                            <td class="align-middle">{{ order.created_at|date:"m-d-Y" }} </td>
-                            <td class="align-middle">{{ order.type }}</td>
-                            <td class="align-middle">{{ order.name }}</td>
-                            <td class="align-middle">{{ order.status }}</td>
-                            <td class="align-middle"><a class="btn btn-secondary w-100" href="{% url "users:customer-order-details" order.type order.id %}">Details</a></td>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td>{{ order.created_at|date:"m-d-Y" }} </td>
+                            <td>{{ order.type }}</td>
+                            <td>{{ order.name }}</td>
+                            <td></td>
                         </tr>
                     {% endfor %}
                 </tbody>

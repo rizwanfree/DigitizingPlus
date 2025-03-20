@@ -21,6 +21,8 @@
         .main-content {
             flex: 1;
             display: flex;
+            width: 80%; /* Ensure main-content takes full width */
+            margin: auto;
         }
         .sidebar {
             width: 20%;
@@ -51,14 +53,19 @@
         i {
             padding-right: 10px;
         }
+        .container1 {
+            display: flex;
+            width: 80%; /* Ensure main-content takes full width */
+            margin: auto;
+        }
     </style>
 </head>
 <body>
 
     <!-- Header -->
-    <header class="bg-light text-center py-3">
-        <div class="container">
-            <div class="row">
+    <header class="bg-light py-1">
+        <div class="row">
+            <div class="container1">
                 <div class="col-md-6 text-start">
                     <img src="{% static "images/logo.png" %}" alt="logo" />
                 </div>
@@ -71,17 +78,21 @@
     </header>
 
     <!-- Main Content -->
-    <div class="container main-content mt-3 mb-3 shadow-sm p-3 mb-5 bg-body-tertiary rounded">
+    <div class="main-content mt-3 mb-3 shadow-sm p-3 mb-5 bg-body-tertiary rounded">
         <!-- Side Navigation -->
         <nav class="sidebar">
             <ul class="list-group list-group-flush">
                 <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
-                <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-orders-records" %}"><i class="bi bi-folder"></i>Order Records</a></li>
-                <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-folder"></i>Quote Records</a></li>
+
                 <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-orders" %}"><i class="bi bi-file-plus"></i>Place Order</a></li>
-                <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-file-plus"></i>Place Quote</a></li>
+                <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-orders-records" %}"><i class="bi bi-folder"></i>Order Records</a></li>
+                
+                <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-quotes" %}"><i class="bi bi-file-plus"></i>Place Quote</a></li>
+                <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-quote-records" %}"><i class="bi bi-folder"></i>Quote Records</a></li>                
+                
                 <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-coin"></i>Billing</a></li>
                 <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-person"></i>Profile</a></li>
+
                 <li class="list-group-item"><a class="nav-link" href="{% url "users:logout" %}"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
                 <li class="list-group-item"><a class="nav-link" href="{% url "web:index" %}"><i class="bi bi-arrow-return-left"></i>Back To Website</a></li>
 

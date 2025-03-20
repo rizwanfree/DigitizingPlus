@@ -4,19 +4,15 @@ from django.contrib.auth.forms import UserCreationForm
 from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.helper import FormHelper
-
 from .models import User
-
 
 class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
-
         fields = ['email', 'password1', 'password2', 'first_name', 'last_name', 'phone_number', 'address', 'city', 'state', 'zip_code', 'country']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.form_action = 'users:register'
@@ -45,4 +41,5 @@ class UserRegistrationForm(UserCreationForm):
                 css_class='row'
             ),
             Submit('submit', 'Register', css_class='btn btn-lg btn-primary w-100')
+            
         )

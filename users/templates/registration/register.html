@@ -1,14 +1,25 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-
 {% block content %}
-
 <div class="container mt-5 mb-5">
-<h2 class="text-center mb-4">New Registration</h2>
-{% csrf_token %}
-{% crispy form %}
+    <h2 class="text-center mb-4">New Registration</h2>
+    <form action="" method="post">
+        {% csrf_token %}
+        {% crispy form %}
+    </form>
 </div>
 
 
+
 {% endblock content %}
+
+{% block js %}
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        console.log("Form Submitted")
+        event.stopImmediatePropagation(); // Prevent other scripts from stopping submission
+        this.submit(); // Force submission
+    });
+</script>
+{% endblock js %}
