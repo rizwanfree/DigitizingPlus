@@ -1,43 +1,164 @@
 {% extends "frontend/base.html" %}
+{% load static %}
 
 {% block content %}
 
 <div class="row mt-3 mb-4">
-    <div class="col-md-8">
-        {% comment %} <div class="card">
-            <h4 class="card-header text-center">Digitizing</h4>
-            <div class="card-body">
-                <ul class="list-group list-group-light">
-                    <li class="list-group-item">Logo Flat Digitizing</li>
-                    <li class="list-group-item">Applique & Tackle Twill Digitizing</li>
-                    <li class="list-group-item">3D Puff Digitizing</li>
-                    <li class="list-group-item">Chenille Digitizing</li>
-                    <li class="list-group-item">Cap & Small Text Digitizing</li>
-                    <li class="list-group-item">Experienced designers</li>
-                </ul>
-            </div>
-        </div> {% endcomment %}
-
-        <h3>Not Sure What goes here.</h3>
+    <!-- Quote Form Sidebar (col-md-2) -->
+    <div class="col-md-2">
+        <div class="sidebar-form">
+            <h5 class="text-center mb-3">Get Quote Now</h5>
+            <form id="sidebarQuoteForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Dimensions -->
+                <input type="number" step="0.01" class="form-control mb-2" placeholder="Width (inches)" name="width" required>
+                <input type="number" step="0.01" class="form-control mb-2" placeholder="Height (inches)" name="height" required>
+                
+                <!-- Patch Type -->
+                <select class="form-select mb-2" name="patch_type" required>
+                    <option value="" selected disabled>Patch Type</option>
+                    <option value="standard">Standard</option>
+                    <option value="3d">3D Foam</option>
+                    <option value="woven">Woven</option>
+                </select>
+                
+                <!-- Backing Type -->
+                <select class="form-select mb-2" name="backing" required>
+                    <option value="" selected disabled>Backing Type</option>
+                    <option value="iron_on">Iron on/Heat Seal</option>
+                    <option value="velcro">Velcro</option>
+                    <option value="none">No Backing</option>
+                </select>
+                
+                <!-- Quantity -->
+                <input type="number" class="form-control mb-2" placeholder="Quantity" name="quantity" min="1" required>
+                
+                <!-- Date Needed -->
+                <input type="text" class="form-control mb-2" placeholder="Date Needed (M/D/Y)" name="date_needed" onfocus="(this.type='date')" required>
+                
+                <!-- Contact Info -->
+                <input type="text" class="form-control mb-2" placeholder="Your Name" name="name" required>
+                <input type="email" class="form-control mb-2" placeholder="Email" name="email" required>
+                <input type="tel" class="form-control mb-2" placeholder="Contact No." name="phone" required>
+                
+                <!-- Instructions -->
+                <textarea class="form-control mb-2" placeholder="Special Instructions" name="instructions" rows="2"></textarea>
+                
+                <!-- File Upload -->
+                <div class="mb-3">
+                    <input class="form-control form-control-sm" type="file" id="artwork" name="artwork" accept=".jpg,.jpeg,.png,.pdf,.ai,.eps">
+                    <small class="text-muted">Max 5MB</small>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100 btn-sm">Send Request</button>
+            </form>
+        </div>
     </div>
 
+    <!-- Main Content Area (col-md-7) with Carousel -->
+    <div class="col-md-7">
+        <div id="mainCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+            <div class="carousel-inner h-100 rounded-3">
+                <div class="carousel-item active h-100">
+                    <img src="{% static 'images/hero/1.jpeg' %}" class="d-block w-100 h-100 object-fit-cover" alt="...">
+                </div>
+                <div class="carousel-item h-100">
+                    <img src="{% static 'images/hero/1.jpeg' %}" class="d-block w-100 h-100 object-fit-cover" alt="...">
+                </div>
+                <div class="carousel-item h-100">
+                    <img src="{% static 'images/hero/1.jpeg' %}" class="d-block w-100 h-100 object-fit-cover" alt="...">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <h4 class="card-header text-center">Key Points</h4>
+    <!-- Key Points Sidebar (col-md-3) -->
+    <div class="col-md-3">
+        <div class="card h-100">
+            <h4 class="card-header text-center bg-primary text-white">Key Points</h4>
             <div class="card-body">
-                <ul class="list-group list-group-light">
-                    <li class="list-group-item">No Minimum</li>
-                    <li class="list-group-item">Sample $20</li>
-                    <li class="list-group-item">Free Shipping</li>
-                    <li class="list-group-item">Multi Arts, Multi Colors Options Available</li>
-                    <li class="list-group-item"><strong>For pricing share art, mention size and number of pieces to get price quote</strong></li>
-
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i> No Minimum Order
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i> Sample $20
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i> Free Shipping
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i> Multi Arts/Colors Available
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-info-circle text-primary me-2"></i> 
+                        <strong>Share art, size and quantity for pricing</strong>
+                    </li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    /* Form styling */
+    #sidebarQuoteForm input, 
+    #sidebarQuoteForm select, 
+    #sidebarQuoteForm textarea {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.5rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    #sidebarQuoteForm .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+    
+    .sidebar-form {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    /* Key points styling */
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    /* Carousel styling */
+    #mainCarousel {
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .object-fit-cover {
+        object-fit: cover;
+    }
+    
+    @media (max-width: 992px) {
+        #mainCarousel {
+            height: 400px;
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
 
 {% endblock content %}

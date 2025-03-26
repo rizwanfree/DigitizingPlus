@@ -132,6 +132,13 @@ class DigitizingOrder(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    #DPO = Digitizing Order
+    #DPV = Vector Order
+    #DPP = Patch Order
+
+    #DPOQ = Digitizing Quote
+    #DPVQ = Vector Quote
+    #DPPQ = Patch Quote
     def __str__(self):
         return self.name
     

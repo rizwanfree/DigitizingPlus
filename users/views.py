@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 
-from .forms import UserRegistrationForm
+from .forms import UserRegistrationForm, UserProfileForm
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
 
@@ -41,6 +41,20 @@ def log_out(request):
 @login_required
 def customer_dashboard(request):
     return render(request, 'users/customer/dashboard.html')
+
+
+
+@login_required
+def customer_profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # Redirect to profile page after update
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    return render(request, 'users/customer/profile.html', {'form': form})
 
 
 @login_required
@@ -204,7 +218,10 @@ def quote_records(request):
 
 
 
+
+
+
 # Admin Panel Views
 @login_required
 def admin_dashboard(request):
-    return render(request, 'users/admin/dashboard.html')
+    return render(request, 'users/admin/index.html')

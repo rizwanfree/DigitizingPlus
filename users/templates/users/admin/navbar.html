@@ -1,0 +1,126 @@
+{% load static %}
+
+
+<style>
+    .navbar-custom {
+        background-color: #800000; /* Maroon color */
+    }
+    .navbar-custom .navbar-brand,
+    .navbar-custom .nav-link,
+    .navbar-custom .dropdown-item {
+        color: white !important;
+    }
+    .navbar-custom .dropdown-menu {
+        background-color: #800000;
+        border: none;
+    }
+    .navbar-custom .dropdown-item:hover {
+        background-color: #6a0000;
+    }
+    .navbar-custom .navbar-toggler {
+        border-color: rgba(255,255,255,0.5);
+    }
+    .centered-nav {
+        margin: 0 auto;
+    }
+    .dropdown-item i {
+        width: 20px;
+        margin-right: 10px;
+        text-align: center;
+    }
+</style>
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <!-- Logo on far left -->
+        <a class="navbar-brand ms-3" href="#">
+            {% comment %} <img src="{% static "images/logo1.png" %}" alt="" height="75px"> {% endcomment %}
+            Digitizing Plus
+        </a>
+        
+        <!-- Mobile toggle -->
+        <button class="navbar-toggler me-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Centered menu -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav centered-nav">
+                <li class="nav-item mx-2">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                
+                <li class="nav-item dropdown mx-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" data-bs-toggle="dropdown">
+                        <i class="fas fa-cogs"></i> Digitizing
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
+                        <hr>
+                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>                        
+                    </ul>
+                </li>
+
+
+                <li class="nav-item dropdown mx-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-vest-patches"></i> Patches
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
+                        <hr>
+                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>   
+                    </ul>
+                </li>
+
+
+                <li class="nav-item dropdown mx-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-vector-square"></i> Vectors
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
+                        <hr>
+                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>   
+                    </ul>
+                </li>
+
+
+                <li class="nav-item dropdown mx-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" data-bs-toggle="dropdown">
+                        <i class="fas fa-cogs"></i> Advanced
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-thread"></i> Embroidery
+                        </a></li>
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-vector-square"></i> Vector Art
+                        </a></li>
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-tshirt"></i> Apparel
+                        </a></li>
+                    </ul>
+                </li>
+                
+
+            </ul>
+            
+            <!-- Right-aligned items -->
+            <ul class="navbar-nav ms-auto me-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-phone-alt"></i> Contact
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>

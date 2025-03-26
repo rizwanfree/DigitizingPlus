@@ -1,51 +1,155 @@
 {% extends "frontend/base.html" %}
-
+{% load static %}
 {% block content %}
 
 <style>
-.bg-image {
-    background-image: url('https://mdbcdn.b-cdn.net/img/new/standard/city/041.webp');
-    height: 100vh;
-    background-size: cover;
-    background-position: center;
-  }
+    /* Main layout styling */
+    .service-card {
+        height: 100%;
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .service-card .card-header {
+        background-color: #8B0000; /* Maroon color */
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+    }
+    
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .list-group-item i {
+        margin-right: 0.5rem;
+        color: #8B0000;
+    }
+    
+    /* Carousel styling */
+    .custom-carousel {
+        height: 500px;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .custom-carousel .carousel-inner,
+    .custom-carousel .carousel-item,
+    .custom-carousel img {
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .carousel-control-prev, 
+    .carousel-control-next {
+        width: 5%;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .custom-carousel {
+            height: 350px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .service-card {
+            margin-bottom: 1.5rem;
+        }
+    }
+    #mainCarousel .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;  /* Prevents stretching */
+        object-position: center; /* Focus on image center */
+      }
 </style>
 
-<div class="row mt-3 mb-4">
-    <div class="col-md-4">
-        <div class="card">
-            <h4 class="card-header text-center">Digitizing</h4>
-            <div class="card-body">
-                <ul class="list-group list-group-light">
-                    <li class="list-group-item">Logo Flat Digitizing</li>
-                    <li class="list-group-item">Applique & Tackle Twill Digitizing</li>
-                    <li class="list-group-item">3D Puff Digitizing</li>
-                    <li class="list-group-item">Chenille Digitizing</li>
-                    <li class="list-group-item">Cap & Small Text Digitizing</li>
-                    <li class="list-group-item">Experienced designers</li>
-                </ul>
+<div class="container-fluid mt-4 mb-5">
+    <div class="row g-4">
+        <!-- Digitizing Services Column -->
+        <div class="col-md-3">
+            <div class="card service-card">
+                <h4 class="card-header text-center">Digitizing</h4>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-thread"></i> Logo Flat Digitizing
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-cut"></i> Applique & Tackle Twill Digitizing
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-layer-group"></i> 3D Puff Digitizing
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-vector-square"></i> Chenille Digitizing
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-hat-cowboy"></i> Cap & Small Text Digitizing
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-user-tie"></i> Experienced designers
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
+        
+        <!-- Carousel Column -->
+        <div class="col-md-6">
+            <div id="serviceCarousel" class="carousel slide custom-carousel" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="{% static 'images/hero/1.jpeg' %}" class="d-block w-100" alt="Digitizing Service">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/hero/2.jpeg' %}" class="d-block w-100" alt="Vector Art">
 
-    <div class="col-md-4"></div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/hero/3.jpeg' %}" class="d-block w-100" alt="Embroidery Samples">
 
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#serviceCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#serviceCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <h4 class="card-header text-center">Vector</h4>
-            <div class="card-body">
-                <ul class="list-group list-group-light">
-                    <li class="list-group-item">Raster To Vector</li>
-                    <li class="list-group-item">Line Art</li>
-                    <li class="list-group-item">Silhouette</li>
-                    <li class="list-group-item">Color Separation</li>
-
-                </ul>
+        <!-- Vector Services Column -->
+        <div class="col-md-3">
+            <div class="card service-card">
+                <h4 class="card-header text-center">Vector</h4>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-image"></i> Raster To Vector
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-pencil-ruler"></i> Line Art
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-object-group"></i> Silhouette
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-palette"></i> Color Separation
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 
 {% endblock content %}

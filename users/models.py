@@ -6,16 +6,24 @@ from django_countries.fields import CountryField
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError('The Email field must be set')
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+    def create_user(self, user_id, password=None, **extra_fields):
+        if not user_id:
+            raise ValueError('The User ID field must be set')
+        
+        # Normalize and validate emails if provided
+        if 'email' in extra_fields:
+            extra_fields['email'] = self.normalize_email(extra_fields['email'])
+        if 'email2' in extra_fields:
+            extra_fields['email2'] = self.normalize_email(extra_fields['email2'])
+        if 'email3' in extra_fields:
+            extra_fields['email3'] = self.normalize_email(extra_fields['email3'])
+        
+        user = self.model(user_id=user_id, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         return user
     
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, user_id, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
@@ -25,14 +33,20 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True')
         
-        return self.create_user(email, password, **extra_fields)
-
+        return self.create_user(user_id, password, **extra_fields)
 
 class User(AbstractUser):
     username = None
+    user_id = models.CharField(max_length=100, unique=True, blank=False, null=False)
+    
+    # Main email field (now optional)
+    email = models.EmailField(unique=True)
+    # Additional email fields
+    email2 = models.EmailField(blank=True, null=True, verbose_name="Secondary Email")
+    email3 = models.EmailField(blank=True, null=True, verbose_name="Tertiary Email")
+    
     first_name = models.CharField(max_length=100, blank=False, null=False)
     last_name = models.CharField(max_length=100, blank=False, null=False)
-    email = models.EmailField(unique=True, blank=False, null=False)
     phone_number = models.CharField(max_length=50, null=True, blank=True)
     address = models.CharField(max_length=500)
     city = models.CharField(max_length=50)
@@ -40,11 +54,15 @@ class User(AbstractUser):
     zip_code = models.CharField(max_length=15)
     country = CountryField()
 
-    
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    # Use user_id as the login field instead of email
+    USERNAME_FIELD = 'user_id'
+    REQUIRED_FIELDS = []  # Removed email from required fields
 
     objects = UserManager()
 
     def __str__(self):
-        return self.email
+        return self.user_id
+
+    def get_all_emails(self):
+        """Return all non-empty email addresses associated with the user"""
+        return [email for email in [self.email, self.email2, self.email3] if email]
