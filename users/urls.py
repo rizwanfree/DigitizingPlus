@@ -31,4 +31,5 @@ urlpatterns = [
 
     #Admin Panel
     path('admin/dashboard/', views.admin_dashboard, name='admin-dashboard'),
+    path('admin/order-details/<int:pk>', views.admin_order_details, name='admin-order-details'),
 ]

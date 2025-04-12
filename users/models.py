@@ -70,6 +70,19 @@ class User(AbstractUser):
 
     objects = UserManager()
 
+    COUNTRY_CODE_MAP = {
+        'United States': 'us',
+        'United Kingdom': 'gb',
+        'Australia': 'au',
+        'New Zealand': 'nz',
+        'Germany': 'de',
+        'Canada': 'ca',
+    }
+    
+    @property
+    def country_code(self):
+        return self.COUNTRY_CODE_MAP.get(self.country, '')
+
     def __str__(self):
         return self.user_id
 

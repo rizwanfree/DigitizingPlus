@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 
@@ -222,5 +222,40 @@ def quote_records(request):
 
 # Admin Panel Views
 @login_required
+@user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
 def admin_dashboard(request):
-    return render(request, 'users/admin/index.html')
+    # Get all orders with user data and prefetch files
+    digitizing_orders = DigitizingOrder.objects.select_related('user').prefetch_related('files')
+    patch_orders = PatchOrder.objects.select_related('user').prefetch_related('files')
+    vector_orders = VectorOrder.objects.select_related('user').prefetch_related('files')
+
+    # Combine all orders with their types
+    all_orders = []
+    for order in digitizing_orders:
+        order.order_type = 'Digitizing'
+        all_orders.append(order)
+    for order in patch_orders:
+        order.order_type = 'Patch'
+        all_orders.append(order)
+    for order in vector_orders:
+        order.order_type = 'Vector'
+        all_orders.append(order)
+
+    # Sort by creation date (newest first)
+    all_orders.sort(key=lambda x: x.created_at, reverse=True)
+
+    context = {
+        'orders': all_orders,
+    }
+    return render(request, 'users/admin/dashboard.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
+def admin_order_details(request, pk):
+
+
+    context = {
+        
+    }
+    return render(request, 'users/admin/order-details.html', context)
