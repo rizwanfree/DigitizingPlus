@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -252,7 +252,24 @@ def admin_dashboard(request):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
-def admin_order_details(request, pk):
+def admin_order_details(request, pk, order_type):
+
+    # Map order types to their models
+    ORDER_MODELS = {
+        'digitizing': DigitizingOrder,
+        'patch': PatchOrder,
+        'vector': VectorOrder,
+    }
+
+    # Get the correct model class
+    model = ORDER_MODELS.get(order_type.lower())
+    if not model:
+        raise Http404("Invalid order type")
+    
+    # Get the specific order
+    order = get_object_or_404(model, pk=pk)
+
+    user = order.user
 
     if request.method == 'POST':
         form = GivenInfoForm(request.POST)
@@ -260,8 +277,25 @@ def admin_order_details(request, pk):
             # Process the data
             return redirect('success_url')
     else:
-        form = GivenInfoForm()
+        # Initialize form with order data
+        form = GivenInfoForm(initial={
+            'design_name': order.name,
+            'po_number': order.po_number,
+            'width': getattr(order, 'width', ''),
+            'height': getattr(order, 'height', ''),
+            'colors': order.colors,
+            'required_format': getattr(order, 'file_format', '') or getattr(order, 'required_format', ''),
+            'placement': getattr(order, 'logo_placement', '') or getattr(order, 'patch_type', ''),
+            'fabric_type': getattr(order, 'fabric_type', ''),
+            # 'price_option_a': getattr(order, 'price_option_a', ''),
+            # 'price_option_b': getattr(order, 'price_option_b', ''),
+            # 'total_price': getattr(order, 'total_price', ''),
+        })
+
     context = {
+        'order': order,
+        'user': user,
+        'order_type': order_type,
         'form': form,
     }
     return render(request, 'users/admin/order-details.html', context)

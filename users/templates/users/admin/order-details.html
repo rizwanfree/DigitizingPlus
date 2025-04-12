@@ -180,6 +180,19 @@
               <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum perferendis eveniet, velit dolores officia quis sed provident totam libero deserunt maxime similique expedita voluptatum blanditiis quidem impedit sunt laborum quos.</p>
             </div>
         </div>
+
+        <div class="card mt-1">
+            <div class="card-header">
+              Customer Information
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Name: </strong>{{ user.first_name }} {{ user.last_name }}</li>
+                    <li class="list-group-item"><strong>Email: </strong>{{ user.email }}</li>
+                    <li class="list-group-item"><strong>Phone: </strong>{{ user.phone_number }}</li>
+                  </ul>
+            </div>
+        </div>
     </div>
 </div>
 

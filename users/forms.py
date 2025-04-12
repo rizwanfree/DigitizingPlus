@@ -6,7 +6,7 @@ from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
 from django.core.validators import MinValueValidator
 from crispy_forms.helper import FormHelper
 from .models import User
-
+from crafting.models import BACKING_TYPE, BORDER_TYPE, FABRIC_CHOICES, LOGO_PLACEMENT, PATCH_TYPE, FORMAT_CHOICES
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -114,14 +114,16 @@ class GivenInfoForm(forms.Form):
     design_name = forms.CharField(
         label="Design Name",
         max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
     )
     
     po_number = forms.CharField(
         label="P.O. #",
         max_length=50,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+
     )
     
     # Numeric fields
@@ -130,63 +132,44 @@ class GivenInfoForm(forms.Form):
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(0.01)],
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        required=False,    
+    )
     
     height = forms.DecimalField(
         label="Height (inches)",
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(0.01)],
+        required=False,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
     
     colors = forms.IntegerField(
         label="Colors",
         min_value=1,
+        required=False,
         widget=forms.NumberInput(attrs={'class': 'form-control'}))
     
-    # Select fields
-    FORMAT_CHOICES = [
-        ('', '-- Select Format --'),
-        ('AI', 'Adobe Illustrator'),
-        ('EPS', 'EPS'),
-        ('PDF', 'PDF'),
-        ('JPG', 'JPG'),
-        ('PNG', 'PNG'),
-        ('Other', 'Other'),
-    ]
     
     required_format = forms.ChoiceField(
         label="Required Format",
         choices=FORMAT_CHOICES,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'}))
     
-    PLACEMENT_CHOICES = [
-        ('', '-- Select Placement --'),
-        ('Chest', 'Chest'),
-        ('Back', 'Back'),
-        ('Sleeve', 'Sleeve'),
-        ('Pocket', 'Pocket'),
-        ('Other', 'Other'),
-    ]
     
     placement = forms.ChoiceField(
         label="Placement",
-        choices=PLACEMENT_CHOICES,
+        choices=LOGO_PLACEMENT,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'}))
     
-    FABRIC_CHOICES = [
-        ('', '-- Select Fabric --'),
-        ('Cotton', 'Cotton'),
-        ('Polyester', 'Polyester'),
-        ('Nylon', 'Nylon'),
-        ('Leather', 'Leather'),
-        ('Blend', 'Blend'),
-        ('Other', 'Other'),
-    ]
+ 
     
     fabric_type = forms.ChoiceField(
         label="Fabric Type",
         choices=FABRIC_CHOICES,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'}))
     
     # Price fields
@@ -208,8 +191,94 @@ class GivenInfoForm(forms.Form):
         label="Total Price ($)",
         max_digits=8,
         decimal_places=2,
+        required=False,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'step': '0.01',
             'readonly': 'readonly'  # Often calculated automatically
     }))
+
+
+
+class OptionsForm(forms.Form):
+    width_a = forms.DecimalField(
+        label="Width (inches)",
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        required=False,    
+    )
+    
+    height_a = forms.DecimalField(
+        label="Height (inches)",
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
+    
+    stitches_a = forms.IntegerField(
+        label="Stitches",
+        min_value=1,
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    
+    price_a = forms.DecimalField(
+        label="Price",
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
+    
+    width_b = forms.DecimalField(
+        label="Width (inches)",
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        required=False,    
+    )
+    
+    height_b = forms.DecimalField(
+        label="Height (inches)",
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
+    
+    stitches_b = forms.IntegerField(
+        label="Stitches",
+        min_value=1,
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    
+    price_b = forms.DecimalField(
+        label="Price",
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
+    
+        # Summary Fields
+    total_price = forms.DecimalField(
+        label="Total Price",
+        max_digits=8, decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'readonly': True,
+            'step': '0.01'
+        })
+    )
+    
+    comments = forms.CharField(
+        label="Comments",
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3
+        }),
+        required=False
+    )
