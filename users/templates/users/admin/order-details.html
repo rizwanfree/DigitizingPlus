@@ -124,7 +124,6 @@
                         {{ form.total_price|as_crispy_field }}
                     </div>
                 </div>
-
                 <button type="submit" class="btn btn-primary mt-3">Update</button>
             </form>
         </div>
@@ -139,12 +138,80 @@
         </div>
 
         <!-- Final Tab -->
-        <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">
+        <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">            
             <form action="" method="post">
                 {% csrf_token %}
-                <input type="hidden" name="form_type" value="vector">
-                {% comment %} {% crispy vector_form %} {% endcomment %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <!--Option A-->
+                        <h3>OPTION A</h3>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Width</span>
+                            {{ final_form.width_a }}
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Height</span>
+                            {{ final_form.height_a }}
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Stiches</span>
+                            {{ final_form.stitches_a }}
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Price</span>
+                            {{ final_form.price_a }}
+                        </div>
+                    </div>
+                
+                
+
+                <div class="col-md-6">
+                    <!--Option B-->
+                    <h3>OPTION B</h3>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Width</span>
+                        {{ final_form.width_b }}
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Height</span>
+                        {{ final_form.height_b }}
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Stiches</span>
+                        {{ final_form.stitches_b }}
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Price</span>
+                        {{ final_form.price_b }}
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Total Price</span>
+                        {{ final_form.total_price }}
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Comments</span>
+                        {{ final_form.comments }}
+                    </div>
+                </div>
             </form>
+                
+
+                
+
+            </div>
+
         </div>
 
         <!-- Previous Tab -->

@@ -266,7 +266,8 @@ class OptionsForm(forms.Form):
         # Summary Fields
     total_price = forms.DecimalField(
         label="Total Price",
-        max_digits=8, decimal_places=2,
+        max_digits=8, 
+        decimal_places=2,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'readonly': True,
@@ -278,7 +279,7 @@ class OptionsForm(forms.Form):
         label="Comments",
         widget=forms.Textarea(attrs={
             'class': 'form-control',
-            'rows': 3
+            'rows': 2
         }),
         required=False
     )

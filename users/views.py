@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 
-from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm
+from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
 
@@ -292,10 +292,15 @@ def admin_order_details(request, pk, order_type):
             # 'total_price': getattr(order, 'total_price', ''),
         })
 
+        option_form = OptionsForm(initial={
+
+        })
+
     context = {
         'order': order,
         'user': user,
         'order_type': order_type,
         'form': form,
+        'final_form': option_form
     }
     return render(request, 'users/admin/order-details.html', context)
