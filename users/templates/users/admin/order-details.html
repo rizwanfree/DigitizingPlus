@@ -75,11 +75,57 @@
     <div class="tab-content" id="orderTabsContent">
 
         <!-- Given Tab -->
-        <div class="tab-pane fade show active mt-5" id="given" role="tabpanel" aria-labelledby="given-tab">
-            <form action="" method="post" enctype="multipart/form-data">
+        <div class="tab-pane fade show active mt-1" id="given" role="tabpanel" aria-labelledby="given-tab">
+            <form action="" method="post" enctype="multipart/form-data" class="mt-3">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="digitizing">
-                {% comment %} {% crispy digitizing_form %} {% endcomment %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.design_name|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.po_number|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form.width|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.height|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.colors|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form.required_format|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.placement|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.fabric_type|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div class="row bg-light py-3">
+                    <div class="col-md-4">
+                        {{ form.price_option_a|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.price_option_b|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.total_price|as_crispy_field }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Update</button>
             </form>
         </div>
 
@@ -122,7 +168,7 @@
               Customer Instructions
             </div>
             <div class="card-body">
-                <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                <p class="card-text">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Blanditiis officiis, deserunt quasi reprehenderit, minima cum sed earum saepe eaque, ratione suscipit ea voluptatibus asperiores aliquam! Magni sunt ducimus alias repudiandae?</p>
             </div>
         </div>
 
@@ -131,11 +177,31 @@
               Admin Instructions
             </div>
             <div class="card-body">
-              <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+              <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum perferendis eveniet, velit dolores officia quis sed provident totam libero deserunt maxime similique expedita voluptatum blanditiis quidem impedit sunt laborum quos.</p>
             </div>
         </div>
     </div>
 </div>
 
+
+<!-- Optional: Add JavaScript for automatic price calculation -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Example: Auto-calculate total when prices change
+        const priceA = document.getElementById('id_price_option_a');
+        const priceB = document.getElementById('id_price_option_b');
+        const total = document.getElementById('id_total_price');
+        
+        function calculateTotal() {
+            const a = parseFloat(priceA.value) || 0;
+            const b = parseFloat(priceB.value) || 0;
+            total.value = (a + b).toFixed(2);
+        }
+        
+        priceA.addEventListener('change', calculateTotal);
+        priceB.addEventListener('change', calculateTotal);
+    });
+</script>
+    
 
 {% endblock content %}

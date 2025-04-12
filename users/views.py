@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 
-from .forms import UserRegistrationForm, UserProfileForm
+from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
 
@@ -254,8 +254,14 @@ def admin_dashboard(request):
 @user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
 def admin_order_details(request, pk):
 
-
+    if request.method == 'POST':
+        form = GivenInfoForm(request.POST)
+        if form.is_valid():
+            # Process the data
+            return redirect('success_url')
+    else:
+        form = GivenInfoForm()
     context = {
-        
+        'form': form,
     }
     return render(request, 'users/admin/order-details.html', context)
