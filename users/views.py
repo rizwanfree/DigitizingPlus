@@ -249,6 +249,34 @@ def admin_dashboard(request):
     }
     return render(request, 'users/admin/dashboard.html', context)
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
+def inprocess_orders(request):
+    # Get all orders with user data and prefetch files
+    digitizing_orders = DigitizingOrder.objects.select_related('user').prefetch_related('files')
+    patch_orders = PatchOrder.objects.select_related('user').prefetch_related('files')
+    vector_orders = VectorOrder.objects.select_related('user').prefetch_related('files')
+
+    # Combine all orders with their types
+    all_orders = []
+    for order in digitizing_orders:
+        order.order_type = 'Digitizing'
+        all_orders.append(order)
+    for order in patch_orders:
+        order.order_type = 'Patch'
+        all_orders.append(order)
+    for order in vector_orders:
+        order.order_type = 'Vector'
+        all_orders.append(order)
+
+    # Sort by creation date (newest first)
+    all_orders.sort(key=lambda x: x.created_at, reverse=True)
+
+    context = {
+        'orders': all_orders,
+    }
+    return render(request, 'users/admin/inprocess-orders.html', context)
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
@@ -268,7 +296,9 @@ def admin_order_details(request, pk, order_type):
     
     # Get the specific order
     order = get_object_or_404(model, pk=pk)
-    payment = get_object_or_404(model, pk=pk)
+    #payment = get_object_or_404(model, pk=pk)
+
+    #payments = payment.payment_details
 
     user = order.user
 
@@ -288,7 +318,7 @@ def admin_order_details(request, pk, order_type):
             'required_format': getattr(order, 'file_format', '') or getattr(order, 'required_format', ''),
             'placement': getattr(order, 'logo_placement', '') or getattr(order, 'patch_type', ''),
             'fabric_type': getattr(order, 'fabric_type', ''),
-            'price_option_a': getattr(payment, 'price_option_a', 0),
+            #'price_option_a': getattr(payment, 'price_option_a', ''),
             #'price_option_b': getattr(order, 'price_option_b', ''),
             'total_price': getattr(order, 'total_price', ''),
         })
@@ -297,7 +327,7 @@ def admin_order_details(request, pk, order_type):
             'width_a': getattr(order, 'width', ''),
             'height_a': getattr(order, 'height', ''),
             'stitches_a': getattr(order, 'stitches', ''),
-            'price_a': getattr(payment, 'price', 0),
+            #'price_a': getattr(payment, 'price', ''),
 
         })
 
