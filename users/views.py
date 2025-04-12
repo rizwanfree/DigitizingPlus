@@ -268,6 +268,7 @@ def admin_order_details(request, pk, order_type):
     
     # Get the specific order
     order = get_object_or_404(model, pk=pk)
+    payment = get_object_or_404(model, pk=pk)
 
     user = order.user
 
@@ -287,12 +288,16 @@ def admin_order_details(request, pk, order_type):
             'required_format': getattr(order, 'file_format', '') or getattr(order, 'required_format', ''),
             'placement': getattr(order, 'logo_placement', '') or getattr(order, 'patch_type', ''),
             'fabric_type': getattr(order, 'fabric_type', ''),
-            # 'price_option_a': getattr(order, 'price_option_a', ''),
-            # 'price_option_b': getattr(order, 'price_option_b', ''),
-            # 'total_price': getattr(order, 'total_price', ''),
+            'price_option_a': getattr(payment, 'price_option_a', 0),
+            #'price_option_b': getattr(order, 'price_option_b', ''),
+            'total_price': getattr(order, 'total_price', ''),
         })
 
         option_form = OptionsForm(initial={
+            'width_a': getattr(order, 'width', ''),
+            'height_a': getattr(order, 'height', ''),
+            'stitches_a': getattr(order, 'stitches', ''),
+            'price_a': getattr(payment, 'price', 0),
 
         })
 

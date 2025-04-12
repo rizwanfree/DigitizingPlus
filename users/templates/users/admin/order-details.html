@@ -18,7 +18,7 @@
     }
 </style>
 
-<h1 class="text-center mt-3 mb-2">REVISION | NO: ORDER # | DATE: 12-04-2025 | STATUS</h1>
+<h3 class="text-center mt-3 mb-2">REVISION | NO: ORDER # | DATE: {{ order.created_at|date:"m-d-Y" }} | {{order.status|upper}}</h3>
 
 <div class="row ">
     <div class="col-md-6">
@@ -55,11 +55,6 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="assigning-tab" data-bs-toggle="tab" data-bs-target="#assigning" type="button" role="tab" aria-controls="assigning" aria-selected="false">
-                Assigning
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
             <button class="nav-link" id="final-tab" data-bs-toggle="tab" data-bs-target="#final" type="button" role="tab" aria-controls="final" aria-selected="false">
                 Final Info
             </button>
@@ -78,64 +73,94 @@
         <div class="tab-pane fade show active mt-1" id="given" role="tabpanel" aria-labelledby="given-tab">
             <form action="" method="post" enctype="multipart/form-data" class="mt-3">
                 {% csrf_token %}
-                <input type="hidden" name="form_type" value="digitizing">
+                {% comment %} <input type="hidden" name="form_type" value="digitizing"> {% endcomment %}
 
                 <div class="row">
                     <div class="col-md-6">
-                        {{ form.design_name|as_crispy_field }}
+                        {% comment %} {{ form.design_name|as_crispy_field }} {% endcomment %}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Design Name</span>
+                            {{ form.design_name }}
+                        </div>
                     </div>
+
                     <div class="col-md-6">
-                        {{ form.po_number|as_crispy_field }}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">P.O #</span>
+                            {{ form.po_number }}
+                        </div>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-4">
-                        {{ form.width|as_crispy_field }}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Width</span>
+                            {{ form.width }}
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        {{ form.height|as_crispy_field }}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Height</span>
+                            {{ form.height }}
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        {{ form.colors|as_crispy_field }}
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Colors</span>
+                            {{ form.colors }}
+                        </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4">
-                        {{ form.required_format|as_crispy_field }}
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Required Format</span>
+                            {{ form.required_format }}
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        {{ form.placement|as_crispy_field }}
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Placement</span>
+                            {{ form.placement }}
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        {{ form.fabric_type|as_crispy_field }}
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Fabric Type</span>
+                            {{ form.fabric_type }}
+                        </div>
                     </div>
                 </div>
                 
                 <div class="row bg-light py-3">
-                    <div class="col-md-4">
-                        {{ form.price_option_a|as_crispy_field }}
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Price (Option A)</span>
+                            {{ form.price_option_a }}
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        {{ form.price_option_b|as_crispy_field }}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Price (Option B)</span>
+                            {{ form.price_option_b }}
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        {{ form.total_price|as_crispy_field }}
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Total Price</span>
+                            {{ form.total_price }}
+                        </div>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary mt-3">Update</button>
             </form>
+
+            <hr>
+            
         </div>
 
-        <!-- Assigning Tab -->
-        <div class="tab-pane fade mt-5" id="assigning" role="tabpanel" aria-labelledby="assigning-tab">
-            <form action="" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="patch">
-                {% comment %} {% crispy patch_form %} {% endcomment %}
-            </form>
-        </div>
 
         <!-- Final Tab -->
         <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">            
@@ -204,6 +229,11 @@
                         <span class="input-group-text">Comments</span>
                         {{ final_form.comments }}
                     </div>
+                    
+                </div>
+
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary btn-block">Release</button>
                 </div>
             </form>
                 

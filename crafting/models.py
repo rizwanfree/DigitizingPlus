@@ -280,3 +280,50 @@ class PatchQuote(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+
+class Payment(models.Model):
+    PAYMENT_METHODS = [
+        ('credit', 'Credit Card'),
+        ('paypal', 'PayPal'),
+        ('bank', 'Bank Transfer'),
+        ('cashApp', 'CashApp'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    ]
+
+    # Simple foreign key (you'll need to choose one order type)
+    # Alternatively, create separate fields for each order type
+    digitizing_order = models.ForeignKey(
+        DigitizingOrder, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    patch_order = models.ForeignKey(
+        PatchOrder,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    vector_order = models.ForeignKey(
+        VectorOrder,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
+    transaction_id = models.CharField(max_length=100, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment #{self.id} - ${self.amount}"
