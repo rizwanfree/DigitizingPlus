@@ -59,37 +59,38 @@ def customer_profile(request):
 
 @login_required
 def orders(request):
-    print("Request method:", request.method)  # Debug print
+    # Initialize empty forms
+    digitizing_form = DigitizingOrderForm(user=request.user)
+    patch_form = PatchOrderForm(user=request.user)
+    vector_form = VectorOrderForm(user=request.user)
 
     if request.method == 'POST':
-        form_type = request.POST.get('form_type')  # Get the form type from the hidden input
-
+        form_type = request.POST.get('form_type')
+        
+        # Handle each form type
         if form_type == 'digitizing':
-            form = DigitizingOrderForm(request.POST, request.FILES)
+            form = DigitizingOrderForm(request.POST, request.FILES, user=request.user)
         elif form_type == 'patch':
-            form = PatchOrderForm(request.POST, request.FILES)
+            form = PatchOrderForm(request.POST, request.FILES, user=request.user)
         elif form_type == 'vector':
-            form = VectorOrderForm(request.POST, request.FILES)
+            form = VectorOrderForm(request.POST, request.FILES, user=request.user)
         else:
-            messages.error(request, "Invalid form submission.")
+            messages.error(request, "Invalid form submission")
             return redirect('users:place-order')
 
         if form.is_valid():
-            order = form.save()
-            messages.success(request, f"{form_type.capitalize()} order placed successfully!")
-            print("form Saved")
-            return redirect('users:customer-orders-records')  # Redirect to order detail page
+            form.save()
+            messages.success(request, "Order placed successfully!")
+            return redirect('users:customer-orders-records')
         else:
-            messages.error(request, "Please correct the errors below.")
-            print(form.errors)
-    else:
-        print("Something went wrong")
-
-
-    # Initialize empty forms for GET requests
-    digitizing_form = DigitizingOrderForm()
-    patch_form = PatchOrderForm()
-    vector_form = VectorOrderForm()
+            messages.error(request, "Please fix the errors below")
+            # Keep the submitted form to show errors
+            if form_type == 'digitizing':
+                digitizing_form = form
+            elif form_type == 'patch':
+                patch_form = form
+            elif form_type == 'vector':
+                vector_form = form
 
     context = {
         'digitizing_form': digitizing_form,
@@ -98,31 +99,30 @@ def orders(request):
     }
     return render(request, 'users/customer/orders.html', context)
 
+
 @login_required
 def order_records(request):
-    # Fetch all orders from each model
-    digitizing_orders = DigitizingOrder.objects.all()
-    patch_orders = PatchOrder.objects.all()
-    vector_orders = VectorOrder.objects.all()
+    # Get all orders for current user
+    digitizing = DigitizingOrder.objects.filter(user=request.user)
+    patch = PatchOrder.objects.filter(user=request.user)
+    vector = VectorOrder.objects.filter(user=request.user)
 
-    # Add a 'type' attribute to each order to identify its type
-    for order in digitizing_orders:
+    # Add type labels
+    for order in digitizing:
         order.type = 'Digitizing'
-    for order in patch_orders:
+    for order in patch:
         order.type = 'Patch'
-    for order in vector_orders:
+    for order in vector:
         order.type = 'Vector'
 
-    # Combine all orders into a single list
-    all_orders = list(digitizing_orders) + list(patch_orders) + list(vector_orders)
+    # Combine and sort by date (newest first)
+    all_orders = sorted(
+        list(digitizing) + list(patch) + list(vector),
+        key=lambda x: x.created_at,
+        reverse=True
+    )
 
-    # Sort the combined list by creation date (or any other field)
-    all_orders.sort(key=lambda x: x.created_at, reverse=True)
-
-
-    context = {
-        'orders': all_orders
-    }
+    context = {'orders': all_orders}
     return render(request, 'users/customer/records.html', context)
 
 
@@ -148,37 +148,41 @@ def order_details(request, type, id):
     return render(request, template_name, context)
 
 
+
 @login_required
 def quotes(request):
-    if request.method == 'POST':
-        form_type = request.POST.get('form_type')  # Get the form type from the hidden input
+    # Initialize empty forms
+    digitizing_form = DigitizingQuoteForm(user=request.user)
+    patch_form = PatchQuoteForm(user=request.user)
+    vector_form = VectorQuoteForm(user=request.user)
 
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type')
+        
+        # Handle each form type
         if form_type == 'digitizing':
-            form = DigitizingQuoteForm(request.POST)
+            form = DigitizingQuoteForm(request.POST, user=request.user)
         elif form_type == 'patch':
-            form = PatchQuoteForm(request.POST)
+            form = PatchQuoteForm(request.POST, user=request.user)
         elif form_type == 'vector':
-            form = VectorQuoteForm(request.POST)
+            form = VectorQuoteForm(request.POST, user=request.user)
         else:
-            messages.error(request, "Invalid form submission.")
-            return redirect('users:place-order')
+            messages.error(request, "Invalid form submission")
+            return redirect('users:place-quote')
 
         if form.is_valid():
-            order = form.save()
-            messages.success(request, f"{form_type.capitalize()} order placed successfully!")
-            print("form Saved")
-            return redirect('users:customer-quote-records')  # Redirect to order detail page
+            form.save()
+            messages.success(request, "Quote request submitted!")
+            return redirect('users:customer-quote-records')
         else:
-            messages.error(request, "Please correct the errors below.")
-            print(form.errors)
-    else:
-        print("Something went wrong")
-
-
-    # Initialize empty forms for GET requests
-    digitizing_form = DigitizingQuoteForm()
-    patch_form = PatchQuoteForm()
-    vector_form = VectorQuoteForm()
+            messages.error(request, "Please fix the errors below")
+            # Keep the submitted form to show errors
+            if form_type == 'digitizing':
+                digitizing_form = form
+            elif form_type == 'patch':
+                patch_form = form
+            elif form_type == 'vector':
+                vector_form = form
 
     context = {
         'digitizing_form': digitizing_form,
@@ -188,35 +192,30 @@ def quotes(request):
     return render(request, 'users/customer/quotes.html', context)
 
 
-
 @login_required
 def quote_records(request):
-    # Fetch all orders from each model
-    digitizing_orders = DigitizingQuote.objects.all()
-    patch_orders = PatchQuote.objects.all()
-    vector_orders = VectorQuote.objects.all()
+    # Get all quotes for current user
+    digitizing = DigitizingQuote.objects.filter(user=request.user)
+    patch = PatchQuote.objects.filter(user=request.user)
+    vector = VectorQuote.objects.filter(user=request.user)
 
-    # Add a 'type' attribute to each order to identify its type
-    for order in digitizing_orders:
-        order.type = 'Digitizing'
-    for order in patch_orders:
-        order.type = 'Patch'
-    for order in vector_orders:
-        order.type = 'Vector'
+    # Add type labels
+    for quote in digitizing:
+        quote.type = 'Digitizing'
+    for quote in patch:
+        quote.type = 'Patch'
+    for quote in vector:
+        quote.type = 'Vector'
 
-    # Combine all orders into a single list
-    all_orders = list(digitizing_orders) + list(patch_orders) + list(vector_orders)
+    # Combine and sort by date (newest first)
+    all_quotes = sorted(
+        list(digitizing) + list(patch) + list(vector),
+        key=lambda x: x.created_at,
+        reverse=True
+    )
 
-    # Sort the combined list by creation date (or any other field)
-    all_orders.sort(key=lambda x: x.created_at, reverse=True)
-
-
-    context = {
-        'orders': all_orders
-    }
+    context = {'quotes': all_quotes}
     return render(request, 'users/customer/quotes-records.html', context)
-
-
 
 
 

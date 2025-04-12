@@ -1,9 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django_countries.fields import CountryField
-# Create your models here.
-
-
 
 class UserManager(BaseUserManager):
     def create_user(self, user_id, password=None, **extra_fields):
@@ -36,6 +32,15 @@ class UserManager(BaseUserManager):
         return self.create_user(user_id, password, **extra_fields)
 
 class User(AbstractUser):
+    COUNTRY_CHOICES = [
+        ('United States', 'United States'),
+        ('United Kingdom', 'United Kingdom'),
+        ('Australia', 'Australia'),
+        ('New Zealand', 'New Zealand'),
+        ('Germany', 'Germany'),
+        ('Canada', 'Canada'),
+    ]
+    
     username = None
     user_id = models.CharField(max_length=100, unique=True, blank=False, null=False)
     
@@ -52,7 +57,12 @@ class User(AbstractUser):
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=50)
     zip_code = models.CharField(max_length=15)
-    country = CountryField()
+    country = models.CharField(
+        max_length=15,
+        choices=COUNTRY_CHOICES,
+        default='US',  # Default to United States
+        verbose_name="Country"
+    )
 
     # Use user_id as the login field instead of email
     USERNAME_FIELD = 'user_id'

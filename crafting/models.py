@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 
@@ -117,8 +118,21 @@ VECTOR_ORDER_COLOR_TYPES = [
     ('RGB', 'RGB'),
     ('CMYK', 'CMYK'),
 ]
+    #DPO = Digitizing Order
+    #DPV = Vector Order
+    #DPP = Patch Order
+
+    #DPOQ = Digitizing Quote
+    #DPVQ = Vector Quote
+    #DPPQ = Patch Quote
+
 
 class DigitizingOrder(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='digitizing_orders',
+    )
     name = models.CharField(max_length=255)
     height = models.IntegerField()
     width = models.IntegerField()
@@ -132,16 +146,8 @@ class DigitizingOrder(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    #DPO = Digitizing Order
-    #DPV = Vector Order
-    #DPP = Patch Order
-
-    #DPOQ = Digitizing Quote
-    #DPVQ = Vector Quote
-    #DPPQ = Patch Quote
     def __str__(self):
         return self.name
-    
 
 class DigitizingOrder_Files(models.Model):
     order = models.ForeignKey(DigitizingOrder, on_delete=models.CASCADE, related_name='files')
@@ -150,23 +156,24 @@ class DigitizingOrder_Files(models.Model):
 
     def __str__(self):
         return f"File for Order #{self.order.name}"
-    
 
 class PatchOrder(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='patch_orders',
+    )
     name = models.CharField(max_length=255)
     po_number = models.IntegerField(null=True, blank=True)
     height = models.IntegerField()
     width = models.IntegerField()
-     
     patch_type = models.CharField(max_length=50, choices=PATCH_TYPE, null=True, blank=True)
     backing_type = models.CharField(max_length=50, choices=BACKING_TYPE, null=True, blank=True)
     border_type = models.CharField(max_length=50, choices=BORDER_TYPE, null=True, blank=True)
     embroidery_fill = models.CharField(max_length=50, choices=EMBROIDERY_FILL, null=True, blank=True)
-
     quantity = models.IntegerField(default=1)
     date = models.DateField()
     color_details = models.CharField(max_length=255, blank=True, null=True)
-
     contact_name = models.CharField(max_length=255)
     contact_number = models.CharField(max_length=50)
     shipping_address = models.TextField(null=True, blank=True)
@@ -176,7 +183,6 @@ class PatchOrder(models.Model):
 
     def __str__(self):
         return self.name
-    
 
 class PatchOrder_Files(models.Model):
     order = models.ForeignKey(PatchOrder, on_delete=models.CASCADE, related_name='files')
@@ -185,13 +191,15 @@ class PatchOrder_Files(models.Model):
 
     def __str__(self):
         return f"File for Order #{self.order.name}"
-    
-
 
 class VectorOrder(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='vector_orders',
+    )
     name = models.CharField(max_length=255)
     po_number = models.IntegerField(null=True, blank=True)
-
     required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
     color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
     colors = models.IntegerField(default=1)
@@ -202,7 +210,6 @@ class VectorOrder(models.Model):
 
     def __str__(self):
         return self.name
-    
 
 class VectorOrder_Files(models.Model):
     order = models.ForeignKey(VectorOrder, on_delete=models.CASCADE, related_name='files')
@@ -211,9 +218,13 @@ class VectorOrder_Files(models.Model):
 
     def __str__(self):
         return f"File for Order #{self.order.name}"
-    
 
 class DigitizingQuote(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='digitizing_quotes',
+    )
     name = models.CharField(max_length=255)
     height = models.IntegerField()
     width = models.IntegerField()
@@ -227,10 +238,13 @@ class DigitizingQuote(models.Model):
 
     def __str__(self):
         return self.name
-    
-
 
 class VectorQuote(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='vector_quotes',
+    )
     name = models.CharField(max_length=255)
     required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
     color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
@@ -241,9 +255,13 @@ class VectorQuote(models.Model):
 
     def __str__(self):
         return self.name
-    
 
 class PatchQuote(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='patch_quotes',
+    )
     name = models.CharField(max_length=255)
     height = models.IntegerField()
     width = models.IntegerField()     
@@ -251,11 +269,9 @@ class PatchQuote(models.Model):
     backing_type = models.CharField(max_length=50, choices=BACKING_TYPE, null=True, blank=True)
     border_type = models.CharField(max_length=50, choices=BORDER_TYPE, null=True, blank=True)
     embroidery_fill = models.CharField(max_length=50, choices=EMBROIDERY_FILL, null=True, blank=True)
-
     quantity = models.IntegerField(default=1)
     date = models.DateField()
     color_details = models.CharField(max_length=255, blank=True, null=True)
-
     contact_name = models.CharField(max_length=255)
     contact_number = models.CharField(max_length=50)
     shipping_address = models.TextField(null=True, blank=True)

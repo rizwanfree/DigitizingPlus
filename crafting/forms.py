@@ -1,12 +1,28 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingOrder_Files, PatchOrder_Files, VectorOrder_Files, DigitizingQuote, PatchQuote, VectorQuote
-
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Reset, HTML
 
-class DigitizingOrderForm(forms.ModelForm):
+class BaseOrderForm:
+    """Base form class with common functionality for all order forms"""
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)  # Get user from kwargs
+        super().__init__(*args, **kwargs)
+        # Remove user field from form as we'll set it automatically
+        if 'user' in self.fields:
+            del self.fields['user']
 
+    def save(self, commit=True):
+        # Set the user before saving
+        instance = super().save(commit=False)
+        if self.user:
+            instance.user = self.user
+        if commit:
+            instance.save()
+        return instance
+
+class DigitizingOrderForm(BaseOrderForm, forms.ModelForm):
     file1 = forms.FileField(label='Upload Files (2 MB Max Size)', required=False)
     file2 = forms.FileField(label='', required=False)
 
@@ -28,7 +44,6 @@ class DigitizingOrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
-
             Row(
                 Column('name', css_class='col-md-8'),
                 Column('po_number', css_class='col-md-4'),
@@ -59,7 +74,7 @@ class DigitizingOrderForm(forms.ModelForm):
     
     class Meta:
         model = DigitizingOrder
-        fields = '__all__'
+        exclude = ['user', 'status', 'created_at']  # Exclude auto fields
         labels = {
             'name': 'Design Name',
             'height': 'Height (in inches)',
@@ -88,9 +103,7 @@ class DigitizingOrderForm(forms.ModelForm):
 
         return order
 
-
-class PatchOrderForm(forms.ModelForm):
-
+class PatchOrderForm(BaseOrderForm, forms.ModelForm):
     file1 = forms.FileField(label='Upload Files (2 MB Max Size)', required=False)
     file2 = forms.FileField(label='', required=False)    
 
@@ -98,7 +111,6 @@ class PatchOrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
-
             Row(
                 Column('name', css_class='col-md-8'),
                 Column('po_number', css_class='col-md-4'),
@@ -106,26 +118,21 @@ class PatchOrderForm(forms.ModelForm):
             Row(
                 Column('height', css_class='col-md-6'),
                 Column('width', css_class='col-md-6'),
-                
             ),
             Row(
                 Column('patch_type', css_class='col-md-6'),
                 Column('backing_type', css_class='col-md-6'),
-                
             ),
             Row(
                 Column('border_type', css_class='col-md-6'),
                 Column('embroidery_fill', css_class='col-md-6'),
-                
             ),
             Row(
                 Column('quantity', css_class='col-md-6'),
                 Column('date', css_class='col-md-6'),
-                
             ),
             Row(
                 Column('color_details', css_class='col-md-12'),
-                
             ),
             Row(
                 Column('contact_name', css_class='col-md-6'),
@@ -162,16 +169,12 @@ class PatchOrderForm(forms.ModelForm):
 
     class Meta:
         model = PatchOrder
-        fields = '__all__'
+        exclude = ['user', 'status', 'created_at']
         labels = {
             'name': 'Order Name',
             'height': 'Height (in inches)',
             'width': 'Width (in inches)',
-            'colors': 'Number of Colors',
             'po_number': 'Purchase Order Number',
-            'file_format': 'File Format',
-            'fabric_type': 'Fabric Type',
-            'logo_placement': 'Logo Placement',
             'instructions': 'Special Instructions',
         }
         widgets = {
@@ -191,9 +194,7 @@ class PatchOrderForm(forms.ModelForm):
 
         return order
 
-
-class VectorOrderForm(forms.ModelForm):
-
+class VectorOrderForm(BaseOrderForm, forms.ModelForm):
     file1 = forms.FileField(label='Upload Files (2 MB Max Size)', required=False)
     file2 = forms.FileField(label='', required=False)    
 
@@ -201,24 +202,18 @@ class VectorOrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
-
             Row(
                 Column('name', css_class='col-md-8'),
                 Column('po_number', css_class='col-md-4'),
             ),
-
             Row(
                 Column('required_format', css_class='col-md-4'),
                 Column('color_types', css_class='col-md-4'),
                 Column('colors', css_class='col-md-4'),
-                
             ),
             Row(
-                
                 Column('others', css_class='col-md-12'),
-                
             ),
-
             Row(
                 Column('instructions', css_class='col-md-6'),
                 Column(Row(
@@ -226,7 +221,6 @@ class VectorOrderForm(forms.ModelForm):
                     Column('file2', css_class='col-md-12 mt-0'),  
                 ), css_class='col-md-6'),                
             ),
-            
             Row(
                 Column(HTML(''), css_class='col-md-8'),
                 Column(Submit('submit', 'Place Order', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
@@ -250,7 +244,7 @@ class VectorOrderForm(forms.ModelForm):
 
     class Meta:
         model = VectorOrder
-        fields = '__all__'
+        exclude = ['user', 'status', 'created_at']
         labels = {
             'name': 'Order Name',
             'colors': 'Number of Colors',
@@ -275,180 +269,30 @@ class VectorOrderForm(forms.ModelForm):
             VectorOrder_Files.objects.create(order=order, file=file2)
 
         return order
-    
 
+###### QUOTE FORMS ######
 
-
-###### QUOTES FORM ######
-
-class DigitizingQuoteForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-
-            Row(
-                Column('name', css_class='col-md-12'),
-            ),
-            Row(
-                Column('height', css_class='col-md-4'),
-                Column('width', css_class='col-md-4'),
-                Column('colors', css_class='col-md-4'),
-            ),
-            Row(
-                Column('file_format', css_class='col-md-4'),
-                Column('fabric_type', css_class='col-md-4'),
-                Column('logo_placement', css_class='col-md-4'),
-            ),
-            Row(
-                Column('instructions', css_class='col-md-12')               
-            ),
-            Row(
-                Column('is_urgent', css_class='col-md-8'),
-                Column(Submit('submit', 'Place Order', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
-                Column(Reset('reset', 'Reset', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
-            ),
-        )
-    
+class DigitizingQuoteForm(BaseOrderForm, forms.ModelForm):
     class Meta:
         model = DigitizingQuote
-        fields = '__all__'
-        labels = {
-            'name': 'Design Name',
-            'height': 'Height (in inches)',
-            'width': 'Width (in inches)',
-            'colors': 'Number of Colors',
-            'file_format': 'File Format',
-            'fabric_type': 'Fabric Type',
-            'logo_placement': 'Logo Placement',
-            'instructions': 'Special Instructions',
-            'is_urgent': 'Is this order urgent?',
-        }
+        exclude = ['user', 'created_at']
         widgets = {
             'instructions': forms.Textarea(attrs={'rows': 3})
         }
 
-    def save(self, commit=True):
-        order = super().save(commit=commit)
-        return order
-    
-
-
-class PatchQuoteForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-
-            Row(
-                Column('name', css_class='col-md-6'),
-                Column('height', css_class='col-md-3'),
-                Column('width', css_class='col-md-3'),
-            ),
-            Row(
-                Column('patch_type', css_class='col-md-6'),
-                Column('backing_type', css_class='col-md-6'),
-                
-            ),
-            Row(
-                Column('border_type', css_class='col-md-6'),
-                Column('embroidery_fill', css_class='col-md-6'),
-                
-            ),
-            Row(
-                Column('quantity', css_class='col-md-6'),
-                Column('date', css_class='col-md-6'),
-                
-            ),
-            Row(
-                Column('color_details', css_class='col-md-12'),
-                
-            ),
-            Row(
-                Column('contact_name', css_class='col-md-6'),
-                Column('contact_number', css_class='col-md-6'),
-            ),
-            Row(
-                Column('shipping_address', css_class='col-md-6'),
-                Column('instructions', css_class='col-md-6'),              
-            ),
-            Row(
-                Column(HTML(''), css_class='col-md-8'),
-                Column(Submit('submit', 'Place Order', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
-                Column(Reset('reset', 'Reset', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
-            ),
-        )
-
+class PatchQuoteForm(BaseOrderForm, forms.ModelForm):
     class Meta:
         model = PatchQuote
-        fields = '__all__'
-        labels = {
-            'name': 'Order Name',
-            'height': 'Height (in inches)',
-            'width': 'Width (in inches)',
-            'colors': 'Number of Colors',
-            'file_format': 'File Format',
-            'fabric_type': 'Fabric Type',
-            'logo_placement': 'Logo Placement',
-            'instructions': 'Special Instructions',
-        }
+        exclude = ['user', 'created_at']
         widgets = {
             'instructions': forms.Textarea(attrs={'rows': 3}),
             'shipping_address': forms.Textarea(attrs={'rows': 3})
         }
 
-    def save(self, commit=True):
-        order = super().save(commit=commit)
-        return order
-    
-
-
-class VectorQuoteForm(forms.ModelForm):  
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-
-            Row(
-                Column('name', css_class='col-md-6'),
-                Column('required_format', css_class='col-md-2'),
-                Column('color_types', css_class='col-md-2'),
-                Column('colors', css_class='col-md-2'),                
-            ),
-            Row(
-                
-                Column('others', css_class='col-md-12'),                
-            ),
-
-            Row(
-                Column('instructions', css_class='col-md-12'),              
-            ),
-            
-            Row(
-                Column(HTML(''), css_class='col-md-8'),
-                Column(Submit('submit', 'Place Order', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
-                Column(Reset('reset', 'Reset', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
-            ),
-        )
-
+class VectorQuoteForm(BaseOrderForm, forms.ModelForm):
     class Meta:
         model = VectorQuote
-        fields = '__all__'
-        labels = {
-            'name': 'Order Name',
-            'colors': 'Number of Colors',
-            'required_format': 'Required Format',
-            'color_types': 'Color Type',
-            'others': 'Others',
-            'instructions': 'Additional Instructions',
-        }
+        exclude = ['user', 'created_at']
         widgets = {
             'instructions': forms.Textarea(attrs={'rows': 3}),
         }
-
-    def save(self, commit=True):
-        order = super().save(commit=commit)
-        return order
