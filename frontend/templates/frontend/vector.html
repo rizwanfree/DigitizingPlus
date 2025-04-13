@@ -69,6 +69,8 @@
       }
 </style>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/css/glide.core.min.css">
+
 <div class="container-fluid mt-4 mb-5">
     <div class="row g-4">
         <!-- Digitizing Services Column -->
@@ -150,15 +152,33 @@
             </div>
 
 
-            <div class="row mt-3">
-                <div class="col-md-12">
-                    <div class="text-center">
-                        Portfolio Picture Area
+            <div class="col-md-12">
+                <div class="card service-card">
+                    <h4 class="card-header text-center">Portfolio</h4>
+                    <div class="card-body">
+                        <div class="glide">
+                            <div class="glide__track" data-glide-el="track">
+                                <ul class="glide__slides">
+                                    
+                                    <li class="glide__slide">
+                                        <img src="{% static "images/hero/1.jpeg" %}" class="img-fluid">
+                                    </li>
+                                    <li class="glide__slide">
+                                        <img src="{% static "images/hero/2.jpeg" %}" class="img-fluid">
+                                    </li>
+                                    <li class="glide__slide">
+                                        <img src="{% static "images/hero/3.jpeg" %}" class="img-fluid">
+                                    </li>
+                                    
+                                </ul>
+                            </div>
+                            <div class="glide__arrows" data-glide-el="controls">
+                                <button class="glide__arrow glide__arrow--left" data-glide-dir="<">←</button>
+                                <button class="glide__arrow glide__arrow--right" data-glide-dir=">">→</button>
+                            </div>
+                        </div>
                     </div>
-                    
                 </div>
-
-
             </div>
         </div>
 
@@ -186,5 +206,18 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/glide.min.js"></script>
+<script>
+    new Glide('.glide', {
+        type: 'carousel',
+        perView: 6,
+        gap: 20,
+        breakpoints: {
+            768: { perView: 2 },
+            1024: { perView: 3 }
+        }
+    }).mount()
+</script>
 
 {% endblock content %}
