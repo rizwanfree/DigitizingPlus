@@ -73,11 +73,10 @@
         <div class="tab-pane fade show active mt-1" id="given" role="tabpanel" aria-labelledby="given-tab">
             <form action="" method="post" enctype="multipart/form-data" class="mt-3">
                 {% csrf_token %}
-                {% comment %} <input type="hidden" name="form_type" value="digitizing"> {% endcomment %}
+                <input type="hidden" name="form_type" value="digitizing"> 
 
                 <div class="row">
-                    <div class="col-md-6">
-                        {% comment %} {{ form.design_name|as_crispy_field }} {% endcomment %}
+                    <div class="col-md-6">                        
                         <div class="input-group mb-3">
                             <span class="input-group-text">Design Name</span>
                             {{ form.design_name }}
@@ -143,7 +142,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Price (Option B)</span>
+                            <span class="input-group-text" disable>Price (Option B)</span>
                             {{ form.price_option_b }}
                         </div>
                     </div>

@@ -144,6 +144,7 @@ class DigitizingOrder(models.Model):
     instructions = models.TextField(null=True, blank=True)
     is_urgent = models.BooleanField(default=False)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
+    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -179,6 +180,7 @@ class PatchOrder(models.Model):
     shipping_address = models.TextField(null=True, blank=True)
     instructions = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
+    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -206,6 +208,7 @@ class VectorOrder(models.Model):
     others = models.CharField(max_length=255, blank=True, null=True)
     instructions = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
+    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
