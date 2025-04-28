@@ -31,6 +31,7 @@ urlpatterns = [
     #Admin Panel
     path('admin/dashboard/', adminviews.admin_dashboard, name='admin-dashboard'),
     path('admin/all-receivables/', adminviews.admin_all_receivables, name='admin-all-receivables'),
+    path('admin/find-invoice/', adminviews.admin_invoice_list, name='admin-invoice-list'),
     path('admin/inprocesss-orders/', adminviews.inprocess_orders, name='admin-inprocess-orders'),
     path('admin/order-details/<int:pk>/<str:order_type>/', adminviews.admin_order_details, name='admin-order-details'),
 ]

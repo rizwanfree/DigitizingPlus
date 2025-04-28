@@ -159,3 +159,10 @@ def admin_order_details(request, pk, order_type):
 def admin_all_receivables(request):
 
     return render(request, 'users/admin/all-receivables.html')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_invoice_list(request):
+
+    return render(request, 'finance/invoice-list.html')
