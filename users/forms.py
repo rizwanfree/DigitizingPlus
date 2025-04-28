@@ -180,12 +180,12 @@ class GivenInfoForm(forms.Form):
         required=False,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
     
-    price_option_b = forms.DecimalField(
-        label="Price Option B ($)",
-        max_digits=8,
-        decimal_places=2,
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
+    # price_option_b = forms.DecimalField(
+    #     label="Price Option B ($)",
+    #     max_digits=8,
+    #     decimal_places=2,
+    #     required=False,
+    #     widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
     
     total_price = forms.DecimalField(
         label="Total Price ($)",

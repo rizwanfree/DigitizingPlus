@@ -136,6 +136,7 @@ class DigitizingOrder(models.Model):
     name = models.CharField(max_length=255)
     height = models.IntegerField()
     width = models.IntegerField()
+    stitches = models.IntegerField(default=0)
     colors = models.IntegerField(null=True, blank=True)
     po_number = models.IntegerField(null=True, blank=True)
     file_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, null=True, blank=True)

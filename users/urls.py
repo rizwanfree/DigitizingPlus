@@ -1,8 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 
-from . import views
-
+from . import views, adminviews
 
 app_name = 'users'
 
@@ -30,7 +29,8 @@ urlpatterns = [
 
 
     #Admin Panel
-    path('admin/dashboard/', views.admin_dashboard, name='admin-dashboard'),
-    path('admin/inprocesss-orders/', views.inprocess_orders, name='admin-inprocess-orders'),
-    path('admin/order-details/<int:pk>/<str:order_type>/', views.admin_order_details, name='admin-order-details'),
+    path('admin/dashboard/', adminviews.admin_dashboard, name='admin-dashboard'),
+    path('admin/all-receivables/', adminviews.admin_all_receivables, name='admin-all-receivables'),
+    path('admin/inprocesss-orders/', adminviews.inprocess_orders, name='admin-inprocess-orders'),
+    path('admin/order-details/<int:pk>/<str:order_type>/', adminviews.admin_order_details, name='admin-order-details'),
 ]

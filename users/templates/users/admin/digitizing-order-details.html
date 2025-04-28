@@ -1,0 +1,314 @@
+{% extends "users/admin/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<!-- Custom CSS for Inactive Tabs -->
+<style>
+    .nav-tabs .nav-link {
+        color: #000; /* Set the text color for inactive tabs */
+        background-color:rgba(79, 13, 165, 0.57); /* Set the background color for inactive tabs */
+        border-color: #dee2e6 #dee2e6 #fff; /* Match the border color */
+    }
+    .nav-tabs .nav-link.active {
+        color: #000; /* Set the text color for active tabs */
+        background-color: #fff; /* Set the background color for active tabs */
+        border-color: #dee2e6 #dee2e6 #fff; /* Match the border color */
+    }
+</style>
+
+<h3 class="text-center mt-3 mb-2">REVISION | NO: ORDER # | DATE: {{ order.created_at|date:"m-d-Y" }} | {{order.status|upper}}</h3>
+
+<div class="row ">
+    <div class="col-md-6">
+
+        <div class="card">
+            <div class="card-header">
+              Standard Price
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">Special title treatment</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">        
+        <div class="card">
+            <div class="card-header">
+              Standard Price
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">Special title treatment</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row mt-3">
+    <div class="col-md-8">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="given-tab" data-bs-toggle="tab" data-bs-target="#given" type="button" role="tab" aria-controls="given" aria-selected="true">
+                Given Info
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="final-tab" data-bs-toggle="tab" data-bs-target="#final" type="button" role="tab" aria-controls="final" aria-selected="false">
+                Final Info
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="previous-tab" data-bs-toggle="tab" data-bs-target="#previous" type="button" role="tab" aria-controls="previous" aria-selected="false">
+                Previous Info
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="orderTabsContent">
+
+        <!-- Given Tab -->
+        <div class="tab-pane fade show active mt-1" id="given" role="tabpanel" aria-labelledby="given-tab">
+            <form action="" method="post" enctype="multipart/form-data" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="given-info"> 
+
+                <div class="row">
+                    <div class="col-md-6">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Design Name</span>
+                            {{ form.design_name }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">P.O #</span>
+                            {{ form.po_number }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Width</span>
+                            {{ form.width }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Height</span>
+                            {{ form.height }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Colors</span>
+                            {{ form.colors }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Required Format</span>
+                            {{ form.required_format }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Placement</span>
+                            {{ form.placement }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Fabric Type</span>
+                            {{ form.fabric_type }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row bg-light py-3">
+                    <div class="col-md-6">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Price (Option A)</span>
+                            {{ form.price_option_a }}
+                        </div>
+                    </div>
+                    {% comment %} <div class="col-md-4">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" disable>Price (Option B)</span>
+                            {{ form.price_option_b }}
+                        </div>
+                    </div> {% endcomment %}
+                    <div class="col-md-6">                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Total Price</span>
+                            {{ form.total_price }}
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Update</button>
+            </form>
+
+            <hr>
+            
+        </div>
+
+
+        <!-- Final Tab -->
+        <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">            
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <!--Option A-->
+                        <h3>OPTION A</h3>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Width</span>
+                            {{ final_form.width_a }}
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Height</span>
+                            {{ final_form.height_a }}
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Stiches</span>
+                            {{ final_form.stitches_a }}
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Price</span>
+                            {{ final_form.price_a }}
+                        </div>
+                    </div>
+                
+                
+
+                <div class="col-md-6">
+                    <!--Option B-->
+                    <h3>OPTION B</h3>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Width</span>
+                        {{ final_form.width_b }}
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Height</span>
+                        {{ final_form.height_b }}
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Stiches</span>
+                        {{ final_form.stitches_b }}
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Price</span>
+                        {{ final_form.price_b }}
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Total Price</span>
+                        {{ final_form.total_price }}
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Comments</span>
+                        {{ final_form.comments }}
+                    </div>
+                    
+                </div>
+
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary btn-block">Release</button>
+                </div>
+            </form>
+                
+
+                
+
+            </div>
+
+        </div>
+
+        <!-- Previous Tab -->
+        <div class="tab-pane fade mt-5" id="previous" role="tabpanel" aria-labelledby="previous-tab">
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="vector">
+                {% comment %} {% crispy vector_form %} {% endcomment %}
+            </form>
+        </div>
+    </div>
+
+    </div>
+
+
+
+
+    <div class="col-md-4">        
+        <div class="card">
+            <div class="card-header">
+              Customer Instructions
+            </div>
+            <div class="card-body">
+                <p class="card-text">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Blanditiis officiis, deserunt quasi reprehenderit, minima cum sed earum saepe eaque, ratione suscipit ea voluptatibus asperiores aliquam! Magni sunt ducimus alias repudiandae?</p>
+            </div>
+        </div>
+
+        <div class="card mt-1">
+            <div class="card-header">
+              Admin Instructions
+            </div>
+            <div class="card-body">
+              <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum perferendis eveniet, velit dolores officia quis sed provident totam libero deserunt maxime similique expedita voluptatum blanditiis quidem impedit sunt laborum quos.</p>
+            </div>
+        </div>
+
+        <div class="card mt-1">
+            <div class="card-header">
+              Customer Information
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Name: </strong>{{ user.first_name }} {{ user.last_name }}</li>
+                    <li class="list-group-item"><strong>Email: </strong>{{ user.email }}</li>
+                    <li class="list-group-item"><strong>Phone: </strong>{{ user.phone_number }}</li>
+                  </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Optional: Add JavaScript for automatic price calculation -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Example: Auto-calculate total when prices change
+        const priceA = document.getElementById('id_price_option_a');
+        const total = document.getElementById('id_total_price');
+        
+        function calculateTotal() {
+            const a = parseFloat(priceA.value) || 0;
+            total.value = (a).toFixed(2);
+        }
+        
+        priceA.addEventListener('change', calculateTotal);
+        priceB.addEventListener('change', calculateTotal);
+    });
+</script>
+    
+
+{% endblock content %}
