@@ -45,9 +45,11 @@
     border-radius: 8px;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
+    width: 100%;          /* Full width of the slide */
+    height: 400px;        /* Fixed height (adjust as needed) */
+    object-fit: cover;    /* Ensures images cover the area without stretching */
+    display: block;       /* Removes extra space below image */
+    margin: 0 auto;       /* Centers the image horizontally */
 }
 
 .glide__slide:hover img {

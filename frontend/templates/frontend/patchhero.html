@@ -1,0 +1,124 @@
+{% load static %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/css/glide.core.min.css">
+
+
+<style>
+  /* Custom Glide Theme */
+.glide__arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    opacity: 0.9;
+    transform: translateY(-50%);
+    transition: all 0.3s ease;
+}
+
+.glide__arrow:hover {
+    background: #f8f9fa;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.glide__arrow--left {
+    left: 20px;
+}
+
+.glide__arrow--right {
+    right: 20px;
+}
+
+.glide__arrow i {
+    font-size: 1.2rem;
+    color: #495057;
+}
+
+.glide__slides {
+    padding: 15px 0; /* Add breathing room */
+}
+
+.glide__slide {
+    transition: transform 0.3s ease;
+    padding: 0 5px; /* Space between slides */
+}
+
+.glide__slide img {
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 100%;          /* Full width of the slide */
+    height: 720px;        /* Fixed height (adjust as needed) */
+    object-fit: contain;    /* Ensures images cover the area without stretching */
+    display: block;       /* Removes extra space below image */
+    margin: 0 auto;       /* Centers the image horizontally */
+}
+
+.glide__slide:hover img {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.glide__bullets {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.glide__bullet {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #dee2e6;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.glide__bullet:hover, .glide__bullet--active {
+    background: #0d6efd;
+    transform: scale(1.2);
+}
+</style>
+
+
+<div class="glide">
+    <div class="glide__track" data-glide-el="track">
+        <ul class="glide__slides">
+            
+            <li class="glide__slide">
+                <img src="{% static "images/hero/Patch/1.jpg" %}" class="img-fluid">
+            </li>
+            <li class="glide__slide">
+                <img src="{% static "images/hero/Patch/2.jpeg" %}" class="img-fluid">
+            </li>
+            <li class="glide__slide">
+                <img src="{% static "images/hero/Patch/3.jpeg" %}" class="img-fluid">
+            </li>
+
+            
+        </ul>
+    </div>
+    <div class="glide__arrows" data-glide-el="controls">
+        <button class="glide__arrow glide__arrow--left" data-glide-dir="<">←</button>
+        <button class="glide__arrow glide__arrow--right" data-glide-dir=">">→</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/glide.min.js"></script>
+<script>
+    new Glide('.glide', {
+        type: 'slider',
+        rewindDuration: 2000,
+        perView: 1,
+        focusAt: 'center',
+        autoplay: 3000, // Auto-slide every 3 seconds (adjust as needed)
+        hoverpause: true, // Pauses on hover (optional)
+    }).mount()
+</script>
