@@ -1,120 +1,102 @@
 {% load static %}
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/css/glide.core.min.css">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css">
 
 <style>
-  /* Custom Glide Theme */
-.glide__arrow {
-    position: absolute;
-    top: 50%;
-    z-index: 2;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    opacity: 0.9;
-    transform: translateY(-50%);
-    transition: all 0.3s ease;
-}
-
-.glide__arrow:hover {
-    background: #f8f9fa;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-}
-
-.glide__arrow--left {
-    left: 20px;
-}
-
-.glide__arrow--right {
-    right: 20px;
-}
-
-.glide__arrow i {
-    font-size: 1.2rem;
-    color: #495057;
-}
-
-.glide__slides {
-    padding: 15px 0; /* Add breathing room */
-}
-
-.glide__slide {
-    transition: transform 0.3s ease;
-    padding: 0 5px; /* Space between slides */
-}
-
-.glide__slide img {
-    border-radius: 8px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    width: 100%;          /* Full width of the slide */
-    height: 475px;        /* Fixed height (adjust as needed) */
-    object-fit: contain;    /* Ensures images cover the area without stretching */
-    display: block;       /* Removes extra space below image */
-    margin: 0 auto;       /* Centers the image horizontally */
-}
-
-.glide__slide:hover img {
-    transform: scale(1.02);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.glide__bullets {
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-}
-
-.glide__bullet {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #dee2e6;
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.glide__bullet:hover, .glide__bullet--active {
-    background: #0d6efd;
-    transform: scale(1.2);
-}
+    .glide img{
+        max-height: 500px;
+        width: auto;
+    }
 </style>
 
-{% comment %} <div class="card service-card">
-    <div class="card-body"> {% endcomment %}
-        <div class="glide">
-            <div class="glide__track" data-glide-el="track">
-                <ul class="glide__slides">
-                    
-                    <li class="glide__slide">
-                        <img src="{% static "images/hero/Home/1.png" %}" class="img-fluid">
-                    </li>
-                    
-                </ul>
-            </div>
-            <div class="glide__arrows" data-glide-el="controls">
-                <button class="glide__arrow glide__arrow--left" data-glide-dir="<">←</button>
-                <button class="glide__arrow glide__arrow--right" data-glide-dir=">">→</button>
-            </div>
-        </div>
-    {% comment %} </div>
-</div> {% endcomment %}
+<div class="glide mt-3">
+    <div class="glide__track" data-glide-el="track">
+        <ul class="glide__slides list-unstyled">
+            <!-- Slide 1 -->
+            <li class="glide__slide">
+                <div class="row g-0 align-items-center bg-light rounded-3">
+                    <div class="col-md-6 p-4 p-lg-5">
+                        <h3 class="fw-bold mb-3">Premium Digitizing Services</h3>
+                        <p class="text-muted mb-4">High-quality embroidery digitizing with perfect stitch placement and tension control. Satisfaction guaranteed or your money back.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>Small text and cap digitizing</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>3D puff and tackle twill</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>All file formats included</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <img src="{% static 'images/hero/Home/1.png' %}" class="img-fluid rounded-end" alt="Digitizing Service">
+                    </div>
+                </div>
+            </li>
+            
+            <!-- Slide 2 -->
+            <li class="glide__slide">
+                <div class="row g-0 align-items-center bg-light rounded-3">
+                    <div class="col-md-6 p-4 p-lg-5">
+                        <h3 class="fw-bold mb-3">Professional Vector Conversion</h3>
+                        <p class="text-muted mb-4">Clean, scalable vector files perfect for screen printing, DTF, and sublimation.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>No charges for color separation</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>Raster to vector conversion</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>Line art and silhouette designs</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <img src="{% static 'images/hero/Home/2.png' %}" class="img-fluid rounded-end" alt="Vector Conversion">
+                    </div>
+                </div>
+            </li>
+            
+            <!-- Slide 3 -->
+            <li class="glide__slide">
+                <div class="row g-0 align-items-center bg-light rounded-3">
+                    <div class="col-md-6 p-4 p-lg-5">
+                        <h3 class="fw-bold mb-3">Custom Patch Production</h3>
+                        <p class="text-muted mb-4">High-quality embroidered patches with your designs.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>See samples before full production</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>No cancellations after approval</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>100% payment in advance</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <img src="{% static 'images/hero/Home/3.png' %}" class="img-fluid rounded-end" alt="Patch Production">
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Centered Arrows -->
+    <div class="d-flex justify-content-center mt-3 glide__arrows" data-glide-el="controls">
+        <button class="btn btn-primary btn-floating mx-2" data-glide-dir="<">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="btn btn-primary btn-floating mx-2" data-glide-dir=">">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+    
+    <!-- Bullets -->
+    {% comment %} <div class="glide__bullets d-flex justify-content-center mt-3" data-glide-el="controls[nav]">
+        <button class="btn btn-sm btn-outline-primary mx-1" data-glide-dir="=0">1</button>
+        <button class="btn btn-sm btn-outline-primary mx-1" data-glide-dir="=1">2</button>
+        <button class="btn btn-sm btn-outline-primary mx-1" data-glide-dir="=2">3</button>
+    </div> {% endcomment %}
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/glide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
 <script>
     new Glide('.glide', {
         type: 'slider',
         rewindDuration: 2000,
         perView: 1,
         focusAt: 'center',
-        autoplay: 3000, // Auto-slide every 3 seconds (adjust as needed)
-        hoverpause: true, // Pauses on hover (optional)
+        autoplay: 2000,
+        hoverpause: true,
+        gap: 20
     }).mount()
 </script>
