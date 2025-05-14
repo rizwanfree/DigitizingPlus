@@ -50,3 +50,13 @@ def vector(request):
 
 def patches(request):
     return render(request, "frontend/patches.html")
+
+
+def faqs(request):
+    return render(request, "frontend/faqs.html")
+
+def privary_policy(request):
+    return render(request, "frontend/privacy.html")
+
+def terms(request):
+    return render(request, "frontend/terms.html")

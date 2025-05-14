@@ -15,4 +15,7 @@ urlpatterns = [
     path('contact/', views.contact, name='contact'),
     path('vector-digitizing/', views.vector, name='vector'),
     path('patches/', views.patches, name='patches'),
+    path('termsconditions/', views.terms, name='terms'),
+    path('faqs/', views.faqs, name='faqs'),
+    path('privacypolicy/', views.privary_policy, name='privacy'),
 ]

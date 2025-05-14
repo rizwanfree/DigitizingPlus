@@ -1,0 +1,109 @@
+{% extends "frontend/base.html" %}
+
+{% block content %}
+
+  <!-- FAQ Header -->
+  <div class="p-5 text-center bg-light">
+    <h1 class="mb-3">Frequently Asked Questions</h1>
+    <p class="mb-3">Find quick answers to common questions below</p>
+  </div>
+
+  <!-- FAQ Content -->
+  <div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <!-- MDB Accordion -->
+        <div class="accordion" id="faqAccordion">
+          
+          <!-- Question 1 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-mdb-toggle="collapse"
+                data-mdb-target="#collapseOne"
+                aria-expanded="false"
+                aria-controls="collapseOne"
+              >
+                Do you provide Logo Digitizing ?
+              </button>
+            </h2>
+            <div
+              id="collapseOne"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-mdb-parent="#faqAccordion"
+            >
+              <div class="accordion-body">
+                <p>
+                    Yes, we provide logo digitizing for all placements including caps, left chest, visor, full front, shirts, and jacket backs. We specialize in small text and cap digitizing. Our services include 3D puff, tackle twill, appliqué, and chenille digitizing. We provide all file formats, and there are no charges for minor changes
+                </p>
+              </div>
+            </div>
+          </div>
+
+  <!-- Question 2 -->
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingTwo">
+      <button class="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+        Are my files saved on your server? Can I download them anytime?
+      </button>
+    </h2>
+    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-mdb-parent="#faqAccordion">
+      <div class="accordion-body">
+        <p>Yes, your files are securely saved in your account. You can:</p>
+        <ul>
+          <li>Log in anytime to download your files</li>
+          <li>Access your complete order history</li>
+          <li>We also send all files to your registered email address for backup</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Question 3 -->
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingThree">
+      <button class="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+        Are there any charges for color separation in vector files?
+      </button>
+    </h2>
+    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-mdb-parent="#faqAccordion">
+      <div class="accordion-body">
+        <p>No, there are no additional charges for color separation in vector files. Our service includes:</p>
+        <ul>
+          <li>All standard file formats</li>
+          <li>Raster to vector conversion for:
+            <ul>
+              <li>Screen printing</li>
+              <li>Normal printing</li>
+              <li>DTF (Direct to Film)</li>
+              <li>Sublimation</li>
+            </ul>
+          </li>
+          <li>Specialty conversions including:
+            <ul>
+              <li>Line art</li>
+              <li>Silhouette designs</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+        <!-- Additional Help Card -->
+        <div class="card mt-4">
+          <div class="card-body text-center">
+            <h5 class="card-title">Still have questions?</h5>
+            <p class="card-text">We're here to help!</p>
+            <a href="{% url "web:contact" %}" class="btn btn-primary">Contact Us</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock content %}
