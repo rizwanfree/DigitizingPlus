@@ -1,124 +1,85 @@
 {% load static %}
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/css/glide.core.min.css">
-
+<!-- MDBootstrap CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css" rel="stylesheet">
 
 <style>
-  /* Custom Glide Theme */
-.glide__arrow {
-    position: absolute;
+  /* Custom arrow styling to make them more visible */
+  .carousel-control-prev, .carousel-control-next {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 50%;
     top: 50%;
-    z-index: 2;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    opacity: 0.9;
     transform: translateY(-50%);
-    transition: all 0.3s ease;
-}
-
-.glide__arrow:hover {
-    background: #f8f9fa;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-}
-
-.glide__arrow--left {
-    left: 20px;
-}
-
-.glide__arrow--right {
-    right: 20px;
-}
-
-.glide__arrow i {
-    font-size: 1.2rem;
-    color: #495057;
-}
-
-.glide__slides {
-    padding: 15px 0; /* Add breathing room */
-}
-
-.glide__slide {
-    transition: transform 0.3s ease;
-    padding: 0 5px; /* Space between slides */
-}
-
-.glide__slide img {
-    border-radius: 8px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    width: 100%;          /* Full width of the slide */
-    height: 720px;        /* Fixed height (adjust as needed) */
-    object-fit: contain;    /* Ensures images cover the area without stretching */
-    display: block;       /* Removes extra space below image */
-    margin: 0 auto;       /* Centers the image horizontally */
-}
-
-.glide__slide:hover img {
-    transform: scale(1.02);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.glide__bullets {
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-}
-
-.glide__bullet {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #dee2e6;
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.glide__bullet:hover, .glide__bullet--active {
-    background: #0d6efd;
-    transform: scale(1.2);
-}
+    opacity: 1;
+  }
+  .carousel-control-prev { left: 20px; }
+  .carousel-control-next { right: 20px; }
+  .carousel-control-prev-icon, 
+  .carousel-control-next-icon {
+    width: 2rem;
+    height: 2rem;
+  }
 </style>
 
+<div id="patchCarousel" class="carousel slide" data-mdb-ride="carousel">
+  <!-- Indicators -->
+  <div class="carousel-indicators">
+    <button type="button" data-mdb-target="#patchCarousel" data-mdb-slide-to="0" class="active"></button>
+    <button type="button" data-mdb-target="#patchCarousel" data-mdb-slide-to="1"></button>
+    <button type="button" data-mdb-target="#patchCarousel" data-mdb-slide-to="2"></button>
+  </div>
 
-<div class="glide">
-    <div class="glide__track" data-glide-el="track">
-        <ul class="glide__slides">
-            
-            <li class="glide__slide">
-                <img src="{% static "images/hero/Patch/1.jpg" %}" class="img-fluid">
-            </li>
-            <li class="glide__slide">
-                <img src="{% static "images/hero/Patch/2.jpeg" %}" class="img-fluid">
-            </li>
-            <li class="glide__slide">
-                <img src="{% static "images/hero/Patch/3.jpeg" %}" class="img-fluid">
-            </li>
+  <!-- Slides -->
+  <div class="carousel-inner">
+    <!-- Slide 1 -->
+    <div class="carousel-item active">
+      <div class="position-absolute top-0 start-0 end-0 text-center p-2 bg-dark bg-opacity-75">
+        <h5 class="text-white mb-0">Chenille Patches</h5>
+      </div>
+      <img src="{% static 'images/hero/Patch/1.png' %}" class="d-block w-100" style="height: 720px; object-fit: contain;" alt="Patch Design 1">
+    </div>
 
-            
-        </ul>
+    <!-- Slide 2 -->
+    <div class="carousel-item">
+      <div class="position-absolute top-0 start-0 end-0 text-center p-2 bg-dark bg-opacity-75">
+        
+        <h5 class="text-white mb-0">Embroidered Patches</h5>
+
+      </div>
+      <img src="{% static 'images/hero/Patch/2.png' %}" class="d-block w-100" style="height: 720px; object-fit: contain;" alt="Patch Design 2">
     </div>
-    <div class="glide__arrows" data-glide-el="controls">
-        <button class="glide__arrow glide__arrow--left" data-glide-dir="<">←</button>
-        <button class="glide__arrow glide__arrow--right" data-glide-dir=">">→</button>
+
+    <!-- Slide 3 -->
+    <div class="carousel-item">
+      <div class="position-absolute top-0 start-0 end-0 text-center p-2 bg-dark bg-opacity-75">
+        <h5 class="text-white mb-0">3D Puff Patches</h5>
+        
+      </div>
+      <img src="{% static 'images/hero/Patch/3.png' %}" class="d-block w-100" style="height: 720px; object-fit: contain;" alt="Patch Design 3">
     </div>
+  </div>
+
+  <!-- Controls - Made more visible -->
+  <button class="carousel-control-prev" type="button" data-mdb-target="#patchCarousel" data-mdb-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-mdb-target="#patchCarousel" data-mdb-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/glide.min.js"></script>
+<!-- MDBootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
+
 <script>
-    new Glide('.glide', {
-        type: 'slider',
-        rewindDuration: 2000,
-        perView: 1,
-        focusAt: 'center',
-        autoplay: 3000, // Auto-slide every 3 seconds (adjust as needed)
-        hoverpause: true, // Pauses on hover (optional)
-    }).mount()
+  document.addEventListener('DOMContentLoaded', function() {
+    const carousel = new mdb.Carousel(document.getElementById('patchCarousel'), {
+      interval: 3000,
+      touch: true
+    });
+  });
 </script>

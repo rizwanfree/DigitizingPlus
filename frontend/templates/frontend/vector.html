@@ -67,6 +67,10 @@
         object-fit: cover;  /* Prevents stretching */
         object-position: center; /* Focus on image center */
       }
+
+    li {
+        font-size: 13px;
+    }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.6.0/css/glide.core.min.css">
@@ -77,28 +81,25 @@
         <!-- Digitizing Services Column -->
         <div class="col-md-3">
             <div class="card service-card">
-                <h4 class="card-header text-center">Digitizing</h4>
+                <h4 class="card-header text-center">Digitizing Services</h4>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <i class="fas fa-thread"></i> Logo Flat Digitizing
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-cut"></i> Applique & Tackle Twill Digitizing
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-layer-group"></i> 3D Puff Digitizing
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-vector-square"></i> Chenille Digitizing
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-hat-cowboy"></i> Cap & Small Text Digitizing
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-user-tie"></i> Experienced designers
-                        </li>
+                        <li class="list-group-item">Flat embroidery digitizing, as per art provided, our expert digitizer work on it and does great jobs.</li>
+                        <li class="list-group-item">We do applique digitizing to save stitches</li>
+                        <li class="list-group-item">We also do cap digitizing that is little complicated for other companies</li>
+                        <li class="list-group-item">We also do 3D puff digitizing</li>
+                        <li class="list-group-item">We provide all formats, EMB, DST, CND, OFM, PXF, POF, PES, EXP. Free minor edits and revisions.</li>
+
+
+                        <li class="list-group-item">Logo Flat Digitizing</li>
+                        <li class="list-group-item">Applique & Tackle Twill Digitizing</li>
+                        <li class="list-group-item">3D Puff Digitizing</li>
+                        <li class="list-group-item">Chenille Digitizing</li>
+                        <li class="list-group-item">Cap & Small Text Digitizing</li>
+                        <li class="list-group-item">4 to 12 hours turnaround time / for complex designs next working day</li>
+                        <li class="list-group-item">Experienced designers</li>
                     </ul>
+                    <a class="btn btn-primary btn-lg mt-3" href="{% url "users:register" %}" style="width: 100%;">Register Now</a>
                 </div>
             </div>
         </div>
@@ -149,15 +150,15 @@
                                         <img src="{% static "images/hero/Vector/2.jpg" %}" class="img-fluid">
                                     </li>
                                     <li class="glide__slide">
-                                        <img src="{% static "images/hero/Vector/3.png" %}" class="img-fluid">
+                                        <img src="{% static "images/hero/Vector/3a.png" %}" class="img-fluid">
                                     </li>
                                     
                                 </ul>
                             </div>
-                            <div class="glide__arrows" data-glide-el="controls">
+                            {% comment %} <div class="glide__arrows" data-glide-el="controls">
                                 <button class="glide__arrow glide__arrow--left" data-glide-dir="<">←</button>
                                 <button class="glide__arrow glide__arrow--right" data-glide-dir=">">→</button>
-                            </div>
+                            </div> {% endcomment %}
                         </div>
                     </div>
                 </div>
@@ -166,23 +167,31 @@
 
         <!-- Vector Services Column -->
         <div class="col-md-2">
-            <div class="card service-card">
+            <div class="card service-card h-100 d-flex flex-column"> <!-- Added flex classes -->
                 <h4 class="card-header text-center">Vector</h4>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
+                <div class="card-body d-flex flex-column"> <!-- Added flex classes -->
+                    <ul class="list-group list-group-flush flex-grow-1"> <!-- Added flex-grow -->
                         <li class="list-group-item">
-                            <i class="fas fa-image"></i> Raster To Vector
+                            We have in-house vector artist who can convert artwork to vector file, we can provide vector files in Adobe Illustrator formats, CorelDraw and EPS formats.
+                        </li>
+                        
+                        <li class="list-group-item">
+                            Raster To Vector
                         </li>
                         <li class="list-group-item">
-                            <i class="fas fa-pencil-ruler"></i> Line Art
+                            Line Art
                         </li>
                         <li class="list-group-item">
-                            <i class="fas fa-object-group"></i> Silhouette
+                            Silhouette
                         </li>
                         <li class="list-group-item">
-                            <i class="fas fa-palette"></i> Color Separation
+                            Color Separation
                         </li>
+                        <li class="list-group-item">4 to 12 hours turnaround time / for complex designs next working day</li>
                     </ul>
+                    
+                    <!-- Button moved outside list-group and added margin-top -->
+                    <a class="btn btn-primary btn-lg mt-auto" href="{% url 'users:register' %}" style="width: 100%;">Register Now</a>
                 </div>
             </div>
         </div>
@@ -193,11 +202,15 @@
 <script>
     new Glide('.glide', {
         type: 'slider',
-        rewindDuration: 2000,
-        perView: 2,
-        gap: 20,
-
-    }).mount()
+        perView: 3,  // Show exactly 3 images
+        gap: 20,     // Space between images
+        dragThreshold: false,  // Disable drag/swipe
+        touchAngle: false,     // Disable touch controls
+        animationDuration: 0,  // No animation
+        rewind: false,         // No looping
+        hoverpause: false,     // No pause on hover
+        keyboard: false        // Disable keyboard arrows
+    }).mount();
 </script>
 
 {% endblock content %}
