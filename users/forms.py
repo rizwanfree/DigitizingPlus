@@ -5,17 +5,43 @@ from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
 from django.core.validators import MinValueValidator
 from crispy_forms.helper import FormHelper
+from django.core.validators import RegexValidator
 from .models import User
 from crafting.models import BACKING_TYPE, BORDER_TYPE, FABRIC_CHOICES, LOGO_PLACEMENT, PATCH_TYPE, FORMAT_CHOICES
 
 
 class UserRegistrationForm(UserCreationForm):
+    password1 = forms.CharField(
+        label="Password",
+        strip=False,  # Preserves whitespace (if needed)
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        min_length=4,
+    )
+    password2 = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        strip=False,
+    )
+
     class Meta:
         model = User
         fields = ['user_id', 'email', 'password1', 'password2', 'first_name', 'last_name', 'phone_number', 'address', 'city', 'state', 'zip_code', 'country']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Remove ALL default password validations
+        self.fields['password1'].validators = []  # Removes numeric/entropy checks
+        self.fields['password2'].validators = []  # Removes confirmation checks
+
+        # Optional: Add RegexValidator if you want only letters/numbers
+        self.fields['password1'].validators.append(
+            RegexValidator(
+                regex='^[a-zA-Z0-9]*$',  # Allows letters + numbers (no spaces/symbols)
+                message="Password must be letters or numbers only.",
+            )
+        )
+
+        # Keep your existing FormHelper layout
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.form_action = 'users:register'
@@ -45,7 +71,6 @@ class UserRegistrationForm(UserCreationForm):
                 css_class='row'
             ),
             Submit('submit', 'Register', css_class='btn btn-lg btn-primary w-100')
-            
         )
 
 
