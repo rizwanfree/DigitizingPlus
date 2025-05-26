@@ -11,6 +11,11 @@ from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm, Options
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
 
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 
 # Create your views here.
 
@@ -20,8 +25,35 @@ def register(request):
         form = UserRegistrationForm(request.POST)
         print("Submit Button pressed")
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)  # Don't save yet
+            raw_password = form.cleaned_data.get('password1')  # Get plain password
+            user.set_password(raw_password)  # Now hash it
+            user.save()
             print(user, 'created successfully')
+            
+            # Send welcome email
+            try:
+                subject = 'Welcome to DigitizingPlus'
+                html_message = render_to_string('registration/register_email.html', {
+                    'user': user,
+                    'raw_password': raw_password,  # Passing plain password to template
+                })
+                plain_message = strip_tags(html_message)
+                from_email = settings.DEFAULT_FROM_EMAIL
+                to_email = user.email
+                
+                send_mail(
+                    subject,
+                    plain_message,
+                    from_email,
+                    [to_email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                print(f"Welcome email sent to {user.email}")
+            except Exception as e:
+                print(f"Failed to send welcome email: {str(e)}")
+            
             login(request, user)
             print(user, 'logged-in')
             return redirect('web:index')

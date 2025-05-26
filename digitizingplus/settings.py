@@ -159,6 +159,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'digitizingpluss@gmail.com'
-EMAIL_HOST_PASSWORD = 'your_app_password_here'  # Use App Password, not your regular password
+EMAIL_HOST_PASSWORD = 'ajvl udkm cvjs xfsd'  # Use App Password, not your regular password
 DEFAULT_FROM_EMAIL = 'digitizingpluss@gmail.com'
 SERVER_EMAIL = 'digitizingpluss@gmail.com'
