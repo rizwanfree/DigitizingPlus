@@ -134,9 +134,9 @@ class DigitizingOrder(models.Model):
         related_name='digitizing_orders',
     )
     name = models.CharField(max_length=255)
-    height = models.IntegerField()
-    width = models.IntegerField()
-    stitches = models.IntegerField(default=0)
+    height = models.DecimalField(decimal_places=2, max_digits=10)
+    width = models.DecimalField(decimal_places=2, max_digits=10)
+    stitches = models.IntegerField(default=0, null=True, blank=True)
     colors = models.IntegerField(null=True, blank=True)
     po_number = models.IntegerField(null=True, blank=True)
     file_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, null=True, blank=True)

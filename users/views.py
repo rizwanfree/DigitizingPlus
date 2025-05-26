@@ -145,7 +145,6 @@ def customer_profile(request):
 
 @login_required
 def orders(request):
-    # Initialize empty forms
     digitizing_form = DigitizingOrderForm(user=request.user)
     patch_form = PatchOrderForm(user=request.user)
     vector_form = VectorOrderForm(user=request.user)
@@ -153,30 +152,32 @@ def orders(request):
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         
-        # Handle each form type
-        if form_type == 'digitizing':
-            form = DigitizingOrderForm(request.POST, request.FILES, user=request.user)
-        elif form_type == 'patch':
-            form = PatchOrderForm(request.POST, request.FILES, user=request.user)
-        elif form_type == 'vector':
-            form = VectorOrderForm(request.POST, request.FILES, user=request.user)
+        
+        forms = {
+            'digitizing': DigitizingOrderForm,
+            'patch': PatchOrderForm,
+            'vector': VectorOrderForm
+        }
+
+        print(form_type)
+        if form_type in forms:
+            form = forms[form_type](request.POST, request.FILES, user=request.user)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Order placed successfully!")
+                return redirect('users:customer-orders-records')
+            else:
+                # Update the specific form with errors
+                if form_type == 'digitizing':
+                    digitizing_form = form
+                elif form_type == 'patch':
+                    patch_form = form
+                elif form_type == 'vector':
+                    vector_form = form
+                messages.error(request, "Please fix the errors below")
+                print(form.errors)
         else:
             messages.error(request, "Invalid form submission")
-            return redirect('users:place-order')
-
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Order placed successfully!")
-            return redirect('users:customer-orders-records')
-        else:
-            messages.error(request, "Please fix the errors below")
-            # Keep the submitted form to show errors
-            if form_type == 'digitizing':
-                digitizing_form = form
-            elif form_type == 'patch':
-                patch_form = form
-            elif form_type == 'vector':
-                vector_form = form
 
     context = {
         'digitizing_form': digitizing_form,

@@ -2,6 +2,16 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
     <!-- Custom CSS for Inactive Tabs -->
     <style>
         .nav-tabs .nav-link {
@@ -40,7 +50,7 @@
     <div class="tab-content" id="orderTabsContent">
         <!-- Digitizing Order Tab -->
         <div class="tab-pane fade show active mt-5" id="digitizing" role="tabpanel" aria-labelledby="digitizing-tab">
-            <form action="" method="post" enctype="multipart/form-data">
+            <form action="{% url 'users:customer-orders' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="digitizing">
                 {% crispy digitizing_form %}
@@ -49,7 +59,7 @@
 
         <!-- Patch Order Tab -->
         <div class="tab-pane fade mt-5" id="patch" role="tabpanel" aria-labelledby="patch-tab">
-            <form action="" method="post">
+            <form action="{% url 'users:customer-orders' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="patch">
                 {% crispy patch_form %}
@@ -58,7 +68,7 @@
 
         <!-- Vector Order Tab -->
         <div class="tab-pane fade mt-5" id="vector" role="tabpanel" aria-labelledby="vector-tab">
-            <form action="" method="post">
+            <form action="{% url 'users:customer-orders' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="vector">
                 {% crispy vector_form %}
