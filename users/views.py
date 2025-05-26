@@ -6,6 +6,9 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import update_session_auth_hash
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 
@@ -152,32 +155,66 @@ def orders(request):
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         
-        
-        forms = {
-            'digitizing': DigitizingOrderForm,
-            'patch': PatchOrderForm,
-            'vector': VectorOrderForm
-        }
-
-        print(form_type)
-        if form_type in forms:
-            form = forms[form_type](request.POST, request.FILES, user=request.user)
-            if form.is_valid():
-                form.save()
-                messages.success(request, "Order placed successfully!")
-                return redirect('users:customer-orders-records')
-            else:
-                # Update the specific form with errors
-                if form_type == 'digitizing':
-                    digitizing_form = form
-                elif form_type == 'patch':
-                    patch_form = form
-                elif form_type == 'vector':
-                    vector_form = form
-                messages.error(request, "Please fix the errors below")
-                print(form.errors)
+        if form_type == 'digitizing':
+            form = DigitizingOrderForm(request.POST, request.FILES, user=request.user)
+        elif form_type == 'patch':
+            form = PatchOrderForm(request.POST, request.FILES, user=request.user)
+        elif form_type == 'vector':
+            form = VectorOrderForm(request.POST, request.FILES, user=request.user)
         else:
             messages.error(request, "Invalid form submission")
+            return redirect('users:place-order')
+
+        if form.is_valid():
+            order = form.save()
+            
+            # Prepare email context
+            context = {
+                'order_number': order.id,
+                'customer_name': request.user.get_full_name(),
+                'order_details': order,
+                'order_type': form_type.capitalize()
+            }
+            
+            # 1. Send confirmation to customer
+            subject_customer = f"Order Confirmation #{order.id}"
+            html_content_customer = render_to_string('emails/order_confirmation.html', context)
+            text_content_customer = strip_tags(html_content_customer)
+            
+            email_customer = EmailMultiAlternatives(
+                subject_customer,
+                text_content_customer,
+                'digitizingplus@gmail.com',
+                [request.user.email]
+            )
+            email_customer.attach_alternative(html_content_customer, "text/html")
+            email_customer.send()
+            
+            # 2. Send notification to admin
+            subject_admin = f"New {form_type} Order Received (#{order.id})"
+            html_content_admin = render_to_string('emails/admin_order_notification.html', context)
+            text_content_admin = strip_tags(html_content_admin)
+            
+            email_admin = EmailMultiAlternatives(
+                subject_admin,
+                text_content_admin,
+                'digitizingplus@gmail.com',
+                ['admin@digitizingplus.com']  # Replace with admin email
+            )
+            email_admin.attach_alternative(html_content_admin, "text/html")
+            email_admin.send()
+            
+            messages.success(request, "Order placed successfully! Check your email for confirmation.")
+            return redirect('users:customer-orders-records')
+        
+        else:
+            messages.error(request, "Please fix the errors below")
+            if form_type == 'digitizing':
+                digitizing_form = form
+            elif form_type == 'patch':
+                patch_form = form
+            elif form_type == 'vector':
+                vector_form = form
 
     context = {
         'digitizing_form': digitizing_form,

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .alert { background: #e3f2fd; padding: 10px; }
+        .order-details { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>New {{ order_type }} Order Received</h1>
+    
+    <div class="alert">
+        <strong>Order #{{ order_number }}</strong> requires processing
+    </div>
+    
+    <div class="order-details">
+        <h3>Customer Details</h3>
+        <p><strong>Name:</strong> {{ customer_name }}</p>
+        <p><strong>Email:</strong> {{ order.user.email }}</p>
+        
+        <h3>Order Information</h3>
+        <p><strong>Type:</strong> {{ order_type }}</p>
+        <p><strong>Submitted:</strong> {{ order.created_at|date:"F j, Y H:i" }}</p>
+    </div>
+    
+    <p>Please process this order within the promised timeframe.</p>
+    
+    <p>View order details in admin panel:</p>
+    <a href="{{ admin_order_url }}">Go to Order #{{ order_number }}</a>
+</body>
+</html>

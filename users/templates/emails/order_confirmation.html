@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .header { color: #2c3e50; border-bottom: 2px solid #eee; }
+        .order-info { background: #f9f9f9; padding: 15px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1 class="header">Thanks for your order #{{ order_number }}</h1>
+    
+    <h2>Dear {{ customer_name }},</h2>
+    
+    <h3>Your {{ order_type }} order has been received</h3>
+    <p>We're processing your order and will notify you when it's ready (typically within 2-12 hours).</p>
+    
+    <div class="order-info">
+        <h3>Order Details</h3>
+        <p><strong>Order Type:</strong> {{ order_type }}</p>
+        <p><strong>Order Number:</strong> {{ order_number }}</p>
+        <p><strong>Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+    </div>
+    
+    <p>You can check your order status by logging into your account at any time.</p>
+    
+    <p>Thank you for choosing Digitizing Plus!</p>
+    
+    <div class="footer">
+        <p><strong>Digitizing Plus Team</strong><br>
+        <a href="mailto:digitizingplus@gmail.com">digitizingplus@gmail.com</a></p>
+    </div>
+</body>
+</html>
