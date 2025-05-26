@@ -1,7 +1,21 @@
 {% extends "frontend/base.html" %}
 {% load static %}
 
+
 {% block content %}
+
+
+{% if success %}
+<div class="alert alert-success">
+    Your quote request has been submitted successfully! We've sent a confirmation to your email.
+</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-danger">
+    There was an error submitting your request. Please try again or contact us directly.
+</div>
+{% endif %}
 
 <style>
     input[type="number"]::-webkit-outer-spin-button,
@@ -21,7 +35,7 @@ input[type="number"] {
     <div class="col-md-2">
         <div class="sidebar-form">
             <h5 class="text-center mb-3">Get Quote Now</h5>
-            <form id="sidebarQuoteForm" method="post" enctype="multipart/form-data">
+            <form id="sidebarQuoteForm" method="post" enctype="multipart/form-data" action="{% url 'web:patches' %}">
                 {% csrf_token %}
                 
                 <!-- Dimensions -->
