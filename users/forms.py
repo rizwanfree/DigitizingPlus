@@ -75,12 +75,30 @@ class UserRegistrationForm(UserCreationForm):
 
 
 class UserProfileForm(forms.ModelForm):
+    current_password = forms.CharField(
+        label="Current Password",
+        widget=forms.PasswordInput,
+        required=False,
+        help_text="Enter your current password to make changes"
+    )
+    new_password = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput,
+        required=False,
+        help_text="Leave blank to keep current password"
+    )
+    confirm_password = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput,
+        required=False
+    )
+
     class Meta:
         model = User
         fields = [
             'user_id', 'email', 'email2', 'email3',
             'first_name', 'last_name', 'phone_number',
-            'address', 'city', 'state', 'zip_code', 'country', 'password'
+            'address', 'city', 'state', 'zip_code', 'country'
         ]
         labels = {
             'email2': 'Email 2',
@@ -93,45 +111,40 @@ class UserProfileForm(forms.ModelForm):
         self.helper.form_method = 'post'
         self.helper.form_tag = True
         self.helper.layout = Layout(
-
-        Row(
-            Column(FloatingField('user_id'), css_class='col-md-6'),
-            Column(FloatingField('password'), css_class='col-md-6'),
-            css_class='row'
-        ),
-        Row(
-            Column(FloatingField('email'), css_class='col-md-4'),
-            Column(FloatingField('email2'), css_class='col-md-4'),
-            Column(FloatingField('email3'), css_class='col-md-4'),
-            css_class='row'
-        ),
-            
-            
-
-        Row(
-            Column(FloatingField('first_name'), css_class='col-md-4'),
-            Column(FloatingField('last_name'), css_class='col-md-4'),
-            Column(FloatingField('phone_number'), css_class='col-md-4'),
-            css_class='row'
-        ),
-        
-        
-        FloatingField('address'),
-        Row(
-            Column(FloatingField('city'), css_class='col-md-3'),
-            Column(FloatingField('state'), css_class='col-md-3'),
-            Column(FloatingField('zip_code'), css_class='col-md-3'),
-            Column(FloatingField('country'), css_class='col-md-3'),
-            css_class='row'
-        ),          
-            
-            
-        Submit('submit', 'Update Profile', css_class='btn btn-primary w-100 mt-3')
+            Row(
+                Column(FloatingField('user_id'), css_class='col-md-12'),
+                css_class='row'
+            ),
+            Row(
+                Column(FloatingField('email'), css_class='col-md-4'),
+                Column(FloatingField('email2'), css_class='col-md-4'),
+                Column(FloatingField('email3'), css_class='col-md-4'),
+                css_class='row'
+            ),
+            Row(
+                Column(FloatingField('first_name'), css_class='col-md-4'),
+                Column(FloatingField('last_name'), css_class='col-md-4'),
+                Column(FloatingField('phone_number'), css_class='col-md-4'),
+                css_class='row'
+            ),
+            FloatingField('address'),
+            Row(
+                Column(FloatingField('city'), css_class='col-md-3'),
+                Column(FloatingField('state'), css_class='col-md-3'),
+                Column(FloatingField('zip_code'), css_class='col-md-3'),
+                Column(FloatingField('country'), css_class='col-md-3'),
+                css_class='row'
+            ),
+            Fieldset(
+                'Change Password',
+                FloatingField('current_password'),
+                FloatingField('new_password'),
+                FloatingField('confirm_password'),
+            ),
+            Submit('submit', 'Update Profile', css_class='btn btn-primary w-100 mt-3')
         )
         
-        # Make user_id readonly since it's the login field
         self.fields['user_id'].widget.attrs['readonly'] = True
-        self.fields['user_id'].widget.attrs['class'] = 'form-control disable'
 
 
 class GivenInfoForm(forms.Form):

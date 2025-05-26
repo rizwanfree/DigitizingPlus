@@ -1,9 +1,11 @@
+from django.utils import timezone
 from django.http import Http404
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import update_session_auth_hash
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 
@@ -34,7 +36,7 @@ def register(request):
             # Send welcome email
             try:
                 subject = 'Welcome to DigitizingPlus'
-                html_message = render_to_string('registration/register_email.html', {
+                html_message = render_to_string('emails/register.html', {
                     'user': user,
                     'raw_password': raw_password,  # Passing plain password to template
                 })
@@ -81,8 +83,60 @@ def customer_profile(request):
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
-            form.save()
-            return redirect('profile')  # Redirect to profile page after update
+            user = form.save(commit=False)
+            password_changed = False
+            
+            # Handle password change
+            current_password = form.cleaned_data.get('current_password')
+            new_password = form.cleaned_data.get('new_password')
+            confirm_password = form.cleaned_data.get('confirm_password')
+            
+            if new_password:
+                if not request.user.check_password(current_password):
+                    form.add_error('current_password', 'Current password is incorrect')
+                    return render(request, 'users/customer/profile.html', {'form': form})
+                
+                if new_password != confirm_password:
+                    form.add_error('confirm_password', 'New passwords do not match')
+                    return render(request, 'users/customer/profile.html', {'form': form})
+                
+                user.set_password(new_password)
+                password_changed = True
+            
+            user.save()
+            
+            # Send profile update email
+            try:
+                context = {
+                    'user': user,
+                    'site_name': 'Your Site Name',
+                    'timestamp': timezone.now(),
+                    'password_changed': password_changed
+                }
+                
+                subject = 'Your Profile Has Been Updated'
+                html_message = render_to_string('emails/profile_update.html', context)
+                plain_message = strip_tags(html_message)
+                
+                send_mail(
+                    subject,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    html_message=html_message,
+                    fail_silently=False
+                )
+            except Exception as e:
+                # Log error but don't interrupt user flow
+                print(f"Failed to send profile update email: {e}")
+            
+            messages.success(request, 'Profile updated successfully!')
+            
+            if password_changed:
+                update_session_auth_hash(request, user)
+                messages.info(request, 'Your password has been updated')
+            
+            return redirect('users:customer-dashboard')
     else:
         form = UserProfileForm(instance=request.user)
     

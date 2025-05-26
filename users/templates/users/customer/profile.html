@@ -1,11 +1,18 @@
 {% extends "users/customer/base.html" %}
 {% load crispy_forms_tags %}
 
-
 {% block content %}
 <div class="">
     <div class="row justify-content-center">
         <div class="col-md-12">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
             <div class="card">
                 <div class="card-header bg-primary text-white text-center">
                     <h3>Your Profile</h3>

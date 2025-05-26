@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digitizing Plus, Profile Update</title>
+</head>
+<body>
+    <h2>Profile Updated Successfully</h2>
+    <br>
+    <h2>Hello {{ user.first_name }},</h2>
+    
+    <p>Your profile has been updated successfully.</p>
+    
+    {% if password_changed %}
+    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;">
+        <p><strong>Important:</strong> Your password was changed.</p>
+        <p>If you didn't make this change, please contact us immediately.</p>
+    </div>
+    {% endif %}
+    
+    <p>Please feel free to contact us with any of your questions or concerns.</p>
+    
+    <p>Thank you,<br>
+    
+    <p>Best regards,</p>
+    <br>
+    <p><strong>Digitizing Plus Team</strong></p>
+    <p><strong>digitizingpluss@gmail.com</strong></p>
+</body>
+</html>
