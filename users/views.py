@@ -10,7 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
+from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote, VectorQuote_Files, DigitizingQuote_Files, PatchQuote_Files
 
 from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
@@ -323,25 +323,103 @@ def quote_records(request):
     patch = PatchQuote.objects.filter(user=request.user)
     vector = VectorQuote.objects.filter(user=request.user)
 
-    # Add type labels
+    # Add type labels and convert to list of dicts for easier processing
+    all_quotes = []
+    
     for quote in digitizing:
         quote.type = 'Digitizing'
+        all_quotes.append(quote)
+    
     for quote in patch:
         quote.type = 'Patch'
+        all_quotes.append(quote)
+    
     for quote in vector:
         quote.type = 'Vector'
+        all_quotes.append(quote)
 
-    # Combine and sort by date (newest first)
-    all_quotes = sorted(
-        list(digitizing) + list(patch) + list(vector),
-        key=lambda x: x.created_at,
-        reverse=True
-    )
+    # Sort by created_at (newest first)
+    all_quotes.sort(key=lambda x: x.created_at, reverse=True)
 
     context = {'quotes': all_quotes}
     return render(request, 'users/customer/quotes-records.html', context)
 
 
+@login_required
+def digitizing_quote_details(request, pk):
+    try:
+        quote = DigitizingQuote.objects.get(pk=pk, user=request.user)
+        files = DigitizingQuote_Files.objects.filter(quote=quote)
+        
+        context = {
+            'quote': quote,
+            'files': files,
+            'can_accept': quote.quote_status == 'Quoted' and not quote.converted_to_order
+        }
+        return render(request, 'users/customer/digitizing-quote-details.html', context)
+    
+    except DigitizingQuote.DoesNotExist:
+        raise Http404("Quote not found or you don't have permission to view it")
 
 
+@login_required
+def patch_quote_details(request, pk):
+    try:
+        quote = PatchQuote.objects.get(pk=pk, user=request.user)
+        files = PatchQuote_Files.objects.filter(quote=quote)
+        
+        context = {
+            'quote': quote,
+            'files': files,
+            'can_accept': quote.quote_status == 'Quoted' and not quote.converted_to_order
+        }
+        return render(request, 'users/customer/patch-quote-details.html', context)
+    
+    except PatchQuote.DoesNotExist:
+        raise Http404("Quote not found or you don't have permission to view it")
+
+
+@login_required
+def vector_quote_details(request, pk):
+    try:
+        quote = VectorQuote.objects.get(pk=pk, user=request.user)
+        files = VectorQuote_Files.objects.filter(quote=quote)
+        
+        context = {
+            'quote': quote,
+            'files': files,
+            'can_accept': quote.quote_status == 'Quoted' and not quote.converted_to_order
+        }
+        return render(request, 'users/customer/vector-quote-details.html', context)
+    
+    except VectorQuote.DoesNotExist:
+        raise Http404("Quote not found or you don't have permission to view it")
+
+
+@login_required
+def accept_quote(request, quote_type, pk):
+    try:
+        if quote_type == 'digitizing':
+            quote = DigitizingQuote.objects.get(pk=pk, user=request.user)
+            order = quote.convert_to_order()
+            messages.success(request, 'Quote accepted and converted to order successfully!')
+            return redirect('digitizing-order-details', pk=order.id)
+            
+        elif quote_type == 'patch':
+            quote = PatchQuote.objects.get(pk=pk, user=request.user)
+            order = quote.convert_to_order()
+            messages.success(request, 'Quote accepted and converted to order successfully!')
+            return redirect('patch-order-details', pk=order.id)
+            
+        elif quote_type == 'vector':
+            quote = VectorQuote.objects.get(pk=pk, user=request.user)
+            order = quote.convert_to_order()
+            messages.success(request, 'Quote accepted and converted to order successfully!')
+            return redirect('vector-order-details', pk=order.id)
+            
+    except (DigitizingQuote.DoesNotExist, PatchQuote.DoesNotExist, VectorQuote.DoesNotExist):
+        raise Http404("Quote not found or you don't have permission to accept it")
+    except Exception as e:
+        messages.error(request, f'Error accepting quote: {str(e)}')
+        return redirect('quote-records')
 # Admin Panel Views

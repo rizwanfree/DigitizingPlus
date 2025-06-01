@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.db import transaction
 
 # Create your models here.
 
@@ -133,6 +134,7 @@ class DigitizingOrder(models.Model):
         on_delete=models.CASCADE,
         related_name='digitizing_orders',
     )
+    order_number = models.CharField(max_length=20, unique=True, blank=True)
     name = models.CharField(max_length=255)
     height = models.DecimalField(decimal_places=2, max_digits=10)
     width = models.DecimalField(decimal_places=2, max_digits=10)
@@ -151,13 +153,18 @@ class DigitizingOrder(models.Model):
     def __str__(self):
         return self.name
 
-class DigitizingOrder_Files(models.Model):
-    order = models.ForeignKey(DigitizingOrder, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(upload_to='digitizing_order_files/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            with transaction.atomic():
+                # Lock the table to prevent concurrent inserts
+                last_order = DigitizingOrder.objects.select_for_update().order_by('-id').first()
+                if last_order and last_order.order_number:
+                    last_number = int(last_order.order_number[2:])
+                else:
+                    last_number = 0
+                self.order_number = f"DO-{last_number + 1:04d}"
+        super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"File for Order #{self.order.name}"
 
 class PatchOrder(models.Model):
     user = models.ForeignKey(
@@ -165,6 +172,7 @@ class PatchOrder(models.Model):
         on_delete=models.CASCADE,
         related_name='patch_orders',
     )
+    order_number = models.CharField(max_length=20, unique=True, blank=True)
     name = models.CharField(max_length=255)
     po_number = models.IntegerField(null=True, blank=True)
     height = models.DecimalField(decimal_places=2, max_digits=5)
@@ -186,14 +194,20 @@ class PatchOrder(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            with transaction.atomic():
+                # Lock the table to prevent concurrent inserts
+                last_order = PatchOrder.objects.select_for_update().order_by('-id').first()
+                if last_order and last_order.order_number:
+                    last_number = int(last_order.order_number[2:])
+                else:
+                    last_number = 0
+                self.order_number = f"PO-{last_number + 1:04d}"
+        super().save(*args, **kwargs)
+    
 
-class PatchOrder_Files(models.Model):
-    order = models.ForeignKey(PatchOrder, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(upload_to='patch_order_files/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"File for Order #{self.order.name}"
 
 class VectorOrder(models.Model):
     user = models.ForeignKey(
@@ -201,6 +215,7 @@ class VectorOrder(models.Model):
         on_delete=models.CASCADE,
         related_name='vector_orders',
     )
+    order_number = models.CharField(max_length=20, unique=True, blank=True)
     name = models.CharField(max_length=255)
     po_number = models.IntegerField(null=True, blank=True)
     required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
@@ -215,6 +230,39 @@ class VectorOrder(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            with transaction.atomic():
+                # Lock the table to prevent concurrent inserts
+                last_order = VectorOrder.objects.select_for_update().order_by('-id').first()
+                if last_order and last_order.order_number:
+                    last_number = int(last_order.order_number[2:])
+                else:
+                    last_number = 0
+                self.order_number = f"VO-{last_number + 1:04d}"
+        super().save(*args, **kwargs)
+
+
+
+
+class DigitizingOrder_Files(models.Model):
+    order = models.ForeignKey(DigitizingOrder, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='digitizing_order_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for Order #{self.order.name}"
+
+
+class PatchOrder_Files(models.Model):
+    order = models.ForeignKey(PatchOrder, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='patch_order_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for Order #{self.order.name}"
+
+
 class VectorOrder_Files(models.Model):
     order = models.ForeignKey(VectorOrder, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='vector_order_files/')
@@ -223,6 +271,9 @@ class VectorOrder_Files(models.Model):
     def __str__(self):
         return f"File for Order #{self.order.name}"
 
+
+
+### Quotes
 class DigitizingQuote(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -230,35 +281,61 @@ class DigitizingQuote(models.Model):
         related_name='digitizing_quotes',
     )
     name = models.CharField(max_length=255)
-    height = models.IntegerField()
-    width = models.IntegerField()
+    height = models.DecimalField(decimal_places=2, max_digits=10)
+    width = models.DecimalField(decimal_places=2, max_digits=10)
+    stitches = models.IntegerField(default=0, null=True, blank=True)
     colors = models.IntegerField(null=True, blank=True)
+    po_number = models.IntegerField(null=True, blank=True)
     file_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, null=True, blank=True)
     fabric_type = models.CharField(max_length=50, choices=FABRIC_CHOICES, null=True, blank=True)
     logo_placement = models.CharField(max_length=50, choices=LOGO_PLACEMENT, null=True, blank=True)
     instructions = models.TextField(null=True, blank=True)
     is_urgent = models.BooleanField(default=False)
+    quote_status = models.CharField(max_length=50, choices=(
+        ('Requested', 'Requested'),
+        ('Quoted', 'Quoted'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+    ), default='Requested')
+    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-class VectorQuote(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='vector_quotes',
+    converted_to_order = models.ForeignKey(
+        'DigitizingOrder', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='original_quote'
     )
-    name = models.CharField(max_length=255)
-    required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
-    color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
-    colors = models.IntegerField(default=1)
-    others = models.CharField(max_length=255, blank=True, null=True)
-    instructions = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return f"Digitizing Quote - {self.name}"
+
+    def convert_to_order(self):
+        """Convert this quote to an actual order"""
+        if self.converted_to_order:
+            return self.converted_to_order
+            
+        order_data = {
+            field.name: getattr(self, field.name)
+            for field in DigitizingOrder._meta.fields
+            if field.name not in ['id', 'order_number', 'status', 'converted_to_order']
+            and hasattr(self, field.name)
+        }
+        
+        order = DigitizingOrder.objects.create(**order_data)
+        self.converted_to_order = order
+        self.save()
+        
+        # Copy files if any
+        if hasattr(self, 'files'):
+            for quote_file in self.files.all():
+                DigitizingOrder_Files.objects.create(
+                    order=order,
+                    file=quote_file.file
+                )
+        
+        return order
+
 
 class PatchQuote(models.Model):
     user = models.ForeignKey(
@@ -267,8 +344,9 @@ class PatchQuote(models.Model):
         related_name='patch_quotes',
     )
     name = models.CharField(max_length=255)
-    height = models.IntegerField()
-    width = models.IntegerField()     
+    po_number = models.IntegerField(null=True, blank=True)
+    height = models.DecimalField(decimal_places=2, max_digits=5)
+    width = models.DecimalField(decimal_places=2, max_digits=5)
     patch_type = models.CharField(max_length=50, choices=PATCH_TYPE, null=True, blank=True)
     backing_type = models.CharField(max_length=50, choices=BACKING_TYPE, null=True, blank=True)
     border_type = models.CharField(max_length=50, choices=BORDER_TYPE, null=True, blank=True)
@@ -280,10 +358,134 @@ class PatchQuote(models.Model):
     contact_number = models.CharField(max_length=50)
     shipping_address = models.TextField(null=True, blank=True)
     instructions = models.TextField(null=True, blank=True)
+    quote_status = models.CharField(max_length=50, choices=(
+        ('Requested', 'Requested'),
+        ('Quoted', 'Quoted'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+    ), default='Requested')
+    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    converted_to_order = models.ForeignKey(
+        'PatchOrder', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='original_quote'
+    )
 
     def __str__(self):
-        return self.name
-    
+        return f"Patch Quote - {self.name}"
+
+    def convert_to_order(self):
+        """Convert this quote to an actual order"""
+        if self.converted_to_order:
+            return self.converted_to_order
+            
+        order_data = {
+            field.name: getattr(self, field.name)
+            for field in PatchOrder._meta.fields
+            if field.name not in ['id', 'order_number', 'status', 'converted_to_order']
+            and hasattr(self, field.name)
+        }
+        
+        order = PatchOrder.objects.create(**order_data)
+        self.converted_to_order = order
+        self.save()
+        
+        # Copy files if any
+        if hasattr(self, 'files'):
+            for quote_file in self.files.all():
+                PatchOrder_Files.objects.create(
+                    order=order,
+                    file=quote_file.file
+                )
+        
+        return order
 
 
+class VectorQuote(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='vector_quotes',
+    )
+    name = models.CharField(max_length=255)
+    po_number = models.IntegerField(null=True, blank=True)
+    required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
+    color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
+    colors = models.IntegerField(default=1)
+    others = models.CharField(max_length=255, blank=True, null=True)
+    instructions = models.TextField(null=True, blank=True)
+    quote_status = models.CharField(max_length=50, choices=(
+        ('Requested', 'Requested'),
+        ('Quoted', 'Quoted'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+    ), default='Requested')
+    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    converted_to_order = models.ForeignKey(
+        'VectorOrder', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='original_quote'
+    )
+
+    def __str__(self):
+        return f"Vector Quote - {self.name}"
+
+    def convert_to_order(self):
+        """Convert this quote to an actual order"""
+        if self.converted_to_order:
+            return self.converted_to_order
+            
+        order_data = {
+            field.name: getattr(self, field.name)
+            for field in VectorOrder._meta.fields
+            if field.name not in ['id', 'order_number', 'status', 'converted_to_order']
+            and hasattr(self, field.name)
+        }
+        
+        order = VectorOrder.objects.create(**order_data)
+        self.converted_to_order = order
+        self.save()
+        
+        # Copy files if any
+        if hasattr(self, 'files'):
+            for quote_file in self.files.all():
+                VectorOrder_Files.objects.create(
+                    order=order,
+                    file=quote_file.file
+                )
+        
+        return order
+
+
+# File models for quotes
+class DigitizingQuote_Files(models.Model):
+    quote = models.ForeignKey(DigitizingQuote, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='digitizing_quote_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for Quote #{self.quote.name}"
+
+
+class PatchQuote_Files(models.Model):
+    quote = models.ForeignKey(PatchQuote, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='patch_quote_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for Quote #{self.quote.name}"
+
+
+class VectorQuote_Files(models.Model):
+    quote = models.ForeignKey(VectorQuote, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='vector_quote_files/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"File for Quote #{self.quote.name}"

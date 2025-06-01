@@ -8,48 +8,79 @@
 <!-- Include DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="{% static "libs/dataTables.bootstrap5.css" %}">
 <script src="{% static "libs/dataTables.bootstrap5.js" %}"></script>
-
 <script src="{% static "libs/dataTables.js" %}"></script>
-    <!-- Custom CSS for Inactive Tabs -->
-    <h1 class="text-center mb-3">Quotes Records</h1>
 
-    <div class="mt-5">
-            <!-- Orders Table -->
-            <table id="digitizeordersTable" class="table  table-striped" style="width:100%">
-                <thead>
-                    <tr>
-                        <th class="text-center">S#</th>
-                        <th class="text-center">Date In</th>
-                        <th class="text-center">Order Type</th>
-                        <th class="text-center">Order Name</th>
-                        <th class="text-center">Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in orders %}
-                        <tr>
-                            <td class="text-center">{{ forloop.counter }}</td>
-                            <td>{{ order.created_at|date:"m-d-Y" }} </td>
-                            <td>{{ order.type }}</td>
-                            <td>{{ order.name }}</td>
-                            <td></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-    </div>
+<!-- Custom CSS for Inactive Tabs -->
+<h1 class="text-center mb-3">Quotes Records</h1>
 
+<div class="mt-5">
+    <!-- Quotes Table -->
+    <table id="quotesTable" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th class="text-center">S#</th>
+                <th class="text-center">Date Requested</th>
+                <th class="text-center">Quote Type</th>
+                <th class="text-center">Quote Name</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Price</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quote in quotes %}
+                <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td class="text-center">{{ quote.created_at|date:"m-d-Y" }}</td>
+                    <td class="text-center">{{ quote.type }}</td>
+                    <td class="text-center">{{ quote.name }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if quote.quote_status == 'Requested' %}bg-primary
+                            {% elif quote.quote_status == 'Quoted' %}bg-info
+                            {% elif quote.quote_status == 'Accepted' %}bg-success
+                            {% elif quote.quote_status == 'Rejected' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
+                            {{ quote.quote_status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if quote.price %}
+                            ${{ quote.price }}
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{% if quote.type == 'Digitizing' %}{% url 'users:digitizing-quote-detail' quote.id %}
+                               {% elif quote.type == 'Patch' %}{% url 'users:patch-quote-detail' quote.id %}
+                               {% elif quote.type == 'Vector' %}{% url 'users:vector-quote-detail' quote.id %}{% endif %}" 
+                           class="btn btn-sm btn-primary">
+                            View
+                        </a>
+                        {% if quote.quote_status == 'Quoted' %}
+                            <a href="#" class="btn btn-sm btn-success ms-1">Accept</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 <!-- Initialize DataTables -->
 <script>
     $(document).ready(function() {
-        $('#digitizeordersTable').DataTable({
-            "paging": true,          // Enable pagination
-            "searching": true,       // Enable search
-            "ordering": true,        // Enable sorting
-            "order": [[0, 'asc']],  // Default sort by the first column (ID) in descending order
-            "pageLength": 10,        // Show 10 rows per page
-            "lengthMenu": [10, 25, 50, 100],  // Dropdown for rows per page
+        $('#quotesTable').DataTable({
+            "paging": true,
+            "searching": true,
+            "ordering": true,
+            "order": [[1, 'desc']],  // Default sort by date (newest first)
+            "pageLength": 10,
+            "lengthMenu": [10, 25, 50, 100],
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 6] }  // Disable sorting for S# and Actions columns
+            ]
         });
     });
 </script>

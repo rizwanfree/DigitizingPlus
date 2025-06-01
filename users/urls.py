@@ -24,6 +24,11 @@ urlpatterns = [
 
     path('customer/quote-orders/', views.quotes, name='customer-quotes'),
     path('customer/quote-records/', views.quote_records, name='customer-quote-records'),
+    path('digitizing-quote/<int:pk>/', views.digitizing_quote_details, name='digitizing-quote-detail'),
+    path('patch-quote/<int:pk>/', views.patch_quote_details, name='patch-quote-detail'),
+    path('vector-quote/<int:pk>/', views.vector_quote_details, name='vector-quote-detail'),
+
+    path('accept-quote/<str:quote_type>/<int:pk>/', views.accept_quote, name='accept-quote'),
 
 
 

@@ -31,7 +31,7 @@
                     {% for order in orders %}
                         <tr>
                             <td class="text-center align-middle">{{ forloop.counter }}</td>
-                            <td class="align-middle">{{ order.po_number }}</td>
+                            <td class="align-middle">{{ order.order_number }}</td>
                             <td class="align-middle">{{ order.created_at|date:"m-d-Y" }} </td>
                             <td class="align-middle">{{ order.type }}</td>
                             <td class="align-middle">{{ order.name }}</td>

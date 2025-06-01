@@ -1,0 +1,123 @@
+{% extends "users/customer/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="row gx-3 w-100 align-items-center">
+                <div class="col-md-3">
+                    <h4 class="mb-0">{{ quote.name }}</h4>
+                    <span class="badge 
+                        {% if quote.quote_status == 'Requested' %}bg-primary
+                        {% elif quote.quote_status == 'Quoted' %}bg-info
+                        {% elif quote.quote_status == 'Accepted' %}bg-success
+                        {% elif quote.quote_status == 'Rejected' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ quote.quote_status }}
+                    </span>
+                </div>
+
+                <div class="col-md-6 text-center">
+                    <h4 class="mb-0">Digitizing Quote</h4>
+                </div>
+
+                <div class="col-md-3 text-end">
+                    {% if quote.quote_status != 'Accepted' %}
+                    <a href="#" class="btn btn-sm btn-warning me-2">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Design Specifications</h5>
+                    <p><strong>Dimensions:</strong> {{ quote.width }}" x {{ quote.height }}"</p>
+                    <p><strong>Colors:</strong> {{ quote.colors }}</p>
+                    <p><strong>Fabric Type:</strong> {{ quote.fabric_type }}</p>
+                    <p><strong>File Format:</strong> {{ quote.file_format }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Additional Details</h5>
+                    <p><strong>Logo Placement:</strong> {{ quote.logo_placement }}</p>
+                    <p><strong>Urgent:</strong> {% if quote.is_urgent %}Yes{% else %}No{% endif %}</p>
+                    <p><strong>PO Number:</strong> {{ quote.po_number|default:"Not provided" }}</p>
+                    <p><strong>Date Created:</strong> {{ quote.created_at|date:"F j, Y" }}</p>
+                </div>
+            </div>
+            
+            {% if quote.price %}
+            <div class="alert alert-info">
+                <h5 class="alert-heading">Quoted Price</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">${{ quote.price }}</h4>
+                    {% if can_accept %}
+                    <a href="{% url 'accept-quote' 'users:digitizing' quote.id %}" class="btn btn-success">
+                        <i class="fas fa-check me-1"></i> Accept & Convert to Order
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <h5>Special Instructions</h5>
+                <div class="border p-3 rounded bg-light">
+                    {% if quote.instructions %}
+                        {{ quote.instructions|linebreaks }}
+                    {% else %}
+                        <p class="text-muted">No special instructions provided</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if files %}
+            <div class="mt-4">
+                <h5>Attached Files</h5>
+                <div class="row">
+                    {% for file in files %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card file-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-image display-4 text-primary mb-3"></i>
+                                <p class="text-truncate">{{ file.file.name|cut:"digitizing_quote_files/" }}</p>
+                                <div class="btn-group w-100">
+                                    <a href="{{ file.file.url }}" class="btn btn-sm btn-outline-primary" download>
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{{ file.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-footer">
+            <a href="{% url 'users:customer-quote-records' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Quotes
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .file-card {
+        transition: transform 0.2s;
+    }
+    .file-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
