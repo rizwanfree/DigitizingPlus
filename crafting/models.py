@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 
 # Create your models here.
 
@@ -489,3 +490,126 @@ class VectorQuote_Files(models.Model):
 
     def __str__(self):
         return f"File for Quote #{self.quote.name}"
+    
+
+
+
+
+
+class FinalizedDigitizingOrder(models.Model):
+    original_order = models.OneToOneField(
+        'DigitizingOrder',
+        on_delete=models.CASCADE,
+        related_name='finalized_version'
+    )
+    finalized_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='finalized_digitizing_orders'
+    )
+    finalized_at = models.DateTimeField(default=timezone.now)
+    
+    # Copy all fields from DigitizingOrder
+    order_number = models.CharField(max_length=20)
+    name = models.CharField(max_length=255)
+    height = models.DecimalField(decimal_places=2, max_digits=10)
+    width = models.DecimalField(decimal_places=2, max_digits=10)
+    stitches = models.IntegerField(null=True, blank=True)
+    colors = models.IntegerField(null=True, blank=True)
+    po_number = models.IntegerField(null=True, blank=True)
+    file_format = models.CharField(max_length=10, choices=FORMAT_CHOICES, null=True, blank=True)
+    fabric_type = models.CharField(max_length=50, choices=FABRIC_CHOICES, null=True, blank=True)
+    logo_placement = models.CharField(max_length=50, choices=LOGO_PLACEMENT, null=True, blank=True)
+    instructions = models.TextField(null=True, blank=True)
+    is_urgent = models.BooleanField(default=False)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    price = models.DecimalField(decimal_places=2, max_digits=10)
+    created_at = models.DateTimeField()
+    
+    # Additional finalized-specific fields
+    admin_notes = models.TextField(null=True, blank=True)
+    completed_date = models.DateField()
+    final_files = models.FileField(upload_to='finalized/digitizing/', null=True, blank=True)
+
+    def __str__(self):
+        return f"Finalized {self.order_number}"
+
+class FinalizedPatchOrder(models.Model):
+    original_order = models.OneToOneField(
+        'PatchOrder',
+        on_delete=models.CASCADE,
+        related_name='finalized_version'
+    )
+    finalized_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='finalized_patch_orders'
+    )
+    finalized_at = models.DateTimeField(default=timezone.now)
+    
+    # Copy all fields from PatchOrder
+    order_number = models.CharField(max_length=20)
+    name = models.CharField(max_length=255)
+    po_number = models.IntegerField(null=True, blank=True)
+    height = models.DecimalField(decimal_places=2, max_digits=5)
+    width = models.DecimalField(decimal_places=2, max_digits=5)
+    patch_type = models.CharField(max_length=50, choices=PATCH_TYPE, null=True, blank=True)
+    backing_type = models.CharField(max_length=50, choices=BACKING_TYPE, null=True, blank=True)
+    border_type = models.CharField(max_length=50, choices=BORDER_TYPE, null=True, blank=True)
+    embroidery_fill = models.CharField(max_length=50, choices=EMBROIDERY_FILL, null=True, blank=True)
+    quantity = models.IntegerField(default=1)
+    date = models.DateField()
+    color_details = models.CharField(max_length=255, blank=True, null=True)
+    contact_name = models.CharField(max_length=255)
+    contact_number = models.CharField(max_length=50)
+    shipping_address = models.TextField(null=True, blank=True)
+    instructions = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    price = models.DecimalField(decimal_places=2, max_digits=10)
+    created_at = models.DateTimeField()
+    
+    # Additional finalized-specific fields
+    admin_notes = models.TextField(null=True, blank=True)
+    shipping_date = models.DateField(null=True, blank=True)
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
+    final_files = models.FileField(upload_to='finalized/patch/', null=True, blank=True)
+
+    def __str__(self):
+        return f"Finalized {self.order_number}"
+
+class FinalizedVectorOrder(models.Model):
+    original_order = models.OneToOneField(
+        'VectorOrder',
+        on_delete=models.CASCADE,
+        related_name='finalized_version'
+    )
+    finalized_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='finalized_vector_orders'
+    )
+    finalized_at = models.DateTimeField(default=timezone.now)
+    
+    # Copy all fields from VectorOrder
+    order_number = models.CharField(max_length=20)
+    name = models.CharField(max_length=255)
+    po_number = models.IntegerField(null=True, blank=True)
+    required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
+    color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
+    colors = models.IntegerField(default=1)
+    others = models.CharField(max_length=255, blank=True, null=True)
+    instructions = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    price = models.DecimalField(decimal_places=2, max_digits=10)
+    created_at = models.DateTimeField()
+    
+    # Additional finalized-specific fields
+    admin_notes = models.TextField(null=True, blank=True)
+    final_files = models.FileField(upload_to='finalized/vector/', null=True, blank=True)
+    revisions = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Finalized {self.order_number}"
