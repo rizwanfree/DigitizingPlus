@@ -65,6 +65,8 @@ urlpatterns = [
     path('customer/orders/', views.orders, name='customer-orders'),
     path('customer/orders/<str:type>/<int:id>', views.order_details, name='customer-order-details'),
     path('customer/orders-records/', views.order_records, name='customer-orders-records'),
+    path('customer/orders/<str:type>/<int:id>/edit/', views.edit_order, name='edit-order'),
+
 
     path('customer/quote-orders/', views.quotes, name='customer-quotes'),
     path('customer/quote-records/', views.quote_records, name='customer-quote-records'),

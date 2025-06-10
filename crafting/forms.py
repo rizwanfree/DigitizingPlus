@@ -7,11 +7,15 @@ from crispy_forms.layout import Layout, Row, Column, Submit, Reset, HTML
 class BaseOrderForm:
     """Base form class with common functionality for all order forms"""
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)  # Get user from kwargs
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # Remove user field from form as we'll set it automatically
         if 'user' in self.fields:
             del self.fields['user']
+        
+        # Customize file fields for edit mode
+        if kwargs.get('instance'):
+            self.fields['file1'].required = False
+            self.fields['file2'].required = False
 
     def save(self, commit=True):
         # Set the user before saving
@@ -171,7 +175,7 @@ class PatchOrderForm(BaseOrderForm, forms.ModelForm):
         model = PatchOrder
         exclude = ['user', 'status', 'created_at']
         labels = {
-            'name': 'Order Name',
+            'name': 'Design Name',
             'height': 'Height (in inches)',
             'width': 'Width (in inches)',
             'po_number': 'Purchase Order Number',
@@ -246,7 +250,7 @@ class VectorOrderForm(BaseOrderForm, forms.ModelForm):
         model = VectorOrder
         exclude = ['user', 'status', 'created_at']
         labels = {
-            'name': 'Order Name',
+            'name': 'Design Name',
             'colors': 'Number of Colors',
             'po_number': 'Purchase Order Number',
             'required_format': 'Required Format',
@@ -440,7 +444,7 @@ class PatchQuoteForm(BaseQuoteForm, forms.ModelForm):
         model = PatchQuote
         exclude = ['user', 'quote_status', 'created_at', 'converted_to_order']
         labels = {
-            'name': 'Order Name',
+            'name': 'Design Name',
             'height': 'Height (in inches)',
             'width': 'Width (in inches)',
             'po_number': 'Purchase Order Number',
@@ -515,7 +519,7 @@ class VectorQuoteForm(BaseQuoteForm, forms.ModelForm):
         model = VectorQuote
         exclude = ['user', 'quote_status', 'created_at', 'converted_to_order']
         labels = {
-            'name': 'Order Name',
+            'name': 'Design Name',
             'colors': 'Number of Colors',
             'po_number': 'Purchase Order Number',
             'required_format': 'Required Format',

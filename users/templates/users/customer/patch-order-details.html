@@ -1,9 +1,179 @@
 {% extends "users/customer/base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block content %}
-<h1 class="text-center">DETAILS</h1>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Original Order -->
+        <div class="col-md-6 pe-4">
+            <div class="card border-maroon mb-4">
+                <div class="card-header bg-maroon text-white">
+                    <h4><i class="fas fa-edit me-2"></i> Original Digitizing Order</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Order #:</div>
+                        <div class="col-md-8">{{ order.order_number }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            <span class="badge bg-{% if order.status == 'Completed' %}success{% else %}warning{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Created:</div>
+                        <div class="col-md-8">{{ order.created_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Design Name:</div>
+                        <div class="col-md-8">{{ order.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Dimensions:</div>
+                        <div class="col-md-8">{{ order.width }}" x {{ order.height }}"</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Stitch Count:</div>
+                        <div class="col-md-8">{{ order.stitches|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Colors:</div>
+                        <div class="col-md-8">{{ order.colors|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">PO Number:</div>
+                        <div class="col-md-8">{{ order.po_number|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">File Format:</div>
+                        <div class="col-md-8">{{ order.get_file_format_display|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Fabric Type:</div>
+                        <div class="col-md-8">{{ order.get_fabric_type_display|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Logo Placement:</div>
+                        <div class="col-md-8">{{ order.get_logo_placement_display|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Urgent:</div>
+                        <div class="col-md-8">
+                            {% if order.is_urgent %}
+                                <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Yes</span>
+                            {% else %}
+                                No
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Price:</div>
+                        <div class="col-md-8">${{ order.price|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Instructions:</div>
+                        <div class="col-md-8">{{ order.instructions|default:"None provided" }}</div>
+                    </div>
+                    
+                    <h5 class="mt-4 border-top pt-3"><i class="fas fa-paperclip me-2"></i>Attachments</h5>
+                    <div class="list-group">
+                        {% for file in order.files.all %}
+                            <a href="{{ file.file.url }}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file me-2"></i> {{ file.file.name|slice:"25:" }}
+                            </a>
+                        {% empty %}
+                            <div class="alert alert-secondary">No files attached</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-{{ obj.name }}
-{% endblock content %}
+        <!-- Finalized Order -->
+        <div class="col-md-6 ps-4">
+            {% if order.finalized_version %}
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-check-circle me-2"></i> Finalized Order</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Finalized By:</div>
+                        <div class="col-md-8">{{ order.finalized_version.finalized_by.get_full_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Finalized On:</div>
+                        <div class="col-md-8">{{ order.finalized_version.finalized_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Completed Date:</div>
+                        <div class="col-md-8">{{ order.finalized_version.completed_date|date:"M d, Y" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Final Price:</div>
+                        <div class="col-md-8">${{ order.finalized_version.price }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Final Stitches:</div>
+                        <div class="col-md-8">{{ order.finalized_version.stitches|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Final Colors:</div>
+                        <div class="col-md-8">{{ order.finalized_version.colors|default:"Not specified" }}</div>
+                    </div>
+                    
+                    {% if order.finalized_version.admin_notes %}
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-comment-alt me-2"></i>Admin Notes</h6>
+                        <p class="mb-0">{{ order.finalized_version.admin_notes }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if order.finalized_version.final_files %}
+                    <div class="mt-4">
+                        <h5><i class="fas fa-download me-2"></i>Final Files</h5>
+                        <a href="{{ order.finalized_version.final_files.url }}" 
+                           class="btn btn-maroon" 
+                           target="_blank">
+                            <i class="fas fa-download me-2"></i>Download Final Design
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card border-secondary">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-hourglass-half fa-3x text-maroon mb-3"></i>
+                    <h4 class="text-maroon">In Progress</h4>
+                    <p>Your Patch order is being processed. We'll notify you when it's completed.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-maroon {
+        background-color: #800000 !important;
+    }
+    .border-maroon {
+        border-color: #800000 !important;
+    }
+    .btn-maroon {
+        background-color: #800000;
+        color: white;
+    }
+    .btn-maroon:hover {
+        background-color: #6a0000;
+        color: white;
+    }
+    .text-maroon {
+        color: #800000 !important;
+    }
+</style>
+{% endblock %}

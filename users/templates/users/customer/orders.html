@@ -12,67 +12,109 @@
     {% endfor %}
 </div>
 {% endif %}
-    <!-- Custom CSS for Inactive Tabs -->
-    <style>
-        .nav-tabs .nav-link {
-            color: #000; /* Set the text color for inactive tabs */
-            background-color: #f8f9fa; /* Set the background color for inactive tabs */
-            border-color: #dee2e6 #dee2e6 #fff; /* Match the border color */
-        }
-        .nav-tabs .nav-link.active {
-            color: #000; /* Set the text color for active tabs */
-            background-color: #fff; /* Set the background color for active tabs */
-            border-color: #dee2e6 #dee2e6 #fff; /* Match the border color */
-        }
-    </style>
-    <h1 class="text-center mb-3">PLACE NEW ORDER</h1>
 
-    <!-- Tab Navigation -->
-    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="digitizing-tab" data-bs-toggle="tab" data-bs-target="#digitizing" type="button" role="tab" aria-controls="digitizing" aria-selected="true">
-                Digitizing Order
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="patch-tab" data-bs-toggle="tab" data-bs-target="#patch" type="button" role="tab" aria-controls="patch" aria-selected="false">
-                Patch Order
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="vector-tab" data-bs-toggle="tab" data-bs-target="#vector" type="button" role="tab" aria-controls="vector" aria-selected="false">
-                Vector Order
-            </button>
-        </li>
-    </ul>
+<style>
+    .nav-tabs .nav-link {
+        color: #000;
+        background-color: #f8f9fa;
+        border-color: #dee2e6 #dee2e6 #fff;
+    }
+    .nav-tabs .nav-link.active {
+        color: #000;
+        background-color: #fff;
+        border-color: #dee2e6 #dee2e6 #fff;
+    }
+    .current-file {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+</style>
 
-    <!-- Tab Content -->
-    <div class="tab-content" id="orderTabsContent">
-        <!-- Digitizing Order Tab -->
-        <div class="tab-pane fade show active mt-5" id="digitizing" role="tabpanel" aria-labelledby="digitizing-tab">
-            <form action="{% url 'users:customer-orders' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="digitizing">
-                {% crispy digitizing_form %}
-            </form>
-        </div>
+<h1 class="text-center mb-3">
+    {% if edit_mode %}EDIT{% else %}PLACE NEW{% endif %} ORDER
+</h1>
 
-        <!-- Patch Order Tab -->
-        <div class="tab-pane fade mt-5" id="patch" role="tabpanel" aria-labelledby="patch-tab">
-            <form action="{% url 'users:customer-orders' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="patch">
-                {% crispy patch_form %}
-            </form>
-        </div>
+<ul class="nav nav-tabs" id="orderTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if edit_mode and active_tab == 'digitizing' or not edit_mode %}active{% endif %}" 
+                id="digitizing-tab" data-bs-toggle="tab" data-bs-target="#digitizing" 
+                type="button" role="tab" aria-controls="digitizing" 
+                aria-selected="{% if edit_mode and active_tab == 'digitizing' or not edit_mode %}true{% else %}false{% endif %}">
+            Digitizing Order
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if edit_mode and active_tab == 'patch' %}active{% endif %}" 
+                id="patch-tab" data-bs-toggle="tab" data-bs-target="#patch" 
+                type="button" role="tab" aria-controls="patch" 
+                aria-selected="{% if edit_mode and active_tab == 'patch' %}true{% else %}false{% endif %}">
+            Patch Order
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if edit_mode and active_tab == 'vector' %}active{% endif %}" 
+                id="vector-tab" data-bs-toggle="tab" data-bs-target="#vector" 
+                type="button" role="tab" aria-controls="vector" 
+                aria-selected="{% if edit_mode and active_tab == 'vector' %}true{% else %}false{% endif %}">
+            Vector Order
+        </button>
+    </li>
+</ul>
 
-        <!-- Vector Order Tab -->
-        <div class="tab-pane fade mt-5" id="vector" role="tabpanel" aria-labelledby="vector-tab">
-            <form action="{% url 'users:customer-orders' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="vector">
-                {% crispy vector_form %}
-            </form>
-        </div>
+<div class="tab-content" id="orderTabsContent">
+    <!-- Digitizing Order Tab -->
+    <div class="tab-pane fade {% if edit_mode and active_tab == 'digitizing' or not edit_mode %}show active{% endif %} mt-5" 
+         id="digitizing" role="tabpanel" aria-labelledby="digitizing-tab">
+        <form action="{% if edit_mode %}{% url 'users:edit-order' type=type id=order_id %}{% else %}{% url 'users:customer-orders' %}{% endif %}" 
+              method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="digitizing">
+            {% crispy digitizing_form %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-maroon">
+                    {% if edit_mode %}Update{% else %}Place{% endif %} Order
+                </button>
+                <a href="{% if edit_mode %}{% url 'users:customer-order-details' type=type id=order_id %}{% else %}{% url 'users:customer-orders' %}{% endif %}" 
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
     </div>
+
+    <!-- Patch Order Tab -->
+    <div class="tab-pane fade {% if edit_mode and active_tab == 'patch' %}show active{% endif %} mt-5" 
+         id="patch" role="tabpanel" aria-labelledby="patch-tab">
+        <form action="{% if edit_mode %}{% url 'users:edit-order' type=type id=order_id %}{% else %}{% url 'users:customer-orders' %}{% endif %}" 
+              method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="patch">
+            {% crispy patch_form %}
+        </form>
+    </div>
+
+    <!-- Vector Order Tab -->
+    <div class="tab-pane fade {% if edit_mode and active_tab == 'vector' %}show active{% endif %} mt-5" 
+         id="vector" role="tabpanel" aria-labelledby="vector-tab">
+        <form action="{% if edit_mode %}{% url 'users:edit-order' type=type id=order_id %}{% else %}{% url 'users:customer-orders' %}{% endif %}" 
+              method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="vector">
+            {% crispy vector_form %}
+        </form>
+    </div>
+</div>
+
+<script>
+    // Activate the correct tab on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabId = {% if edit_mode %}'{{ active_tab }}-tab'{% else %}'digitizing-tab'{% endif %};
+        const tab = document.getElementById(tabId);
+        if (tab) {
+            new bootstrap.Tab(tab).show();
+        }
+    });
+</script>
+
 {% endblock content %}

@@ -157,10 +157,13 @@ class DigitizingOrder(models.Model):
     def save(self, *args, **kwargs):
         if not self.order_number:
             with transaction.atomic():
-                # Lock the table to prevent concurrent inserts
                 last_order = DigitizingOrder.objects.select_for_update().order_by('-id').first()
                 if last_order and last_order.order_number:
-                    last_number = int(last_order.order_number[2:])
+                    try:
+                        last_number = int(last_order.order_number[3:])  # Skip 'DO-'
+                    except ValueError:
+                        print(f"Invalid order_number: {last_order.order_number}")
+                        last_number = 0
                 else:
                     last_number = 0
                 self.order_number = f"DO-{last_number + 1:04d}"

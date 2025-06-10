@@ -10,7 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote, VectorQuote_Files, DigitizingQuote_Files, PatchQuote_Files
+from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote, VectorQuote_Files, DigitizingQuote_Files, PatchQuote_Files, DigitizingOrder_Files, VectorOrder_Files, PatchOrder_Files
 
 from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
@@ -219,7 +219,76 @@ def orders(request):
     context = {
         'digitizing_form': digitizing_form,
         'patch_form': patch_form,
-        'vector_form': vector_form
+        'vector_form': vector_form,
+        'edit_mode': False
+    }
+    return render(request, 'users/customer/orders.html', context)
+
+
+
+@login_required
+def edit_order(request, type, id):
+    # Get the order object
+    if type == 'Vector':
+        order = get_object_or_404(VectorOrder, pk=id, user=request.user)
+        form_class = VectorOrderForm
+        file_model = VectorOrder_Files
+        active_tab = 'vector'
+    elif type == 'Digitizing':
+        order = get_object_or_404(DigitizingOrder, pk=id, user=request.user)
+        form_class = DigitizingOrderForm
+        file_model = DigitizingOrder_Files
+        active_tab = 'digitizing'
+    elif type == 'Patch':
+        order = get_object_or_404(PatchOrder, pk=id, user=request.user)
+        form_class = PatchOrderForm
+        file_model = PatchOrder_Files
+        active_tab = 'patch'
+    else:
+        raise Http404("Invalid order type")
+
+    if request.method == 'POST':
+        form = form_class(request.POST, request.FILES, instance=order, user=request.user)
+        if form.is_valid():
+            order = form.save()
+            
+            # Handle file updates
+            file1 = form.cleaned_data.get('file1')
+            file2 = form.cleaned_data.get('file2')
+            
+            # Clear existing files if new ones are uploaded
+            if file1 or file2:
+                file_model.objects.filter(order=order).delete()
+                
+            if file1:
+                file_model.objects.create(order=order, file=file1)
+            if file2:
+                file_model.objects.create(order=order, file=file2)
+                
+            messages.success(request, "Order updated successfully!")
+            return redirect('users:customer-order-details', type=type, id=id)
+    else:
+        form = form_class(instance=order, user=request.user)
+        # Get existing files to display in the form
+        existing_files = file_model.objects.filter(order=order)
+        if existing_files.exists():
+            form.fields['file1'].help_text = f"Current file: {existing_files.first().file.name}"
+            if existing_files.count() > 1:
+                form.fields['file2'].help_text = f"Current file: {existing_files[1].file.name}"
+
+    # Create empty forms for other tabs
+    forms = {
+        'digitizing_form': DigitizingOrderForm(user=request.user) if active_tab != 'digitizing' else form,
+        'patch_form': PatchOrderForm(user=request.user) if active_tab != 'patch' else form,
+        'vector_form': VectorOrderForm(user=request.user) if active_tab != 'vector' else form,
+    }
+
+    context = {
+        'edit_mode': True,
+        'active_tab': active_tab,
+        'type': type,
+        'order_id': id,
+        **forms
     }
     return render(request, 'users/customer/orders.html', context)
 
@@ -255,19 +324,20 @@ def order_records(request):
 def order_details(request, type, id):
 
     if type == 'Vector':
-        obj = VectorOrder.objects.get(pk=id)
+        order = VectorOrder.objects.get(pk=id)
         template_name = 'users/customer/vector-order-details.html'
     elif type == 'Digitizing':
-        obj = DigitizingOrder.objects.get(pk=id)
+        order = DigitizingOrder.objects.get(pk=id)
         template_name = 'users/customer/digitizing-order-details.html'
     elif type == 'Patch':
-        obj = PatchOrder.objects.get(pk=id)
+        order = PatchOrder.objects.get(pk=id)
         template_name = 'users/customer/patch-order-details.html'
     else:
         raise Http404("Invalid order type")
 
     context = {
-        'obj': obj
+        'order': order,
+        'type': type
     }
     return render(request, template_name, context)
 
