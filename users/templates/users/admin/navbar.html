@@ -58,10 +58,10 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{% url "users:admin-inprocess-digitizing-orders" %}"> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url "users:admin-all-digitizing-orders" %}"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
                         <hr>
-                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>                        
+                        <li><a class="dropdown-item" href="{% url "users:admin-inprocess-digitizing-quotes" %}"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
+                        {% comment %} <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>                         {% endcomment %}
                     </ul>
                 </li>
 
@@ -71,11 +71,11 @@
                         <i class="fa-solid fa-vest-patches"></i> Patches
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url "users:admin-inprocess-patch-orders" %} "> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url "users:admin-inprocess-patch-orders" %}"> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url "users:admin-all-patch-orders" %}"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
                         <hr>
-                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>   
+                        <li><a class="dropdown-item" href="{% url "users:admin-inprocess-patch-quotes" %}"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
+                        {% comment %} <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>    {% endcomment %}
                     </ul>
                 </li>
 
@@ -85,11 +85,11 @@
                         <i class="fa-solid fa-vector-square"></i> Vectors
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url "users:admin-inprocess-vector-orders" %} "> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url "users:admin-inprocess-vector-orders" %}"> <i class="fa-solid fa-cart-shopping"></i>In Process Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url "users:admin-all-vector-orders" %}"><i class="fa-solid fa-cart-shopping"></i> All Orders</a></li>
                         <hr>
-                        <li><a class="dropdown-item" href="#"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>   
+                        <li><a class="dropdown-item" href="{% url "users:admin-inprocess-vector-quotes" %}"> <i class="fa-solid fa-file"></i> In Process Quotes</a></li>
+                        {% comment %} <li><a class="dropdown-item" href="#"><i class="fa-solid fa-file"></i> All Quotes</a></li>    {% endcomment %}
                     </ul>
                 </li>
 

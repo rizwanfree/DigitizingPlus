@@ -14,6 +14,10 @@
         background-color: #fff;
         border-color: #dee2e6 #dee2e6 #fff;
     }
+    .file-badge {
+        font-size: 0.8rem;
+        margin-right: 5px;
+    }
 </style>
 
 <h3 class="text-center mt-3 mb-2">DIGITIZING ORDER #{{ order.order_number }} | DATE: {{ order.created_at|date:"m-d-Y" }} | {{ order.status|upper }}</h3>
@@ -28,7 +32,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="final-tab" data-bs-toggle="tab" data-bs-target="#final" type="button" role="tab" aria-controls="final" aria-selected="false">
-                    Final Info
+                    Final Info {% if finalized_order %}<span class="badge bg-success ms-2">Completed</span>{% endif %}
                 </button>
             </li>
         </ul>
@@ -110,46 +114,102 @@
             </div>
 
             <!-- Final Tab -->
-            <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">            
-                <form action="" method="post">
+            <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">
+                {% if finalized_order %}
+                <div class="alert alert-success mb-3">
+                    <strong>Finalized on:</strong> {{ finalized_order.finalized_at|date:"m-d-Y H:i" }} by {{ finalized_order.finalized_by.get_full_name }}
+                </div>
+                {% endif %}
+                
+                <form action="" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    <input type="hidden" name="form_type" value="final-info">
+                    {{ final_form.original_order }}
+                    
                     <div class="row">
                         <div class="col-md-6">
-                            <h3>DIGITIZING DETAILS</h3>
+                            <h3>FINAL DIGITIZING DETAILS</h3>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Width</span>
-                                {{ final_form.width_a }}
+                                {{ final_form.width }}
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Height</span>
-                                {{ final_form.height_a }}
+                                {{ final_form.height }}
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Stitches</span>
-                                {{ final_form.stitches_a }}
+                                {{ final_form.stitches }}
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Price</span>
-                                {{ final_form.price_a }}
+                                {{ final_form.price }}
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Completed Date</span>
+                                {{ final_form.completed_date }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h3>FILES</h3>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Design File</span>
+                                <input type="file" name="file1" class="form-control">
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Stitch File</span>
+                                <input type="file" name="file2" class="form-control">
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Color Sheet</span>
+                                <input type="file" name="file3" class="form-control">
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Additional File</span>
+                                <input type="file" name="file4" class="form-control">
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-12">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Total Price</span>
-                            {{ final_form.total_price }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Admin Notes</span>
+                                {{ final_form.admin_notes }}
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-12">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Comments</span>
-                            {{ final_form.comments }}
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                {% if finalized_order %}Update Finalized Order{% else %}Release Order{% endif %}
+                            </button>
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <button type="submit" class="btn btn-primary btn-block">Release</button>
                     </div>
                 </form>
+
+                                            {% if finalized_files %}
+                            <div class="mt-4">
+                                <h4>Uploaded Files</h4>
+                                <div class="list-group">
+                                    {% for file in finalized_files %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="{{ file.file.url }}" target="_blank" class="text-decoration-none">
+                                                <i class="fas fa-file-download me-2"></i>{{ file.get_file_type_display }}
+                                            </a>
+                                            <span class="text-muted small">{{ file.uploaded_at|date:"m-d-Y H:i" }}</span>
+                                        </div>
+                                        {% if file.notes %}
+                                        <div class="small text-muted mt-1">{{ file.notes }}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
             </div>
         </div>
     </div>
@@ -164,12 +224,17 @@
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header">
-            Admin Instructions
+        <div class="card mb-3" id="adminInstructionsCard">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Admin Instructions</span>
+                <button class="btn btn-sm btn-outline-primary" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#adminInstructionsModal">
+                    Update
+                </button>
             </div>
             <div class="card-body">
-                <p class="card-text">{{ order.instructions|default:"No instructions provided" }}</p>
+                <p class="card-text">{{ order.admin_instruction|default:"No instructions provided" }}</p>
             </div>
         </div>
 
@@ -186,19 +251,71 @@
             </div>
         </div>
     </div>
+
+    <!-- Admin Instructions Modal -->
+    <div class="modal fade" id="adminInstructionsModal" tabindex="-1" aria-labelledby="adminInstructionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminInstructionsModalLabel">Update Admin Instructions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="adminInstructionsForm" method="post" action="{% url 'users:update_admin_instructions' pk=order.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <textarea name="admin_instructions" class="form-control" rows="5">{{ order.admin_instruction|default:"" }}</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const priceA = document.getElementById('id_price_option_a');
-        const total = document.getElementById('id_total_price');
-        
-        function calculateTotal() {
-            const a = parseFloat(priceA.value) || 0;
-            total.value = a.toFixed(2);
-        }
-        
+document.addEventListener('DOMContentLoaded', function() {
+    // Price calculation script
+    const priceA = document.getElementById('id_price_option_a');
+    const total = document.getElementById('id_total_price');
+    
+    function calculateTotal() {
+        const a = parseFloat(priceA.value) || 0;
+        total.value = a.toFixed(2);
+    }
+    
+    if (priceA && total) {
         priceA.addEventListener('change', calculateTotal);
-    });
+        calculateTotal(); // Calculate on page load
+    }
+
+    // Admin instructions form handling
+    const adminForm = document.getElementById('adminInstructionsForm');
+    if (adminForm) {
+        adminForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+});
 </script>
 {% endblock content %}

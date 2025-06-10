@@ -88,6 +88,16 @@ urlpatterns = [
     path('admin/inprocess-patch-orders/', adminviews.inprocess_patch_orders, name='admin-inprocess-patch-orders'),
     path('admin/inprocess-vector-orders/', adminviews.inprocess_vector_orders, name='admin-inprocess-vector-orders'),
 
+    path('admin/all-digitizing-orders/', adminviews.all_digitizing_orders, name='admin-all-digitizing-orders'),
+    path('admin/all-patch-orders/', adminviews.all_patch_orders, name='admin-all-patch-orders'),
+    path('admin/all-vector-orders/', adminviews.all_vector_orders, name='admin-all-vector-orders'),
+
+
+    path('admin/inprocess-digitizing-quotes/', adminviews.inprocess_digitizing_quotes, name='admin-inprocess-digitizing-quotes'),
+    path('admin/inprocess-patch-quotes/', adminviews.inprocess_patch_quotes, name='admin-inprocess-patch-quotes'),
+    path('admin/inprocess-vector-quotes/', adminviews.inprocess_vector_quotes, name='admin-inprocess-vector-quotes'),
+
 
     path('admin/order-details/<int:pk>/<str:order_type>/', adminviews.admin_order_details, name='admin-order-details'),
+    path('orders/<int:pk>/update-admin-instructions/', adminviews.update_admin_instructions, name='update_admin_instructions'),
 ]

@@ -1,13 +1,14 @@
-from django.http import Http404
+from django.utils import timezone
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 
-from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
+from crafting.models import DigitizingOrder, FinalizedDigitizingFiles, FinalizedDigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 
-from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
+from .forms import FinalDigitizingForm, UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
 
@@ -40,6 +41,8 @@ def admin_dashboard(request):
     }
     return render(request, 'users/admin/dashboard.html', context)
 
+
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def inprocess_digitizing_orders(request):
@@ -51,6 +54,18 @@ def inprocess_digitizing_orders(request):
     }
     return render(request, 'users/admin/inprocess-digitizing-orders.html', context)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def all_digitizing_orders(request):
+    orders = DigitizingOrder.objects.select_related('user').prefetch_related('files').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Digitizing',
+    }
+    return render(request, 'users/admin/all-digitizing-orders.html', context)
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def inprocess_patch_orders(request):
@@ -61,6 +76,18 @@ def inprocess_patch_orders(request):
         'order_type': 'Patch',
     }
     return render(request, 'users/admin/inprocess-patch-orders.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def all_patch_orders(request):
+    orders = PatchOrder.objects.select_related('user').prefetch_related('files').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Patch',
+    }
+    return render(request, 'users/admin/all-patch-orders.html', context)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -76,12 +103,25 @@ def inprocess_vector_orders(request):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
+def all_vector_orders(request):
+    orders = VectorOrder.objects.select_related('user').prefetch_related('files').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Vector',
+    }
+    return render(request, 'users/admin/all-vector-orders.html', context)
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def admin_order_details(request, pk, order_type):
-    # Map order types to their models and templates
     ORDER_MAPPING = {
         'digitizing': {
             'model': DigitizingOrder,
-            'template': 'users/admin/digitizing-order-details.html'
+            'template': 'users/admin/digitizing-order-details.html',
+            'final_model': FinalizedDigitizingOrder
         },
         'patch': {
             'model': PatchOrder,
@@ -93,17 +133,36 @@ def admin_order_details(request, pk, order_type):
         },
     }
 
-    # Get the correct model and template
     order_config = ORDER_MAPPING.get(order_type.lower())
     if not order_config:
         raise Http404("Invalid order type")
     
-    model = order_config['model']
-    my_template = order_config['template']
-    
-    # Get the specific order
-    order = get_object_or_404(model, pk=pk)
+    order = get_object_or_404(order_config['model'], pk=pk)
     user = order.user
+    finalized_order = None
+    finalized_files = []
+    form = GivenInfoForm()
+
+    # Check if finalized version exists
+    if hasattr(order, 'finalized_version'):
+        finalized_order = order.finalized_version
+        finalized_files = finalized_order.final_files.all()
+
+    # Initialize final_form outside of POST handling
+    final_form_initial = {
+        'original_order': order,
+        'completed_date': timezone.now().date()
+    }
+    if finalized_order:
+        final_form_initial.update({
+            'height': finalized_order.height,
+            'width': finalized_order.width,
+            'stitches': finalized_order.stitches,
+            'price': finalized_order.price,
+            'admin_notes': finalized_order.admin_notes,
+            'completed_date': finalized_order.completed_date
+        })
+    final_form = FinalDigitizingForm(initial=final_form_initial)
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
@@ -111,52 +170,127 @@ def admin_order_details(request, pk, order_type):
         if form_type == 'given-info':
             form = GivenInfoForm(request.POST)
             if form.is_valid():
-                # Update order with form data
-                order.price = form.cleaned_data.get('price_option_a')
-                # Update other fields as needed
+                # Update original order
+                order.name = form.cleaned_data['design_name']
+                order.po_number = form.cleaned_data['po_number']
                 order.save()
-                return redirect('success_url')
+                messages.success(request, "Order updated successfully")
+                return redirect('users:admin_order_details', pk=pk, order_type=order_type)
                 
         elif form_type == 'final-info':
-            option_form = OptionsForm(request.POST)
-            if option_form.is_valid():
-                # Process final info form data
-                # Update order with final info if needed
-                return redirect('success_url')
-        else:
-            # Invalid form type
-            form = GivenInfoForm()
-            option_form = OptionsForm()
-    else:
-        # Initialize forms with order data
-        form = GivenInfoForm(initial={
-            'design_name': order.name,
-            'po_number': order.po_number,
-            'width': getattr(order, 'width', ''),
-            'height': getattr(order, 'height', ''),
-            'colors': order.colors,
-            'required_format': getattr(order, 'file_format', '') or getattr(order, 'required_format', ''),
-            'placement': getattr(order, 'logo_placement', '') or getattr(order, 'patch_type', ''),
-            'fabric_type': getattr(order, 'fabric_type', ''),
-            'price_option_a': getattr(order, 'price', ''),
-            'total_price': getattr(order, 'total_price', ''),
-        })
+            final_form = FinalDigitizingForm(request.POST)
+            if final_form.is_valid():
+                # Create or update finalized order
+                finalized_order, created = FinalizedDigitizingOrder.objects.update_or_create(
+                    original_order=order,
+                    defaults={
+                        **final_form.cleaned_data,
+                        'finalized_by': request.user,
+                        'price': final_form.cleaned_data.get('price', 0)
+                    }
+                )
 
-        option_form = OptionsForm(initial={
-            'width_a': getattr(order, 'width', ''),
-            'height_a': getattr(order, 'height', ''),
-            'stitches_a': getattr(order, 'stitches', ''),
-            'price_a': getattr(order, 'price', ''),
-        })
+                # Handle file uploads
+                file_mapping = {
+                    'file1': 'DESIGN',
+                    'file2': 'STITCH',
+                    'file3': 'COLOR',
+                    'file4': 'ADDITIONAL'
+                }
+                
+                for field_name, file_type in file_mapping.items():
+                    if field_name in request.FILES:
+                        FinalizedDigitizingFiles.objects.create(
+                            finalized_order=finalized_order,
+                            file=request.FILES[field_name],
+                            file_type=file_type
+                        )
+
+                # Create invoice if this is a new finalized order
+                if created and not finalized_order.invoice:
+                    finalized_order.create_invoice()
+
+                order.status = 'Delivered'
+                order.save()
+                messages.success(request, "Order finalized and invoice created successfully")
+                return redirect('users:admin-all-digitizing-orders')
+
+    # Initialize form (moved after POST handling to avoid overwriting POST data)
+    form = GivenInfoForm(initial={
+        'design_name': order.name,
+        'po_number': order.po_number,
+        'height': order.height,
+        'width': order.width,
+        'colors': order.colors
+    })
 
     context = {
         'order': order,
         'user': user,
-        'order_type': order_type,
         'form': form,
-        'final_form': option_form
+        'final_form': final_form,
+        'order_type': order_type,
+        'finalized_order': finalized_order,
+        'finalized_files': finalized_files
     }
-    return render(request, my_template, context)
+    return render(request, order_config['template'], context)
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def update_admin_instructions(request, pk):
+    order = get_object_or_404(DigitizingOrder, pk=pk)
+    if request.method == 'POST':
+        order.admin_instruction = request.POST.get('admin_instructions', '')
+        order.save()
+        return JsonResponse({
+            'success': True,
+            'admin_instructions': order.admin_instruction
+        })
+    return JsonResponse({'success': False}, status=400)
+
+
+
+def finalize_order(request, pk):
+    order = get_object_or_404(DigitizingOrder, pk=pk)
+    
+    if request.method == 'POST':
+        form = FinalDigitizingForm(request.POST, request.FILES)
+        if form.is_valid():
+            finalized_order = form.save(commit=False)
+            finalized_order.original_order = order
+            finalized_order.finalized_by = request.user
+            finalized_order.save()
+            
+            # Handle each file upload separately
+            files = [
+                ('design', form.cleaned_data.get('file1')),
+                ('stitch', form.cleaned_data.get('file2')),
+                ('color', form.cleaned_data.get('file3')),
+                ('additional', form.cleaned_data.get('file4')),
+            ]
+            
+            for file_type, file in files:
+                if file:  # Only create records for files that were uploaded
+                    FinalizedDigitizingFiles.objects.create(
+                        finalized_order=finalized_order,
+                        file=file,
+                        description=file_type.upper()  # Or use a more descriptive label
+                    )
+            
+            return redirect('success_url')
+    else:
+        form = FinalDigitizingForm(initial={
+            'original_order': order.id,
+            'height': order.height,
+            'width': order.width,
+            'completed_date': timezone.now().date()
+        })
+    
+    return render(request, 'template.html', {'form': form})
+
+
 
 
 @login_required
@@ -171,3 +305,41 @@ def admin_all_receivables(request):
 def admin_invoice_list(request):
 
     return render(request, 'finance/invoice-list.html')
+
+
+# QUOTES
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def inprocess_digitizing_quotes(request):
+    orders = DigitizingQuote.objects.select_related('user').prefetch_related('files').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Digitizing',
+    }
+    return render(request, 'users/admin/inprocess-digitizing-quotes.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def inprocess_vector_quotes(request):
+    orders = VectorQuote.objects.select_related('user').prefetch_related('files').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Vector',
+    }
+    return render(request, 'users/admin/inprocess-vector-quotes.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def inprocess_patch_quotes(request):
+    orders = PatchQuote.objects.select_related('user').prefetch_related('files').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Patch',
+    }
+    return render(request, 'users/admin/inprocess-patch-quotes.html', context)

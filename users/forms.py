@@ -7,7 +7,7 @@ from django.core.validators import MinValueValidator
 from crispy_forms.helper import FormHelper
 from django.core.validators import RegexValidator
 from .models import User
-from crafting.models import BACKING_TYPE, BORDER_TYPE, FABRIC_CHOICES, LOGO_PLACEMENT, PATCH_TYPE, FORMAT_CHOICES
+from crafting.models import BACKING_TYPE, BORDER_TYPE, FABRIC_CHOICES, LOGO_PLACEMENT, PATCH_TYPE, FORMAT_CHOICES, FinalizedDigitizingOrder
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -217,25 +217,64 @@ class GivenInfoForm(forms.Form):
         decimal_places=2,
         required=False,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
+
     
-    # price_option_b = forms.DecimalField(
-    #     label="Price Option B ($)",
+    # total_price = forms.DecimalField(
+    #     label="Total Price ($)",
     #     max_digits=8,
     #     decimal_places=2,
     #     required=False,
-    #     widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}))
-    
-    total_price = forms.DecimalField(
-        label="Total Price ($)",
-        max_digits=8,
-        decimal_places=2,
-        required=False,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'step': '0.01',
-            'readonly': 'readonly'  # Often calculated automatically
-    }))
+    #     widget=forms.NumberInput(attrs={
+    #         'class': 'form-control',
+    #         'step': '0.01',
+    #         'readonly': 'readonly'  # Often calculated automatically
+    # }))
 
+
+
+
+class FinalDigitizingForm(forms.ModelForm):
+    class Meta:
+        model = FinalizedDigitizingOrder
+        fields = [
+            'original_order',
+            'height',
+            'width',
+            'stitches',
+            'price',
+            'admin_notes',
+            'completed_date'
+        ]
+        widgets = {
+            'original_order': forms.HiddenInput(),  # Hide from user (auto-set in view)
+            'height': forms.NumberInput(attrs={
+                'class': 'form-control',                
+                'step': '0.01'
+            }),
+            'width': forms.NumberInput(attrs={
+                'class': 'form-control',                
+                'step': '0.01'
+            }),
+            'stitches': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 0
+            }),
+            'price': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': 0
+            }),
+            'admin_notes': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Internal notes...'
+            }),
+            'completed_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'value': forms.utils.from_current_timezone  # Auto-set to today
+            }),
+        }
 
 
 class OptionsForm(forms.Form):

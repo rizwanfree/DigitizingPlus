@@ -1,8 +1,8 @@
-from datetime import timezone
+from django.utils import timezone
 from django.db import models
 from django.conf import settings
 
-from crafting.models import DigitizingOrder, PatchOrder, VectorOrder
+
 
 # Create your models here.
 
@@ -19,27 +19,26 @@ class Invoice(models.Model):
     invoice_number = models.CharField(max_length=20, unique=True)
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     date = models.DateField(auto_now_add=True)
-    due_date = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     total = models.DecimalField(max_digits=10, decimal_places=2)
 
-    # Links to all order types (only one will be used per invoice)
+    # Use string references to avoid circular imports
     digitizing_order = models.ForeignKey(
-        DigitizingOrder, 
+        'crafting.DigitizingOrder', 
         on_delete=models.PROTECT, 
-        null=True,
+        null=True, 
         blank=True
     )
     patch_order = models.ForeignKey(
-        PatchOrder,
-        on_delete=models.PROTECT,
-        null=True,
+        'crafting.PatchOrder', 
+        on_delete=models.PROTECT, 
+        null=True, 
         blank=True
     )
     vector_order = models.ForeignKey(
-        VectorOrder,
-        on_delete=models.PROTECT,
-        null=True,
+        'crafting.VectorOrder', 
+        on_delete=models.PROTECT, 
+        null=True, 
         blank=True
     )
 

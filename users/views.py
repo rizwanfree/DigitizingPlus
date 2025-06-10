@@ -12,7 +12,7 @@ from django.utils.html import strip_tags
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote, VectorQuote_Files, DigitizingQuote_Files, PatchQuote_Files, DigitizingOrder_Files, VectorOrder_Files, PatchOrder_Files
 
-from .forms import UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
+from .forms import FinalDigitizingForm, UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
 
@@ -340,6 +340,12 @@ def order_details(request, type, id):
         'type': type
     }
     return render(request, template_name, context)
+
+
+
+
+
+
 
 
 

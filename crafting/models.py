@@ -1,7 +1,9 @@
+from functools import cached_property
 from django.db import models
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
+
 
 # Create your models here.
 
@@ -148,7 +150,8 @@ class DigitizingOrder(models.Model):
     instructions = models.TextField(null=True, blank=True)
     is_urgent = models.BooleanField(default=False)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
-    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    # price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    admin_instruction = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -193,7 +196,8 @@ class PatchOrder(models.Model):
     shipping_address = models.TextField(null=True, blank=True)
     instructions = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
-    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    # price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    admin_instruction = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -228,7 +232,8 @@ class VectorOrder(models.Model):
     others = models.CharField(max_length=255, blank=True, null=True)
     instructions = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
-    price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    # price = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    admin_instruction = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -528,15 +533,37 @@ class FinalizedDigitizingOrder(models.Model):
     is_urgent = models.BooleanField(default=False)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
     price = models.DecimalField(decimal_places=2, max_digits=10)
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     
     # Additional finalized-specific fields
     admin_notes = models.TextField(null=True, blank=True)
     completed_date = models.DateField()
-    final_files = models.FileField(upload_to='finalized/digitizing/', null=True, blank=True)
 
-    def __str__(self):
-        return f"Finalized {self.order_number}"
+    invoice = models.OneToOneField(
+        'finance.Invoice',  # Use string reference
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='digitizing_finalization'
+    )
+
+    @cached_property
+    def invoice_instance(self):
+        """Lazy load the invoice to avoid circular imports"""
+        from finance.models import Invoice
+        return Invoice.objects.get(pk=self.invoice_id) if self.invoice_id else None
+
+    def create_invoice(self):
+        """Lazy import Invoice model when needed"""
+        from finance.models import Invoice
+        invoice = Invoice.objects.create(
+            customer=self.original_order.user,
+            digitizing_order=self.original_order,
+            total=self.price,
+            status='draft'
+        )
+        self.invoice = invoice
+        self.save()
 
 class FinalizedPatchOrder(models.Model):
     original_order = models.OneToOneField(
@@ -616,3 +643,27 @@ class FinalizedVectorOrder(models.Model):
 
     def __str__(self):
         return f"Finalized {self.order_number}"
+    
+
+
+
+class FinalizedDigitizingFiles(models.Model):
+    FILE_TYPES = [
+        ('DESIGN', 'Final Design File'),
+        ('STITCH', 'Stitch File'),
+        ('COLOR', 'Color Sheet'),
+        ('ADDITIONAL', 'Additional File'),
+    ]
+    
+    finalized_order = models.ForeignKey(
+        FinalizedDigitizingOrder,
+        on_delete=models.CASCADE,
+        related_name='final_files'
+    )
+    file = models.FileField(upload_to='finalized/digitizing/files/')
+    file_type = models.CharField(max_length=20, choices=FILE_TYPES)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    notes = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.get_file_type_display()} for {self.finalized_order.order_number}"
