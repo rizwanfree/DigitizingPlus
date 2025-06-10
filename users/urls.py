@@ -83,6 +83,11 @@ urlpatterns = [
     path('admin/dashboard/', adminviews.admin_dashboard, name='admin-dashboard'),
     path('admin/all-receivables/', adminviews.admin_all_receivables, name='admin-all-receivables'),
     path('admin/find-invoice/', adminviews.admin_invoice_list, name='admin-invoice-list'),
-    path('admin/inprocesss-orders/', adminviews.inprocess_orders, name='admin-inprocess-orders'),
+    #path('admin/inprocesss-orders/', adminviews.inprocess_orders, name='admin-inprocess-orders'),
+    path('admin/inprocess-digitizing-orders/', adminviews.inprocess_digitizing_orders, name='admin-inprocess-digitizing-orders'),
+    path('admin/inprocess-patch-orders/', adminviews.inprocess_patch_orders, name='admin-inprocess-patch-orders'),
+    path('admin/inprocess-vector-orders/', adminviews.inprocess_vector_orders, name='admin-inprocess-vector-orders'),
+
+
     path('admin/order-details/<int:pk>/<str:order_type>/', adminviews.admin_order_details, name='admin-order-details'),
 ]

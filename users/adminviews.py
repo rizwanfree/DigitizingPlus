@@ -41,32 +41,37 @@ def admin_dashboard(request):
     return render(request, 'users/admin/dashboard.html', context)
 
 @login_required
-@user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
-def inprocess_orders(request):
-    # Get all orders with user data and prefetch files
-    digitizing_orders = DigitizingOrder.objects.select_related('user').prefetch_related('files')
-    patch_orders = PatchOrder.objects.select_related('user').prefetch_related('files')
-    vector_orders = VectorOrder.objects.select_related('user').prefetch_related('files')
-
-    # Combine all orders with their types
-    all_orders = []
-    for order in digitizing_orders:
-        order.order_type = 'Digitizing'
-        all_orders.append(order)
-    for order in patch_orders:
-        order.order_type = 'Patch'
-        all_orders.append(order)
-    for order in vector_orders:
-        order.order_type = 'Vector'
-        all_orders.append(order)
-
-    # Sort by creation date (newest first)
-    all_orders.sort(key=lambda x: x.created_at, reverse=True)
-
+@user_passes_test(lambda u: u.is_superuser)
+def inprocess_digitizing_orders(request):
+    orders = DigitizingOrder.objects.select_related('user').prefetch_related('files').filter(status='Processing').order_by('-created_at')
+    
     context = {
-        'orders': all_orders,
+        'orders': orders,
+        'order_type': 'Digitizing',
     }
-    return render(request, 'users/admin/inprocess-orders.html', context)
+    return render(request, 'users/admin/inprocess-digitizing-orders.html', context)
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def inprocess_patch_orders(request):
+    orders = PatchOrder.objects.select_related('user').prefetch_related('files').filter(status='Processing').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Patch',
+    }
+    return render(request, 'users/admin/inprocess-patch-orders.html', context)
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def inprocess_vector_orders(request):
+    orders = VectorOrder.objects.select_related('user').prefetch_related('files').filter(status='Processing').order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'order_type': 'Vector',
+    }
+    return render(request, 'users/admin/inprocess-vector-orders.html', context)
 
 
 @login_required
