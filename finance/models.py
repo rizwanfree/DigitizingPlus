@@ -1,6 +1,10 @@
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
 from django.utils import timezone
 from django.db import models
 from django.conf import settings
+
+from users.utils import send_invoice_email
 
 
 
@@ -21,6 +25,7 @@ class Invoice(models.Model):
     date = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
 
     # Use string references to avoid circular imports
     digitizing_order = models.ForeignKey(
@@ -74,6 +79,14 @@ class Invoice(models.Model):
             self.total = self.vector_order.price
         else:
             self.total = 0
+
+@receiver(pre_save, sender=Invoice)
+def send_invoice_on_status_change(sender, instance, **kwargs):
+    """Send email when invoice status changes to 'sent'"""
+    if instance.pk:  # Only for existing invoices
+        original = Invoice.objects.get(pk=instance.pk)
+        if original.status != 'sent' and instance.status == 'sent':
+            send_invoice_email(instance)
 
 
 class Payment(models.Model):

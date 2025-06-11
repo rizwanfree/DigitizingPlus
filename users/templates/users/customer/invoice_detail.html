@@ -1,0 +1,125 @@
+{% extends "users/customer/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3 text-center">Invoice #{{ invoice.invoice_number }}</h2>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>From:</h5>
+                            <p>
+                                <strong>DigitizingPlus</strong><br>
+                                123 Business Street<br>
+                                California, USA<br>
+                                Phone: <br>
+                                Email: digitizingpluss@gmail.com
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h5>To:</h5>
+                            <p>
+                                <strong>{{ invoice.customer.get_full_name }}</strong><br>
+                                {{ invoice.customer.email }}<br>
+                                {% if invoice.customer.phone_number %}
+                                    Phone: {{ invoice.customer.phone_number }}<br>
+                                {% endif %}
+                                {{ invoice.customer.address }}<br>
+                                {{ invoice.customer.city }}, {{ invoice.customer.state }} {{ invoice.customer.zip_code }}<br>
+                                {{ invoice.customer.country }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Invoice Date:</strong> {{ invoice.date|date:"F d, Y" }}</p>
+                            <!-- Add due_date field to your model if needed -->
+                            <p><strong>Due Date:</strong> {{ invoice.date|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p><strong>Status:</strong> 
+                                <span class="badge 
+                                    {% if invoice.status == 'paid' %}bg-success
+                                    {% elif invoice.status == 'overdue' %}bg-danger
+                                    {% elif invoice.status == 'sent' %}bg-primary
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ invoice.get_status_display }}
+                                </span>
+                            </p>
+                            <p><strong>Order Type:</strong> 
+                                {{ invoice.order_type }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Order #</th>
+                                    {% comment %} <th>Quantity</th> {% endcomment %}
+                                    <th>Unit Price</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ invoice.order_type }} Order</td>
+                                    <td>{{invoice.order.order_number}}</td>
+                                    <td>${{ invoice.total|floatformat:2 }}</td>
+                                    <td>${{ invoice.total|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                    <td>${{ invoice.total|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td>${{ invoice.total|floatformat:2 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mb-3">
+                        <h5>Notes:</h5>
+                        <p class="text-muted">Thank you for your business. Please make payment by the due date.</p>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'users:invoice-list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Invoices
+                        </a>
+                        <div>
+                            {% if invoice.status != 'paid' %}
+                                <button class="btn btn-primary me-2" id="payNowBtn">
+                                    <i class="bi bi-credit-card"></i> Pay Now
+                                </button>
+                            {% endif %}
+                            <a href="#" class="btn btn-success" onclick="window.print()">
+                                <i class="bi bi-printer"></i> Print Invoice
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if invoice.status != 'paid' %}
+<script>
+document.getElementById('payNowBtn').addEventListener('click', function() {
+    // Implement your payment processing logic here
+    alert('Payment processing would be implemented here');
+    // This could redirect to a payment gateway or show a payment modal
+});
+</script>
+{% endif %}
+
+{% endblock %}

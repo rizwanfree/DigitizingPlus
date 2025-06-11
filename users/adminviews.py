@@ -141,7 +141,7 @@ def admin_order_details(request, pk, order_type):
     user = order.user
     finalized_order = None
     finalized_files = []
-    form = GivenInfoForm()
+    
 
     # Check if finalized version exists
     if hasattr(order, 'finalized_version'):
@@ -162,6 +162,7 @@ def admin_order_details(request, pk, order_type):
             'admin_notes': finalized_order.admin_notes,
             'completed_date': finalized_order.completed_date
         })
+    form = GivenInfoForm()
     final_form = FinalDigitizingForm(initial=final_form_initial)
 
     if request.method == 'POST':

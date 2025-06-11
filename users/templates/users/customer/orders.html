@@ -71,15 +71,6 @@
             {% csrf_token %}
             <input type="hidden" name="form_type" value="digitizing">
             {% crispy digitizing_form %}
-            <div class="form-actions">
-                <button type="submit" class="btn btn-maroon">
-                    {% if edit_mode %}Update{% else %}Place{% endif %} Order
-                </button>
-                <a href="{% if edit_mode %}{% url 'users:customer-order-details' type=type id=order_id %}{% else %}{% url 'users:customer-orders' %}{% endif %}" 
-                   class="btn btn-secondary">
-                    Cancel
-                </a>
-            </div>
         </form>
     </div>
 

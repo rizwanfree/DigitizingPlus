@@ -77,6 +77,11 @@ urlpatterns = [
     path('accept-quote/<str:quote_type>/<int:pk>/', views.accept_quote, name='accept-quote'),
 
 
+    path('invoices/', views.invoice_list, name='invoice-list'),
+    path('invoices/<int:invoice_id>/', views.invoice_detail, name='invoice-detail'),
+
+
+
 
 
     #Admin Panel

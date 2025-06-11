@@ -11,6 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote, VectorQuote_Files, DigitizingQuote_Files, PatchQuote_Files, DigitizingOrder_Files, VectorOrder_Files, PatchOrder_Files
+from finance.models import Invoice
 
 from .forms import FinalDigitizingForm, UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
@@ -170,7 +171,7 @@ def orders(request):
             
             # Prepare email context
             context = {
-                'order_number': order.id,
+                'order_number': order.order_number,
                 'customer_name': request.user.get_full_name(),
                 'order_details': order,
                 'order_type': form_type.capitalize()
@@ -191,7 +192,7 @@ def orders(request):
             email_customer.send()
             
             # 2. Send notification to admin
-            subject_admin = f"New {form_type} Order Received (#{order.id})"
+            subject_admin = f"New {form_type} Order Received (#{order.order_number})"
             html_content_admin = render_to_string('emails/admin_order_notification.html', context)
             text_content_admin = strip_tags(html_content_admin)
             
@@ -498,4 +499,60 @@ def accept_quote(request, quote_type, pk):
     except Exception as e:
         messages.error(request, f'Error accepting quote: {str(e)}')
         return redirect('quote-records')
-# Admin Panel Views
+
+
+
+# Invoices Views
+
+@login_required
+def invoice_list(request):
+    """
+    Show all invoices for the logged-in user with order type
+    """
+    invoices = Invoice.objects.filter(customer=request.user).order_by('-created_at')
+    
+    # Add order type to each invoice
+    for invoice in invoices:
+        if invoice.digitizing_order:
+            invoice.order_type = "Digitizing"
+            invoice.order = invoice.digitizing_order
+        elif invoice.patch_order:
+            invoice.order_type = "Patch"
+            invoice.order = invoice.patch_order
+        elif invoice.vector_order:
+            invoice.order_type = "Vector"
+            invoice.order = invoice.vector_order
+        else:
+            invoice.order_type = "Unknown"
+            
+    
+    return render(request, 'users/customer/invoice_list.html', {
+        'invoices': invoices
+    })
+
+
+@login_required
+def invoice_detail(request, invoice_id):
+    """
+    Simple view to show details of one invoice
+    """
+    # Get the invoice or show 404 error
+    invoice = get_object_or_404(Invoice, id=invoice_id, customer=request.user)
+    user = invoice.customer
+    if invoice.digitizing_order:
+        invoice.order_type = "Digitizing"
+        invoice.order = invoice.digitizing_order
+    elif invoice.patch_order:
+        invoice.order_type = "Patch"
+        invoice.order = invoice.patch_order
+    elif invoice.vector_order:
+        invoice.order_type = "Vector"
+        invoice.order = invoice.vector_order
+    else:
+            invoice.order_type = "Unknown"
+    
+    return render(request, 'users/customer/invoice_detail.html', {
+        'invoice': invoice,
+        'user': user
+    })
+
