@@ -17,7 +17,6 @@
                     <li class="list-group-item">Guarantee 100%</li>
                     <li class="list-group-item">6-12 hours turnaround time or Next Day</li>
                     <li class="list-group-item">All machine formats <br>DST, EMB, CND, PES, EXP</li>
-
                     <li class="list-group-item">Experienced designers for <br>Digitizing & Vector </li>
                 </ul>
             </div>
@@ -28,46 +27,76 @@
     </div>
     <div class="col-md-2 mt-3">
         <div class="card">
-            <h4 class="card-header text-center">Login</h4>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                <!-- Email input -->
-                <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="text" name="email" class="form-control" required />
-                    <label class="form-label" for="form1Example1">User ID</label>
-                </div>
-
-                <!-- Password input -->
-                <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="password" name="password" class="form-control" required />
-                    <label class="form-label" for="form1Example2">Password</label>
-                </div>
-
-                <!-- 2 column grid layout for inline styling -->
-                <div class="row mb-4">
-                    <div class="col d-flex justify-content-center">
-                    <!-- Checkbox -->
-                    <div class="form-check" style="font-size: 10px;">
-                        <input class="form-check-input" type="checkbox" value="" id="form1Example3" checked />
-                        <label class="form-check-label" for="form1Example3"> Remember me </label>
+            {% if user.is_authenticated %}
+                <!-- User Dashboard for logged-in users -->
+                <h4 class="card-header text-center">Welcome Back!</h4>
+                <div class="card-body text-center">
+                    <p class="mb-3">Hello, <strong>{{ user.first_name }}</strong></p>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'users:customer-orders' %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> New Order
+                        </a>
+                        <a href="{% url 'users:customer-orders-records' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-list-check"></i> My Orders
+                        </a>
+                        <a href="{% url 'users:customer-profile' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-person"></i> Profile
+                        </a>
+                        <a href="{% url 'users:logout' %}" class="btn btn-danger btn-sm mt-2">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
                     </div>
-                    </div>
-
-                    <div class="col" style="font-size: 12px;">
-                    <!-- Simple link -->
-                    <a href="{% url "users:password_reset" %}">Forgot password?</a>
-                    </div>
+                    
+                    {% if user.is_staff %}
+                        <hr>
+                        <a href="{% url 'admin:index' %}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-gear"></i> Admin Panel
+                        </a>
+                    {% endif %}
                 </div>
+            {% else %}
+                <!-- Login Form for guests -->
+                <h4 class="card-header text-center">Login</h4>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <!-- Email input -->
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input type="text" name="email" class="form-control" required />
+                            <label class="form-label" for="form1Example1">User ID</label>
+                        </div>
 
-                <!-- Submit button -->
-                <button data-mdb-ripple-init type="submit" class="btn btn-primary btn-block">Sign in</button>
-                <a href='{% url "users:register" %}' data-mdb-ripple-init type="submit" class="btn btn-primary btn-block">Register</a>
-                </form>
-            </div>
+                        <!-- Password input -->
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input type="password" name="password" class="form-control" required />
+                            <label class="form-label" for="form1Example2">Password</label>
+                        </div>
+
+                        <!-- 2 column grid layout for inline styling -->
+                        <div class="row mb-4">
+                            <div class="col d-flex justify-content-center">
+                            <!-- Checkbox -->
+                            <div class="form-check" style="font-size: 10px;">
+                                <input class="form-check-input" type="checkbox" value="" id="form1Example3" checked />
+                                <label class="form-check-label" for="form1Example3"> Remember me </label>
+                            </div>
+                            </div>
+
+                            <div class="col" style="font-size: 12px;">
+                            <!-- Simple link -->
+                            <a href="{% url 'users:password_reset' %}">Forgot password?</a>
+                            </div>
+                        </div>
+
+                        <!-- Submit button -->
+                        <button data-mdb-ripple-init type="submit" class="btn btn-primary btn-block">Sign in</button>
+                        <a href='{% url "users:register" %}' data-mdb-ripple-init type="submit" class="btn btn-primary btn-block">Register</a>
+                    </form>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
-
 
 {% endblock content %}

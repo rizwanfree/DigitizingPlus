@@ -1,0 +1,81 @@
+{% extends "users/admin/base.html" %}
+{% load static %}
+{% block content %}
+
+
+<script src="{% static 'libs/jquery-3.7.1.js' %}"></script>
+
+<script src="{% static 'libs/dataTables.js' %}"></script>
+<script src="{% static 'libs/dataTables.bootstrap5.js' %}"></script>
+<link rel="stylesheet" href="{% static 'libs/dataTables.bootstrap5.css' %}">
+
+
+<style>
+    .table-wrapper {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+    
+    }
+    .table-wrapper table tbody tr:hover {
+        background-color: #fff0f0;
+    }
+    .table-wrapper table tbody tr.active {
+        background-color: #ffdddd;
+    }
+    .table-wrapper table thead {
+        background-color: #800000;  /* maroon */
+        color: #ffffff;
+    }
+    .table-wrapper table thead th {
+        border-bottom: 2px solid #fff;
+    }
+</style>
+
+
+
+<h1 class="text-center">User List</h1>
+
+
+<div class="table-wrapper mt-4">
+<table id="userTable" class="table table-bordered table-hover w-100">
+    <thead class="">
+        <tr>
+            <th>User ID</th>
+            <th>Reg Date</th>
+            <th>Full Name</th>
+            <th>Country</th>
+            <th>Phone Number</th>
+            <th>Emails</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+        {% if not user.is_staff %}
+        <tr>
+            <td>{{ user.user_id }}</td>
+            <td>{{ user.created_at }}</td>
+            <td>{{ user.first_name }} {{ user.last_name }}</td>
+            <td>{{ user.country }}</td>
+            <td>{{ user.phone_number|default:'N/A' }}</td>
+            <td>{{ user.email }}{% if user.email2 %}, {{ user.email2 }}{% endif %}{% if user.email3 %}, {{ user.email3 }}{% endif %}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+
+
+
+<script>
+    $(document).ready(function(){
+       $('#userTable').DataTable();
+    });
+</script>
+{% endblock content %}
+

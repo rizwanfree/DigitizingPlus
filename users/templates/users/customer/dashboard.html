@@ -16,8 +16,91 @@
     </div>
 
     <!-- Your regular dashboard content -->
-    <div class="container">
-        <h2>Dashboard</h2>
-        <!-- Dashboard content here -->
+<div class="container">
+    <h1 class="text-center mb-5">Dashboard</h1>
+    
+    <div class="row justify-content-center mb-4">
+        <!-- First Row - 3 Links -->
+        <div class="col-md-4 text-center mb-4">
+            <a href="{% url 'users:customer-orders-records' %}" class="dashboard-icon-link">
+                <div class="dashboard-icon">
+                    <i class="bi bi-folder fs-1 text-primary"></i>
+                    <h5 class="mt-3">Order Records</h5>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-4 text-center mb-4">
+            <a href="{% url 'users:customer-quote-records' %}" class="dashboard-icon-link">
+                <div class="dashboard-icon">
+                    <i class="bi bi-file-text fs-1 text-success"></i>
+                    <h5 class="mt-3">Quote Records</h5>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-4 text-center mb-4">
+            <a href="{% url 'users:invoice-list' %}" class="dashboard-icon-link">
+                <div class="dashboard-icon">
+                    <i class="bi bi-coin fs-1 text-warning"></i>
+                    <h5 class="mt-3">Billing</h5>
+                </div>
+            </a>
+        </div>
     </div>
+    
+    <div class="row justify-content-center">
+        <!-- Second Row - 3 Links -->
+        <div class="col-md-4 text-center mb-4">
+            <a href="{% url 'users:customer-orders' %}" class="dashboard-icon-link">
+                <div class="dashboard-icon">
+                    <i class="bi bi-file-plus fs-1 text-info"></i>
+                    <h5 class="mt-3">Place Order</h5>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-4 text-center mb-4">
+            <a href="{% url 'users:customer-quotes' %}" class="dashboard-icon-link">
+                <div class="dashboard-icon">
+                    <i class="bi bi-file-earmark-plus fs-1 text-secondary"></i>
+                    <h5 class="mt-3">Place Quote</h5>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-4 text-center mb-4">
+            <a href="{% url 'users:customer-profile' %}" class="dashboard-icon-link">
+                <div class="dashboard-icon">
+                    <i class="bi bi-person fs-1 text-danger"></i>
+                    <h5 class="mt-3">Profile</h5>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-icon-link {
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.3s ease;
+    }
+    
+    .dashboard-icon-link:hover {
+        transform: scale(1.05);
+    }
+    
+    .dashboard-icon {
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: 100%;
+    }
+    
+    .dashboard-icon:hover {
+        background-color: #e9ecef;
+    }
+</style>
 {% endblock content %}

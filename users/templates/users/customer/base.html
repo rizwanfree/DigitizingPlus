@@ -48,7 +48,7 @@ input[type="number"] {
         <!-- Side Navigation -->
         <nav class="sidebar">
             <ul class="list-group list-group-flush">
-                <li class="list-group-item"><a class="nav-link" href="#"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
+                <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-dashboard" %}"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
                 <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-orders" %}"><i class="bi bi-file-plus"></i>Place Order</a></li>
                 <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-orders-records" %}"><i class="bi bi-folder"></i>Order Records</a></li>
                 <li class="list-group-item"><a class="nav-link" href="{% url "users:customer-quotes" %}"><i class="bi bi-file-plus"></i>Place Quote</a></li>

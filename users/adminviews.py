@@ -1,3 +1,4 @@
+from email.message import EmailMessage
 from django.utils import timezone
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -5,12 +6,15 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.template.loader import render_to_string
 
-from crafting.models import DigitizingOrder, FinalizedDigitizingFiles, FinalizedDigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
+from crafting.models import DigitizingOrder, FinalizedDigitizingFiles, FinalizedDigitizingOrder, FinalizedPatchFiles, FinalizedPatchOrder, FinalizedVectorFiles, FinalizedVectorOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
+from users.models import User
 
 from .forms import FinalDigitizingForm, UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
+from django.core.mail import EmailMultiAlternatives
 
 
 @login_required
@@ -121,15 +125,20 @@ def admin_order_details(request, pk, order_type):
         'digitizing': {
             'model': DigitizingOrder,
             'template': 'users/admin/digitizing-order-details.html',
-            'final_model': FinalizedDigitizingOrder
+            'final_model': FinalizedDigitizingOrder,
+            'file_relation': 'digitizing_files'  # matches related_name
         },
         'patch': {
             'model': PatchOrder,
-            'template': 'users/admin/patch-order-details.html'
+            'template': 'users/admin/patch-order-details.html',
+            'final_model': FinalizedPatchOrder,
+            'file_relation': 'patch_files'  # matches related_name
         },
         'vector': {
             'model': VectorOrder,
-            'template': 'users/admin/vector-order-details.html'
+            'template': 'users/admin/vector-order-details.html',
+            'final_model': FinalizedVectorOrder,
+            'file_relation': 'vector_files'  # matches related_name
         },
     }
 
@@ -142,11 +151,11 @@ def admin_order_details(request, pk, order_type):
     finalized_order = None
     finalized_files = []
     
-
     # Check if finalized version exists
     if hasattr(order, 'finalized_version'):
         finalized_order = order.finalized_version
-        finalized_files = finalized_order.final_files.all()
+        # Use the correct related_name from our mapping
+        finalized_files = getattr(finalized_order, order_config['file_relation']).all()
 
     # Initialize final_form outside of POST handling
     final_form_initial = {
@@ -182,7 +191,7 @@ def admin_order_details(request, pk, order_type):
             final_form = FinalDigitizingForm(request.POST)
             if final_form.is_valid():
                 # Create or update finalized order
-                finalized_order, created = FinalizedDigitizingOrder.objects.update_or_create(
+                finalized_order, created = order_config['final_model'].objects.update_or_create(
                     original_order=order,
                     defaults={
                         **final_form.cleaned_data,
@@ -201,19 +210,66 @@ def admin_order_details(request, pk, order_type):
                 
                 for field_name, file_type in file_mapping.items():
                     if field_name in request.FILES:
-                        FinalizedDigitizingFiles.objects.create(
-                            finalized_order=finalized_order,
-                            file=request.FILES[field_name],
-                            file_type=file_type
-                        )
+                        # Use the correct file model based on order type
+                        if order_type == 'digitizing':
+                            FinalizedDigitizingFiles.objects.create(
+                                finalized_order=finalized_order,
+                                file=request.FILES[field_name],
+                                file_type=file_type
+                            )
+                        elif order_type == 'patch':
+                            FinalizedPatchFiles.objects.create(
+                                finalized_order=finalized_order,
+                                file=request.FILES[field_name],
+                                file_type=file_type
+                            )
+                        elif order_type == 'vector':
+                            FinalizedVectorFiles.objects.create(
+                                finalized_order=finalized_order,
+                                file=request.FILES[field_name],
+                                file_type=file_type
+                            )
 
                 # Create invoice if this is a new finalized order
                 if created and not finalized_order.invoice:
                     finalized_order.create_invoice()
 
+                # Send completion email if this is a new finalized order
+                if created:
+                    files = getattr(finalized_order, order_config['file_relation']).all()
+                    send_to_emails = request.POST.getlist('send_email_to')
+                    print(send_to_emails)
+                    
+                    if send_to_emails and files.exists():
+                        # rendered HTML version
+                        html_content = render_to_string('emails/order_completed.html', {
+                            'order': order,
+                            'user': user,
+                            'order_type': order_type,
+                            'finalized_order': finalized_order,
+                            'finalized_files': files,
+                            'site_url': request.build_absolute_uri('/')
+                        })
+                        
+                        # fallback plain text
+                        text_content = f"Your {order_type} order #{order.order_number} is ready. Please check your account for details."
+                        
+                        email = EmailMultiAlternatives(
+                            subject=f"Your {order_type} order #{order.order_number} is ready",
+                            body=text_content,
+                            from_email='digitizingpluss@gmail.com',
+                            to=send_to_emails,
+                        )
+                        email.attach_alternative(html_content, "text/html")
+
+                        for file in files:
+                            email.attach_file(file.file.path)
+                                                
+                        email.send()
+
                 order.status = 'Delivered'
                 order.save()
-                messages.success(request, "Order finalized and invoice created successfully")
+                messages.success(request, "Order finalized and email sent successfully")
                 return redirect('users:admin-all-digitizing-orders')
 
     # Initialize form (moved after POST handling to avoid overwriting POST data)
@@ -222,7 +278,9 @@ def admin_order_details(request, pk, order_type):
         'po_number': order.po_number,
         'height': order.height,
         'width': order.width,
-        'colors': order.colors
+        'colors': order.colors,
+        'placement': order.logo_placement,
+        'fabric_type': order.fabric_type
     })
 
     context = {
@@ -344,3 +402,15 @@ def inprocess_patch_quotes(request):
         'order_type': 'Patch',
     }
     return render(request, 'users/admin/inprocess-patch-quotes.html', context)
+
+
+
+
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def user_list(request):
+    users = User.objects.all()
+    return render(request, "users/admin/user-list.html", {"users": users})

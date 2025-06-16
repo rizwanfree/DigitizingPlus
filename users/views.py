@@ -62,7 +62,7 @@ def register(request):
             
             login(request, user)
             print(user, 'logged-in')
-            return redirect('web:index')
+            return redirect('users:customer-dashboard')
         else:
             print("Form errors:", form.errors)  # Debug form errors
     else:
@@ -173,7 +173,7 @@ def orders(request):
             context = {
                 'order_number': order.order_number,
                 'customer_name': request.user.get_full_name(),
-                'order_details': order,
+                'order': order,
                 'order_type': form_type.capitalize()
             }
             

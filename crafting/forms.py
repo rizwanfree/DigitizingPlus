@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from .models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingOrder_Files, PatchOrder_Files, VectorOrder_Files, DigitizingQuote, PatchQuote, VectorQuote, DigitizingQuote_Files, VectorQuote_Files, PatchQuote_Files
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Reset, HTML
+from django.forms.widgets import DateInput
 
 class BaseOrderForm:
     """Base form class with common functionality for all order forms"""
@@ -107,6 +108,8 @@ class DigitizingOrderForm(BaseOrderForm, forms.ModelForm):
 
         return order
 
+
+
 class PatchOrderForm(BaseOrderForm, forms.ModelForm):
     file1 = forms.FileField(label='Upload Files (2 MB Max Size)', required=False)
     file2 = forms.FileField(label='', required=False)    
@@ -156,6 +159,8 @@ class PatchOrderForm(BaseOrderForm, forms.ModelForm):
                 Column(Reset('reset', 'Reset', css_class='btn btn-primary w-100'), css_class='col-md-2 text-end'),
             ),
         )
+        # Set the date input type to 'date' for HTML5 date picker
+        self.fields['date'].widget = DateInput(attrs={'type': 'date'})
     
     def clean_file1(self):
         file1 = self.cleaned_data.get('file1')
@@ -183,7 +188,8 @@ class PatchOrderForm(BaseOrderForm, forms.ModelForm):
         }
         widgets = {
             'instructions': forms.Textarea(attrs={'rows': 3}),
-            'shipping_address': forms.Textarea(attrs={'rows': 3})
+            'shipping_address': forms.Textarea(attrs={'rows': 3}),
+            'date': DateInput(attrs={'type': 'date'}),  # This adds HTML5 date picker
         }
 
     def save(self, commit=True):

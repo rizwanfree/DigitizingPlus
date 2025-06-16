@@ -598,7 +598,7 @@ class FinalizedPatchOrder(models.Model):
     instructions = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
     price = models.DecimalField(decimal_places=2, max_digits=10)
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     
     # Additional finalized-specific fields
     admin_notes = models.TextField(null=True, blank=True)
@@ -634,7 +634,7 @@ class FinalizedVectorOrder(models.Model):
     instructions = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
     price = models.DecimalField(decimal_places=2, max_digits=10)
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     
     # Additional finalized-specific fields
     admin_notes = models.TextField(null=True, blank=True)
@@ -658,9 +658,55 @@ class FinalizedDigitizingFiles(models.Model):
     finalized_order = models.ForeignKey(
         FinalizedDigitizingOrder,
         on_delete=models.CASCADE,
-        related_name='final_files'
+        related_name='digitizing_files'
     )
     file = models.FileField(upload_to='finalized/digitizing/files/')
+    file_type = models.CharField(max_length=20, choices=FILE_TYPES)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    notes = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.get_file_type_display()} for {self.finalized_order.order_number}"
+    
+
+class FinalizedPatchFiles(models.Model):
+    FILE_TYPES = [
+        ('DESIGN', 'Final Design File'),
+        ('STITCH', 'Stitch File'),
+        ('COLOR', 'Color Sheet'),
+        ('PROOF', 'Production Proof'),
+        ('ADDITIONAL', 'Additional File'),
+    ]
+    
+    finalized_order = models.ForeignKey(
+        FinalizedPatchOrder,
+        on_delete=models.CASCADE,
+        related_name='patch_files'
+    )
+    file = models.FileField(upload_to='finalized/patch/files/')
+    file_type = models.CharField(max_length=20, choices=FILE_TYPES)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    notes = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.get_file_type_display()} for {self.finalized_order.order_number}"
+    
+
+class FinalizedVectorFiles(models.Model):
+    FILE_TYPES = [
+        ('VECTOR', 'Final Vector File'),
+        ('SOURCE', 'Source File'),
+        ('PROOF', 'Approval Proof'),
+        ('REVISION', 'Revision File'),
+        ('ADDITIONAL', 'Additional File'),
+    ]
+    
+    finalized_order = models.ForeignKey(
+        FinalizedVectorOrder,
+        on_delete=models.CASCADE,
+        related_name='vector_files'
+    )
+    file = models.FileField(upload_to='finalized/vector/files/')
     file_type = models.CharField(max_length=20, choices=FILE_TYPES)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     notes = models.CharField(max_length=255, blank=True, null=True)

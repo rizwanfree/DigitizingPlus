@@ -2,9 +2,60 @@
 <html>
 <head>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; }
-        .header { color: #2c3e50; border-bottom: 2px solid #eee; }
-        .order-info { background: #f9f9f9; padding: 15px; margin: 20px 0; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            line-height: 1.6; 
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header { 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 10px;
+        }
+        .order-info { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .order-table th {
+            background-color: #3498db;
+            color: white;
+            text-align: left;
+            padding: 10px;
+        }
+        .order-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .order-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            color: #777;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -16,19 +67,144 @@
     <p>We're processing your order and will notify you when it's ready (typically within 2-12 hours).</p>
     
     <div class="order-info">
-        <h3>Order Details</h3>
-        <p><strong>Order Type:</strong> {{ order_type }}</p>
-        <p><strong>Order Number:</strong> {{ order.order_number }}</p>
-        <p><strong>Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+        <h3 style="margin-top: 0; color: #2c3e50;">Order Summary</h3>
+        
+        <table class="order-table">
+            <tr>
+                <th>Order Information</th>
+                <th>Details</th>
+            </tr>
+            <tr>
+                <td><strong>Order Type</strong></td>
+                <td>{{ order_type }}</td>
+            </tr>
+            <tr>
+                <td><strong>Order Number</strong></td>
+                <td>{{ order.order_number }}</td>
+            </tr>
+            <tr>
+                <td><strong>Date</strong></td>
+                <td>{{ order.created_at|date:"F j, Y" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Status</strong></td>
+                <td>Processing</td>
+            </tr>
+            <tr>
+                <td><strong>Design Name</strong></td>
+                <td>{{ order.name }}</td>
+            </tr>
+            
+            {% if order_type == 'Digitizing' %}
+                <!-- Digitizing Order Specific Fields -->
+                {% if order.colors %}
+                <tr>
+                    <td><strong>Colors</strong></td>
+                    <td>{{ order.colors }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td><strong>P/O Number</strong></td>
+                    <td>{{ order.po_number|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>File Format</strong></td>
+                    <td>{{ order.file_format|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Fabric Type</strong></td>
+                    <td>{{ order.fabric_type|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Logo Placement</strong></td>
+                    <td>{{ order.logo_placement|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Urgent</strong></td>
+                    <td>{% if order.is_urgent %}YES{% else %}NO{% endif %}</td>
+                </tr>
+            
+            {% elif order_type == 'Patch' %}
+                <!-- Patch Order Specific Fields -->
+                <tr>
+                    <td><strong>P/O Number</strong></td>
+                    <td>{{ order.po_number|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Dimensions</strong></td>
+                    <td>{{ order.height }}" x {{ order.width }}"</td>
+                </tr>
+                <tr>
+                    <td><strong>Patch Type</strong></td>
+                    <td>{{ order.patch_type|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Backing Type</strong></td>
+                    <td>{{ order.backing_type|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Border Type</strong></td>
+                    <td>{{ order.border_type|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Embroidery Fill</strong></td>
+                    <td>{{ order.embroidery_fill|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Quantity</strong></td>
+                    <td>{{ order.quantity }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Color Details</strong></td>
+                    <td>{{ order.color_details|default:"-" }}</td>
+                </tr>
+            
+            {% elif order_type == 'Vector' %}
+                <!-- Vector Order Specific Fields -->
+                <tr>
+                    <td><strong>P/O Number</strong></td>
+                    <td>{{ order.po_number|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Required Format</strong></td>
+                    <td>{{ order.required_format }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Color Types</strong></td>
+                    <td>{{ order.color_types }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Colors</strong></td>
+                    <td>{{ order.colors }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Other Details</strong></td>
+                    <td>{{ order.others|default:"-" }}</td>
+                </tr>
+            {% endif %}
+            
+            <tr>
+                <td><strong>Estimated Completion</strong></td>
+                <td>2-12 hours</td>
+            </tr>
+            
+            {% comment %} {% if order.instructions %}
+            <tr>
+                <td><strong>Special Instructions</strong></td>
+                <td>{{ order.instructions }}</td>
+            </tr>
+            {% endif %} {% endcomment %}
+        </table>
     </div>
     
-    <p>You can check your order status by logging into your account at any time.</p>
+    <p>You can check your order status anytime by logging into your account.</p>
     
     <p>Thank you for choosing Digitizing Plus!</p>
     
     <div class="footer">
         <p><strong>Digitizing Plus Team</strong><br>
-        <a href="mailto:digitizingplus@gmail.com">digitizingplus@gmail.com</a></p>
+        <a href="mailto:digitizingplus@gmail.com" style="color: #3498db;">digitizingplus@gmail.com</a></p>
+        <p>Need help? Reply to this email or contact us at the address above.</p>
     </div>
 </body>
 </html>

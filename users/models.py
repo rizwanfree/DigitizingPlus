@@ -57,6 +57,7 @@ class User(AbstractUser):
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=50)
     zip_code = models.CharField(max_length=15)
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     country = models.CharField(
         max_length=15,
         choices=COUNTRY_CHOICES,
