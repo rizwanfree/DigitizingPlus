@@ -1,0 +1,83 @@
+<!-- templates/users/admin/customer_unpaid_invoices.html -->
+{% extends "users/admin/base.html" %}
+{% block content %}
+
+<div class="container my-5">
+  <div class="card shadow-sm">
+    <div class="card-header text-white" style="background-color: maroon;">
+      <h5 class="mb-0">Unpaid Invoices for {{ customer.first_name }} {{ customer.last_name }}</h5>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="table-maroon">
+              <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for invoice in unpaid_invoices %}
+              <tr>
+                <td><input type="checkbox" name="invoices" value="{{ invoice.id }}"></td>
+                <td>{{ invoice.invoice_number }}</td>
+                <td>{{ invoice.date|date:"M d, Y" }}</td>
+                <td>{{ invoice.status|capfirst }}</td>
+                <td>${{ invoice.total|floatformat:2 }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center">No unpaid invoices found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <p class="mt-3 fw-bold">Total Selected: $<span id="total-amount">0.00</span></p>
+
+        </div>
+
+        <button type="submit" class="btn text-white" style="background-color: maroon;">Send Selected Invoices</button>
+        <a href="{% url 'users:admin-all-receivables' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('select-all').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="invoices"]');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+  });
+</script>
+
+<script>
+  const checkboxes = document.querySelectorAll('input[name="invoices"]');
+  const totalDisplay = document.getElementById('total-amount');
+  const invoiceTotals = {};
+
+  {% for invoice in unpaid_invoices %}
+    invoiceTotals[{{ invoice.id }}] = {{ invoice.total|floatformat:2 }};
+  {% endfor %}
+
+  function updateTotal() {
+    let total = 0;
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        total += invoiceTotals[cb.value] || 0;
+      }
+    });
+    totalDisplay.textContent = total.toFixed(2);
+  }
+
+  checkboxes.forEach(cb => cb.addEventListener('change', updateTotal));
+  document.getElementById('select-all').addEventListener('change', updateTotal);
+</script>
+
+
+{% endblock %}

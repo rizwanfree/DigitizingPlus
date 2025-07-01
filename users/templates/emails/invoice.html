@@ -1,0 +1,52 @@
+<!-- templates/email/send-invoices.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: Arial, sans-serif;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      th {
+        background-color: #800000;
+        color: white;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Dear {{ customer.first_name }},</p>
+
+    <p>Please find the following unpaid invoices from Digitizing Plus:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in invoices %}
+        <tr>
+          <td>{{ invoice.invoice_number }}</td>
+          <td>{{ invoice.date|date:"M d, Y" }}</td>
+          <td>{{ invoice.status|capfirst }}</td>
+          <td>${{ invoice.total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h3>Total Due: ${{ total_amount|floatformat:2 }}</h3>
+
+    <p>If you have any questions, feel free to reach out.</p>
+    <p>Best regards,<br><strong>Digitizing Plus Billing Team</strong></p>
+  </body>
+</html>

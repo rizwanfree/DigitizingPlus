@@ -98,12 +98,13 @@ class Payment(models.Model):
 
     invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField(auto_now_add=True)
+    payment_date = models.DateField(auto_now_add=True)
     method = models.CharField(max_length=20, choices=METHOD_CHOICES)
+    note = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.invoice.update_status()
+        
 
     def __str__(self):
         return f"Payment #{self.id} - ${self.amount}"

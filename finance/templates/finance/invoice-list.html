@@ -3,17 +3,13 @@
 
 {% block content %}
 
-<script src="{% static "libs/jquery-3.7.1.js" %}"></script>
 
-<!-- Include DataTables CSS -->
-<link rel="stylesheet" type="text/css" href="{% static "libs/dataTables.bootstrap5.css" %}">
-<script src="{% static "libs/dataTables.bootstrap5.js" %}"></script>
 
-<script src="{% static "libs/dataTables.js" %}"></script>
+
     <!-- Custom CSS for Inactive Tabs -->
     <h1 class="text-center mb-3">Invoice List</h1>
 
-    <div class="mt-5">
+    <div class="container-fluid mt-5">
         <!-- Invoice Table -->
         <table id="invoiceTable" class="table table-striped" style="width:100%">
             <thead>
@@ -28,18 +24,29 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="text-center align-middle"></td>
-                    <td class="align-middle"></td>
-                    <td class="align-middle"> </td>
-                    <td class="align-middle"></td>
-                    <td class="align-middle"></td>
-                    <td class="align-middle"></td>
-                    <td class="align-middle"><a class="btn btn-secondary w-100" href="">Details</a></td>
-                </tr>
-                {% comment %} {% for order in orders %}
-
-                {% endfor %} {% endcomment %}
+                {% for invoice in invoices %}
+                    <tr>
+                        <td class="text-center">{{forloop.counter}}</td>
+                        <td class="text-center">{{ invoice.invoice_number }}</td>
+                        <td class="text-center">{{ invoice.date }}</td>
+                        <td class="text-center">{{ invoice.customer.first_name }} {{ invoice.customer.last_name }}</td>
+                        <td class="text-center">
+                            {% if invoice.digitizing_order %}
+                                Digitizing
+                            {% endif %}
+                            {% if invoice.vector_order %}
+                                Vector
+                            {% endif %}
+                            {% if invoice.patch_order %}
+                                Patch
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            {{ invoice.status|capfirst }}
+                        </td>
+                        <td class="align-middle"><a class="btn btn-secondary w-100" href="{% url "users:admin-invoice-detail" invoice.id %}">Details</a></td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
 </div>

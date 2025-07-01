@@ -1,0 +1,107 @@
+{% extends "users/admin/base.html" %}
+{% block content %}
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-header text-white py-2 px-3" style="background-color: maroon;">
+      <h6 class="mb-0 text-center">
+        {% if card %}Update{% else %}Add{% endif %} Credit Card for {{ user.first_name }} {{ user.last_name }}
+      </h6>
+    </div>
+    <div class="card-body p-3">
+      <form method="POST" autocomplete="off">
+        {% csrf_token %}
+
+        <!-- Card Info -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="name_on_card" class="form-label">Name on Card</label>
+            <input type="text" id="name_on_card" name="name_on_card" class="form-control" required value="{{ card.name_on_card|default_if_none:'' }}">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="card_number" class="form-label">Card Number</label>
+            <input type="text" id="card_number" name="card_number" class="form-control" maxlength="20" required value="{{ card.card_number|default_if_none:'' }}">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="expiry_month" class="form-label">Expiry Month</label>
+            <input type="number" id="expiry_month" name="expiry_month" class="form-control" min="1" max="12" required value="{{ card.expiry_month|default_if_none:'' }}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="expiry_year" class="form-label">Expiry Year</label>
+            <input type="number" id="expiry_year" name="expiry_year" class="form-control" required value="{{ card.expiry_year|default_if_none:'' }}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="verification_code" class="form-label">CVV</label>
+            <input type="text" id="verification_code" name="verification_code" class="form-control" maxlength="10" required value="{{ card.verification_code|default_if_none:'' }}">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="card_type" class="form-label">Card Type</label>
+          <select id="card_type" class="form-select" name="card_type" required>
+            <option value="">Select Type</option>
+            <option value="visa" {% if card.card_type == 'visa' %}selected{% endif %}>Visa</option>
+            <option value="mastercard" {% if card.card_type == 'mastercard' %}selected{% endif %}>MasterCard</option>
+            <option value="amex" {% if card.card_type == 'amex' %}selected{% endif %}>American Express</option>
+            <option value="discover" {% if card.card_type == 'discover' %}selected{% endif %}>Discover</option>
+          </select>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" required value="{{ card.email|default_if_none:'' }}">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="phone_number" class="form-label">Phone Number</label>
+            <input type="text" id="phone_number" name="phone_number" class="form-control" required value="{{ card.phone_number|default_if_none:'' }}">
+          </div>
+        </div>
+
+        <!-- Address Info -->
+        <div class="mb-3">
+          <label for="street_address" class="form-label">Street Address</label>
+          <input type="text" id="street_address" name="street_address" class="form-control" required value="{{ card.street_address|default_if_none:'' }}">
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="city" class="form-label">City</label>
+            <input type="text" id="city" name="city" class="form-control" required value="{{ card.city|default_if_none:'' }}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="state" class="form-label">State</label>
+            <input type="text" id="state" name="state" class="form-control" required value="{{ card.state|default_if_none:'' }}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="zip_code" class="form-label">Zip Code</label>
+            <input type="text" id="zip_code" name="zip_code" class="form-control" required value="{{ card.zip_code|default_if_none:'' }}">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="country" class="form-label">Country</label>
+          <select id="country" class="form-select" name="country" required>
+            <option value="">Select Country</option>
+            <option value="USA" {% if card.country == 'USA' %}selected{% endif %}>United States</option>
+            <option value="UK" {% if card.country == 'UK' %}selected{% endif %}>United Kingdom</option>
+            <option value="Australia" {% if card.country == 'Australia' %}selected{% endif %}>Australia</option>
+            <option value="France" {% if card.country == 'France' %}selected{% endif %}>France</option>
+            <option value="Germany" {% if card.country == 'Germany' %}selected{% endif %}>Germany</option>
+          </select>
+        </div>
+
+        <div class="d-flex justify-content-start">
+          <button type="submit" class="btn btn-sm text-white" style="background-color: maroon;">
+            {% if card %}Update{% else %}Add{% endif %} Card
+          </button>
+          <a href="{% url 'users:admin-all-receivables' %}" class="btn btn-sm btn-outline-secondary ms-2">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

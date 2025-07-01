@@ -88,7 +88,13 @@ urlpatterns = [
     path('admin/dashboard/', adminviews.admin_dashboard, name='admin-dashboard'),
     path('admin/all-receivables/', adminviews.admin_all_receivables, name='admin-all-receivables'),
     path('admin/user-list/', adminviews.user_list, name='admin-user-list'),
+    path('admin/user-details/<int:pk>/', adminviews.user_detail, name='admin-user-detail'),
+    path('admin/add-credit-card/<int:pk>/', adminviews.add_credit_card, name='admin-add-card'),
+
+
     path('admin/find-invoice/', adminviews.admin_invoice_list, name='admin-invoice-list'),
+    path('admin/invoices/<int:invoice_id>/detail/', adminviews.invoice_detail, name='admin-invoice-detail'),
+
     #path('admin/inprocesss-orders/', adminviews.inprocess_orders, name='admin-inprocess-orders'),
     path('admin/inprocess-digitizing-orders/', adminviews.inprocess_digitizing_orders, name='admin-inprocess-digitizing-orders'),
     path('admin/inprocess-patch-orders/', adminviews.inprocess_patch_orders, name='admin-inprocess-patch-orders'),
@@ -106,4 +112,16 @@ urlpatterns = [
 
     path('admin/order-details/<int:pk>/<str:order_type>/', adminviews.admin_order_details, name='admin-order-details'),
     path('orders/<int:pk>/update-admin-instructions/', adminviews.update_admin_instructions, name='update_admin_instructions'),
+
+
+
+    path('admin/invoices/paid/', adminviews.paid_invoices, name='admin-paid-invoices'),
+    path('admin/invoices/unpaid/', adminviews.unpaid_invoices, name='admin-unpaid-invoices'),
+
+    
+    path('admin/customer/<int:user_id>/unpaid-invoices/', adminviews.customer_unpaid_invoices, name='admin-customer-unpaid-invoices'),
+    path('admin/invoice/<int:invoice_id>/pay/', adminviews.manual_payment, name='admin-manual-payment'),
+    path('admin/invoice/<int:invoice_id>/pay/<int:payment_id>/', adminviews.manual_payment, name='admin-edit-payment'),
+
+
 ]

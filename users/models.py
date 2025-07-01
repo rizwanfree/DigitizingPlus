@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
@@ -90,3 +91,48 @@ class User(AbstractUser):
     def get_all_emails(self):
         """Return all non-empty email addresses associated with the user"""
         return [email for email in [self.email, self.email2, self.email3] if email]
+    
+
+
+class CreditCard(models.Model):
+    CARD_TYPE_CHOICES = [
+        ('visa', 'Visa'),
+        ('mastercard', 'MasterCard'),
+        ('amex', 'American Express'),
+        ('discover', 'Discover'),
+    ]
+
+    COUNTRY_CHOICES = [
+        ('USA', 'United States'),
+        ('UK', 'United Kingdom'),
+        ('Australia', 'Australia'),
+        ('France', 'France'),
+        ('Germany', 'Germany'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='credit_cards')
+    name_on_card = models.CharField(max_length=100)
+    card_number = models.CharField(max_length=20)
+    expiry_month = models.IntegerField()
+    expiry_year = models.IntegerField()
+    card_type = models.CharField(max_length=20, choices=CARD_TYPE_CHOICES)
+    verification_code = models.CharField(max_length=10)  # Usually CVV/CVC
+
+    # Contact Info
+    phone_number = models.CharField(max_length=50)
+    email = models.EmailField()
+
+    # Billing Address
+    country = models.CharField(max_length=20, choices=COUNTRY_CHOICES)
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    zip_code = models.CharField(max_length=20)
+
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def masked_number(self):
+        return f"**** **** **** {self.card_number[-4:]}"
+
+    def __str__(self):
+        return f"{self.user.user_id} - {self.card_type.upper()} ({self.masked_number()})"

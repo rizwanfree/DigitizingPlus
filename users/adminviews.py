@@ -1,6 +1,8 @@
+from datetime import date
 from email.message import EmailMessage
 from django.utils import timezone
 from django.http import Http404, JsonResponse
+from django.db.models import Sum, Max
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.contrib import messages
@@ -9,7 +11,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.loader import render_to_string
 
 from crafting.models import DigitizingOrder, FinalizedDigitizingFiles, FinalizedDigitizingOrder, FinalizedPatchFiles, FinalizedPatchOrder, FinalizedVectorFiles, FinalizedVectorOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
-from users.models import User
+from finance.models import Invoice, Payment
+from users.models import CreditCard, User
 
 from .forms import FinalDigitizingForm, UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
@@ -355,15 +358,45 @@ def finalize_order(request, pk):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_all_receivables(request):
+    users = User.objects.filter(is_superuser=False)
 
-    return render(request, 'users/admin/all-receivables.html')
+    data = []
+
+    for user in users:
+        invoices = Invoice.objects.filter(customer=user)
+        unpaid_total = invoices.exclude(status='paid').aggregate(total_due=Sum('total'))['total_due'] or 0
+        last_invoice = invoices.order_by('-date').first()
+        last_payment = Payment.objects.filter(invoice__customer=user).order_by('-payment_date').first()
+
+        data.append({
+            'user': user,
+            'dues': unpaid_total,
+            'last_invoice_date': last_invoice.date if last_invoice else None,
+            'last_invoice_status': last_invoice.status if last_invoice else 'N/A',
+            'last_status_date': last_invoice.date if last_invoice else None,  # Assuming created_at == status change
+            'last_payment_date': last_payment.payment_date if last_payment else None,
+        })
+
+    return render(request, 'users/admin/all-receivables.html', {"data": data})
 
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_invoice_list(request):
+    invoices = Invoice.objects.all()
+    context = {
+        'invoices': invoices
+    }
+    return render(request, 'finance/invoice-list.html', context)
 
-    return render(request, 'finance/invoice-list.html')
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def invoice_detail(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    return render(request, 'finance/invoice-detail.html', {
+        'invoice': invoice
+    })
 
 
 # QUOTES
@@ -414,3 +447,184 @@ def inprocess_patch_quotes(request):
 def user_list(request):
     users = User.objects.all()
     return render(request, "users/admin/user-list.html", {"users": users})
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def user_detail(request, pk):
+    user = get_object_or_404(User, pk=pk)
+
+    if request.method == "POST":
+        user.user_id = request.POST.get("user_id", user.user_id)
+        user.email = request.POST.get("email", user.email)
+        user.email2 = request.POST.get("email2", "")
+        user.email3 = request.POST.get("email3", "")
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        user.phone_number = request.POST.get("phone_number", "")
+        user.address = request.POST.get("address", "")
+        user.city = request.POST.get("city", "")
+        user.state = request.POST.get("state", "")
+        user.zip_code = request.POST.get("zip_code", "")
+
+        try:
+            user.save()
+            messages.success(request, "User updated successfully.")
+        except Exception as e:
+            messages.error(request, f"Error updating user: {e}")
+
+        return redirect("users:admin-user-detail", pk=pk)  # or redirect to user list
+
+    return render(request, "users/admin/user-form.html", {"user": user})
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def add_credit_card(request, pk):
+    user = get_object_or_404(User, pk=pk)
+
+    # Try to fetch existing card if any
+    existing_card = CreditCard.objects.filter(user=user).first()
+
+    if request.method == 'POST':
+        card_data = {
+            'name_on_card': request.POST.get('name_on_card'),
+            'card_number': request.POST.get('card_number'),
+            'expiry_month': request.POST.get('expiry_month'),
+            'expiry_year': request.POST.get('expiry_year'),
+            'card_type': request.POST.get('card_type'),
+            'verification_code': request.POST.get('verification_code'),
+            'phone_number': request.POST.get('phone_number'),
+            'email': request.POST.get('email'),
+            'country': request.POST.get('country'),
+            'street_address': request.POST.get('street_address'),
+            'city': request.POST.get('city'),
+            'state': request.POST.get('state'),
+            'zip_code': request.POST.get('zip_code'),
+        }
+
+        if existing_card:
+            # Update existing card
+            for key, value in card_data.items():
+                setattr(existing_card, key, value)
+            existing_card.save()
+            messages.success(request, "Credit card updated successfully.")
+        else:
+            # Create new card
+            CreditCard.objects.create(user=user, **card_data)
+            messages.success(request, "Credit card added successfully.")
+
+        return redirect('users:admin-all-receivables')
+
+    return render(request, 'users/admin/add-credit-card.html', {
+        'user': user,
+        'card': existing_card
+    })
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def paid_invoices(request):
+    invoices = Invoice.objects.filter(status='paid')
+    payments = Payment.objects.all()
+    return render(request, 'users/admin/paid-invoices.html', {
+        'invoices': invoices,
+        'title': 'Paid Invoices',
+        'payments': payments
+    })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def unpaid_invoices(request):
+    invoices = Invoice.objects.filter(status__in=['draft', 'sent', 'overdue'])
+    return render(request, 'users/admin/paid-invoices.html', {  # same template reused
+        'invoices': invoices,
+        'title': 'Unpaid Invoices'
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def customer_unpaid_invoices(request, user_id):
+    customer = get_object_or_404(User, pk=user_id)
+    unpaid_invoices = Invoice.objects.filter(customer=customer, status__in=["draft", "sent"])
+
+    if request.method == "POST":
+        invoice_ids = request.POST.getlist("invoices")
+        selected_invoices = Invoice.objects.filter(id__in=invoice_ids)
+
+        total_amount = sum(inv.total for inv in selected_invoices)
+
+        if selected_invoices:
+            subject = "Unpaid Invoices from Digitizing Plus"
+            from_email = "digitizingpluss@gmail.com"
+            to_email = [customer.email]
+
+            html_content = render_to_string("emails/invoice.html", {
+                "customer": customer,
+                "invoices": selected_invoices,
+                "total_amount": total_amount,
+            })
+
+            msg = EmailMultiAlternatives(subject, "", from_email, to_email)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            selected_invoices.update(status="sent")
+            messages.success(request, "Selected invoices emailed to customer.")
+        else:
+            messages.warning(request, "No invoices selected.")
+
+        return redirect("users:admin-all-receivables")
+
+    return render(request, "users/admin/send-invoices.html", {
+        "customer": customer,
+        "unpaid_invoices": unpaid_invoices,
+    })
+
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def manual_payment(request, invoice_id, payment_id=None):
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+
+    payment = None
+    if payment_id:
+        payment = get_object_or_404(Payment, pk=payment_id, invoice=invoice)
+
+    if request.method == "POST":
+        amount = request.POST.get("amount")
+        method = request.POST.get("method")
+        payment_date = request.POST.get("payment_date")
+        note = request.POST.get("note")
+
+        if payment:
+            # Update existing payment
+            payment.amount = amount
+            payment.method = method
+            payment.payment_date = payment_date
+            payment.note = note
+            payment.save()
+            messages.success(request, "Payment updated successfully.")
+        else:
+            # Create new payment
+            Payment.objects.create(
+                invoice=invoice,
+                amount=amount,
+                method=method,
+                payment_date=payment_date,
+                note=note,
+            )
+            messages.success(request, "Payment recorded successfully.")
+
+        return redirect("users:admin-invoice-list")
+
+    return render(request, "users/admin/manual-payment.html", {
+        "invoice": invoice,
+        "payment": payment,
+        "today": date.today(),
+    })

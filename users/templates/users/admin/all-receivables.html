@@ -42,11 +42,11 @@
 
     <div class="row mt-5 shadow-sm bg-body rounded centered-row">
         <div class="col border-end py-2">
-            <p class="text-center m-0"><a href="#" class="text-decoration-none">PAID INVOICE</a></p>
+            <p class="text-center m-0"><a href="{% url "users:admin-paid-invoices" %}" class="text-decoration-none">PAID INVOICE</a></p>
         </div>
     
         <div class="col border-end py-2">
-            <p class="text-center m-0"><a href="#" class="text-decoration-none">UNPAID INVOICE</a></p>
+            <p class="text-center m-0"><a href="{% url "users:admin-unpaid-invoices" %}" class="text-decoration-none">UNPAID INVOICE</a></p>
         </div>
     
         <div class="col border-end py-2">
@@ -57,88 +57,9 @@
             <p class="text-center m-0"><a href="#" class="text-decoration-none">RECEIVABLE PATCHES</a></p>
         </div>
     
-        <div class="col py-2">
-            <p class="text-center m-0"><a href="#" class="text-decoration-none">UPDATE</a></p>
-        </div>
     </div>
 
-    <div class="row mt-3 rounded centered-row">
-        <h3>ALL RECEIVABLE ORDERS</h3>
-        <div class="col-md-7">
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered table-hover">
-                  <thead class="table-maroon">
-                    <tr>
-                      <th scope="col" class="text-center">S#</th>
-                      <th scope="col" class="text-center">Payment Type</th>
-                      <th scope="col" class="text-center">Number Of Invoices</th>
-                      <th scope="col" class="text-center">Total Receivables</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th scope="row" class="text-center">1</th>
-                      <td>CashApp</td>
-                      <td class="text-end">47</td>
-                      <td class="text-end">$ 5000.00</td>
-                    </tr>
-                    <tr>
-                      <th scope="row" class="text-center">2</th>
-                      <td>Check</td>
-                      <td class="text-end">20</td>
-                      <td class="text-end">$ 2500.00</td>
-                    </tr>
-                    <tr>
-                      <th scope="row" class="text-center">3</th>
-                      <td>Paypal</td>
-                      <td class="text-end">5</td>
-                      <td class="text-end">$ 1200.00</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-        </div>
-        <div class="col-md-5">
-            <form action="" method="post" enctype="multipart/form-data" class="">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-3">                        
-                        <div class="input-group">
-                            <span class="input-group-text">Web</span>
-                            <select class="form-select" name="" id="">
-                                <option value="">Select</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="col-md-4">                        
-                        <div class="input-group">
-                            <span class="input-group-text">Country</span>
-                            <select class="form-select" name="" id="">
-                                <option value="">Select</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">                        
-                        <div class="input-group">
-                            <span class="input-group-text">Sort By</span>
-                            <select class="form-select" name="" id="">
-                                <option value="">Select Option</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-md-1">
-                        <button type="submit" class="btn btn-primary">GO</button>
-                    </div>
-
-                </div>
-
-                
-            </form>
-        </div>
-    </div>
 
 
     <div class="row mt-3 rounded centered-row">
@@ -149,11 +70,9 @@
                   <thead class="table-maroon">
                     <tr>
                       <th scope="col" class="text-center">S#</th>
-                      <th scope="col" class="text-center">Web</th>
-                      <th scope="col" class="text-center">Last</th>
+
                       <th scope="col" class="text-center">ID</th>
                       <th scope="col" class="text-center">Customer Name</th>
-                      <th scope="col" class="text-center">Agent</th>
                       <th scope="col" class="text-center">Dues</th>
                       <th scope="col" class="text-center">Send Invoice</th>
                       <th scope="col" class="text-center">Last Paid</th>
@@ -162,84 +81,59 @@
                       <th scope="col" class="text-center">Status</th>
                       <th scope="col" class="text-center">Status Date</th>
                       <th scope="col" class="text-center">Country</th>
-                      <th scope="col" class="text-center">Set Def</th>
+                      
                       
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <th scope="row" class="text-center">1</th>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="text-center"><a class="btn btn-sm btn-success" href="#">Send Invoice</a></td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                      <td class="">Data</td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row" class="text-center">1</th>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="text-center"><a class="btn btn-sm btn-success" href="#">Send Invoice</a></td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                      </tr>
-
+                    {% for item in data %}
+                      {% with u=item.user %}
                       <tr>
-                        <th scope="row" class="text-center">1</th>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="text-center"><a class="btn btn-sm btn-success" href="#">Send Invoice</a></td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                      </tr>
+                        <td scope="row" class="text-center">{{ forloop.counter }}</td>
+                        <td class="text-center">{{ u.id }}  <a href="{% url 'users:admin-user-detail' pk=u.id %}" class="text-decoration-none">
+                          <i class="fa-regular fa-square-caret-right"></i>
+                          </a>
+                        </td>
+                        <td>{{ u.first_name }} {{ u.last_name }}
+                          <a href="" class="text-decoration-none">
+                          <i class="fa-regular fa-square-caret-right"></i>
+                          </a>
+                        </td>
 
-                      <tr>
-                        <th scope="row" class="text-center">1</th>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="text-center"><a class="btn btn-sm btn-success" href="#">Send Invoice</a></td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                        <td class="">Data</td>
-                      </tr>
+                        <td class="text-center">${{ item.dues|floatformat:2 }}</td>
 
+                        <td class="text-center">
+                          <a class="btn btn-sm btn-success" href="{% url "users:admin-customer-unpaid-invoices" u.id %}">Send Invoice</a>
+                        </td>
+
+                        <td class="text-center">
+                          {{ item.last_payment_date|date:"M d, Y" }}
+                        </td>
+
+                        <td class="text-center">
+                          {{ item.last_invoice_date|date:"M d, Y" }}
+                        </td>
+
+                        <td class="text-center">
+                          <a class="btn btn-sm btn-success" href="{% url "users:admin-add-card" u.id %}">Add Card</a>
+                        </td>
+
+                        <td class="text-center">
+                          {{ item.last_invoice_status|capfirst }}
+                        </td>
+
+                        <td class="text-center">
+                          {{ item.last_status_date|date:"M d, Y" }}
+                        </td>
+
+                        <td class="text-center">
+                          {{ u.country }}
+                        </td>
+                      </tr>
+                      {% endwith %}
+                    {% endfor %}
                   </tbody>
+
                 </table>
               </div>
         </div>

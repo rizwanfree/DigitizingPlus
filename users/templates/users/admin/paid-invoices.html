@@ -1,0 +1,144 @@
+<!-- Template: paid_invoices.html -->
+{% extends "users/admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<style>
+  .full-width-section {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+  .centered-row {
+    max-width: 98vw;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+  .table-maroon {
+    background-color: maroon;
+    color: white;
+  }
+  .table-maroon th {
+    border-bottom: 1px solid maroon;
+  }
+  .nav-link.active {
+    font-weight: bold;
+    color: maroon !important;
+  }
+  .active {
+    background-color: light-blue;
+    color: maroon;
+  }
+</style>
+<div class="full-width-section">
+  <!-- Navigation -->
+  <div class="row mt-5 shadow-sm bg-body rounded centered-row">
+    <div class="col-md-12">
+      <p class="text-end pe-3"><a href="{% url 'users:admin-invoice-list' %}" class="text-decoration-none">Find Invoice</a></p>
+    </div>
+  </div>
+
+  <div class="row mt-5 shadow-sm bg-body rounded centered-row">
+    <div class="col border-end py-2">
+      <p class="text-center m-0">
+        <a href="{% url 'users:admin-all-receivables' %}" class="text-decoration-none {% if request.resolver_match.url_name == 'users:admin-all-receivables' %}active nav-link{% endif %}">ALL RECEIVABLE</a>
+      </p>
+    </div>
+    <div class="col border-end py-2">
+      <p class="text-center m-0">
+        <a href="{% url 'users:admin-paid-invoices' %}" class="text-decoration-none {% if request.resolver_match.url_name == 'users:admin-paid-invoices' %}active nav-link{% endif %}">PAID INVOICE</a>
+      </p>
+    </div>
+    <div class="col border-end py-2">
+      <p class="text-center m-0">
+        <a href="{% url 'users:admin-unpaid-invoices' %}" class="text-decoration-none {% if request.resolver_match.url_name == 'users:admin-unpaid-invoices' %}active nav-link{% endif %}">UNPAID INVOICE</a>
+      </p>
+    </div>
+    <div class="col border-end py-2">
+      <p class="text-center m-0">
+        <a href="#" class="text-decoration-none">RECEIVABLE ORDERS</a>
+      </p>
+    </div>
+    <div class="col border-end py-2">
+      <p class="text-center m-0">
+        <a href="#" class="text-decoration-none">RECEIVABLE PATCHES</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Invoice Table -->
+  <div class="row mt-3 rounded centered-row">
+    <h3>{{ title }}</h3>
+    <div class="col-md-12">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover" id="invoiceTable">
+          <thead class="table-maroon">
+            <tr>
+              <th>Invoice #</th>
+              <th>Date</th>
+              <th>Order Type</th>
+              <th>Customer</th>
+              <th>Email</th>              
+              <th>Total</th>              
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for invoice in payments %}
+            <tr>
+              <td>{{ invoice.invoice.invoice_number }}</td>
+              <td>{{ invoice.payment_date|date:"M d, Y" }}</td>
+              <td>
+                {% if invoice.invoice.digitizing_order %}
+                  Digitizing
+                {% elif invoice.invoice.patch_order %}
+                  Patch
+                {% elif invoice.invoice.vector_order %}
+                  Vector
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>{{ invoice.invoice.customer.first_name }} {{ invoice.invoice.customer.last_name }}</td>
+              <td>{{ invoice.invoice.customer.email }}</td>              
+              <td>${{ invoice.invoice.total|floatformat:2 }}</td>
+              <td>{{ invoice.invoice.status|capfirst }}</td>
+              <td>
+                {% if request.resolver_match.url_name == 'admin-paid-invoices' %}
+
+                
+                  
+                    
+                <a href="{% url 'users:admin-edit-payment' invoice.invoice.id invoice.id %}" class="btn btn-secondary btn-sm">View Invoice</a>
+                    
+                  
+                
+
+                  {% comment %} <a href="{% url 'users:admin-edit-payment' invoice.id payment.id %}" class="btn btn-secondary">View Invoice</a> {% endcomment %}
+                {% elif request.resolver_match.url_name == 'admin-unpaid-invoices' %}
+                  <a href="{% url 'users:admin-manual-payment' invoice.id %}" class="btn btn-secondary">Pay Invoice</a>
+                {% endif %}
+              </td>
+              
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    new DataTable('#invoiceTable');
+  });
+</script>
+{% endblock %}

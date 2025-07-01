@@ -1,0 +1,62 @@
+{% extends "users/admin/base.html" %}
+{% block content %}
+
+<div class="container my-5">
+  <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+    <div class="card-header text-white" style="background-color: maroon;">
+      <h5 class="mb-0">
+        {% if payment %}
+          Update Payment for Invoice {{ invoice.invoice_number }}
+        {% else %}
+          Record Payment for Invoice {{ invoice.invoice_number }}
+        {% endif %}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label">Invoice Total</label>
+          <input type="text" class="form-control" value="${{ invoice.total|floatformat:2 }}" disabled>
+        </div>
+
+        <div class="mb-3">
+          <label for="amount" class="form-label">Payment Amount</label>
+          <input type="number" step="0.01" class="form-control" name="amount" id="amount"
+                 value="{{ payment.amount|default_if_none:'' }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="method" class="form-label">Payment Method</label>
+          <select class="form-select" name="method" id="method" required>
+            <option value="">Select</option>
+            <option value="CashApp" {% if payment.method == 'CashApp' %}selected{% endif %}>CashApp</option>
+            <option value="Paypal" {% if payment.method == 'Paypal' %}selected{% endif %}>Paypal</option>
+            <option value="Credit Card" {% if payment.method == 'Credit Card' %}selected{% endif %}>Credit Card</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="payment_date" class="form-label">Payment Date</label>
+          <input type="date" class="form-control" name="payment_date" id="payment_date"
+                 value="{{ payment.payment_date|default:today|date:'Y-m-d' }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="note" class="form-label">Note (optional)</label>
+          <textarea name="note" class="form-control" rows="2">{{ payment.note }}</textarea>
+        </div>
+
+        <div class="d-flex justify-content-start">
+          <button type="submit" class="btn text-white" style="background-color: maroon;">
+            {% if payment %} Update Payment {% else %} Record Payment {% endif %}
+          </button>
+          <a href="{% url 'users:admin-invoice-list' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
