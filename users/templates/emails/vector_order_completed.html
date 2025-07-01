@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .order-details {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            font-weight: bold;
+            min-width: 150px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="header">Your Order #{{ order.order_number }} Is Complete!</h1>
+    
+    <p>Dear {{ user.get_full_name }},</p>
+    
+    <p>We're pleased to inform you that your {{ order_type }} order has been successfully completed. 
+    Please review the attached files and let us know if you're satisfied with the results. 
+    The files are attached to this email and are also available in your account under Order Records for future access.</p>
+    
+    <div class="order-details">
+        <h3>Original Order Details</h3>
+        <div class="detail-row">
+            <span class="detail-label">Order Number:</span>
+            <span>{{ order.order_number }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Design Name:</span>
+            <span>{{ order.name }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Order Date:</span>
+            <span>{{ order.created_at|date:"F j, Y" }}</span>
+        </div>
+        
+        {% if order_type == 'digitizing' %}
+        <div class="detail-row">
+            <span class="detail-label">Dimensions:</span>
+            <span>{{ order.width }}" x {{ order.height }}"</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Colors:</span>
+            <span>{{ order.colors }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Fabric Type:</span>
+            <span>{{ order.fabric_type }}</span>
+        </div>
+        {% elif order_type == 'patch' %}
+        <div class="detail-row">
+            <span class="detail-label">Patch Type:</span>
+            <span>{{ order.patch_type }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Quantity:</span>
+            <span>{{ order.quantity }}</span>
+        </div>
+        {% elif order_type == 'vector' %}
+        <div class="detail-row">
+            <span class="detail-label">Format:</span>
+            <span>{{ order.required_format }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="order-details">
+        <h3>Finalized Details</h3>
+        <div class="detail-row">
+            <span class="detail-label">Completed On:</span>
+            <span>{% now "F j, Y" %}</span>
+        </div>
+        {% if finalized_order.price %}
+        <div class="detail-row">
+            <span class="detail-label">Final Price:</span>
+            <span>${{ finalized_order.price }}</span>
+        </div>
+        {% endif %}
+        {% if finalized_order.stitches %}
+        <div class="detail-row">
+            <span class="detail-label">Total Stitches:</span>
+            <span>{{ finalized_order.stitches }}</span>
+        </div>
+        {% endif %}
+        {% if finalized_order.admin_notes %}
+        <div class="detail-row">
+            <span class="detail-label">Designer Notes:</span>
+            <span>{{ finalized_order.admin_notes }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <p>Attached Files:
+    <ul>
+        {% for file in finalized_files %}
+        <li>{{ file.get_file_type_display }}</li>
+        {% endfor %}
+    </ul>
+    </p>
+    
+    <p>You can view and download these files anytime by logging into your account at <a href="{{ site_url }}">{{ site_url }}</a>.</p>
+    
+    <p>Thank you for choosing Digitizing Plus! We appreciate your business and look forward to serving you again.</p>
+    
+    <div class="footer">
+        <p><strong>Digitizing Plus Team</strong><br>
+        <a href="mailto:digitizingplus@gmail.com">digitizingplus@gmail.com</a></p>
+        <p>Need help? Reply to this email or contact us at the address above.</p>
+    </div>
+</body>
+</html>

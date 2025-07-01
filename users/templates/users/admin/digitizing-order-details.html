@@ -1,6 +1,5 @@
 {% extends "users/admin/base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block content %}
 <style>
@@ -14,321 +13,203 @@
         background-color: #fff;
         border-color: #dee2e6 #dee2e6 #fff;
     }
-    .file-badge {
-        font-size: 0.8rem;
-        margin-right: 5px;
-    }
     .email-card {
         border-left: 4px solid #3498db;
     }
 </style>
 
-<h3 class="text-center mt-3 mb-2">DIGITIZING ORDER #{{ order.order_number }} | DATE: {{ order.created_at|date:"m-d-Y" }} | {{ order.status|upper }}</h3>
+<h3 class="text-center mt-3 mb-2">
+    DIGITIZING ORDER #{{ order.order_number }} | DATE: {{ order.created_at|date:"m-d-Y" }} | {{ order.status|upper }}
+</h3>
 
 <div class="row mt-5">
     <div class="col-md-8">
+        <!-- Tabs -->
         <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="given-tab" data-bs-toggle="tab" data-bs-target="#given" type="button" role="tab" aria-controls="given" aria-selected="true">
-                    Given Info
-                </button>
+            <li class="nav-item">
+                <button class="nav-link active" id="given-tab" data-bs-toggle="tab" data-bs-target="#given" type="button" role="tab">Given Info</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="final-tab" data-bs-toggle="tab" data-bs-target="#final" type="button" role="tab" aria-controls="final" aria-selected="false">
-                    Final Info {% if finalized_order %}<span class="badge bg-success ms-2">Completed</span>{% endif %}
-                </button>
+            <li class="nav-item">
+                <button class="nav-link" id="final-tab" data-bs-toggle="tab" data-bs-target="#final" type="button" role="tab">Final Info</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="previous-tab" data-bs-toggle="tab" data-bs-target="#previous" type="button" role="tab">Previous Info</button>
             </li>
         </ul>
 
-        <div class="tab-content" id="orderTabsContent">
-            <!-- Given Tab -->
-            <div class="tab-pane fade show active mt-1" id="given" role="tabpanel" aria-labelledby="given-tab">
-                <form action="" method="post" enctype="multipart/form-data" class="mt-3">
+        <div class="tab-content mt-3" id="orderTabsContent">
+            <!-- Given Info Tab (editable) -->
+            <div class="tab-pane fade show active" id="given" role="tabpanel">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="given-info">
-
                     <div class="row">
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Design Name</span>
-                                {{ form.design_name }}
-                            </div>
+                        {% comment %} Editable fields for updated or original order {% endcomment %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Design Name</label>
+                            <input type="text" name="design_name" class="form-control" value="{{ current_info.name }}">
                         </div>
-                        <div class="col-md-6">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">P.O #</span>
-                                {{ form.po_number }}
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">P.O #</label>
+                            <input type="number" name="po_number" class="form-control" value="{{ current_info.po_number }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Width</label>
+                            <input type="number" step="0.01" name="width" class="form-control" value="{{ current_info.width }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Height</label>
+                            <input type="number" step="0.01" name="height" class="form-control" value="{{ current_info.height }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Colors</label>
+                            <input type="number" name="colors" class="form-control" value="{{ current_info.colors }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Placement</label>
+                            <input type="text" name="logo_placement" class="form-control" value="{{ current_info.logo_placement }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fabric Type</label>
+                            <input type="text" name="fabric_type" class="form-control" value="{{ current_info.fabric_type }}">
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Width</span>
-                                {{ form.width }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Height</span>
-                                {{ form.height }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Colors</span>
-                                {{ form.colors }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Placement</span>
-                                {{ form.placement }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Fabric Type</span>
-                                {{ form.fabric_type }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary mt-3">Update</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
                 </form>
             </div>
 
-            <!-- Final Tab -->
-            <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">
-                {% if finalized_order %}
-                <div class="alert alert-success mb-3">
-                    <strong>Finalized on:</strong> {{ finalized_order.finalized_at|date:"m-d-Y H:i" }} by {{ finalized_order.finalized_by.get_full_name }}
-                </div>
-                {% endif %}
-                
-                <form action="" method="post" enctype="multipart/form-data">
+            <!-- Final Info Tab (editable) -->
+            <div class="tab-pane fade" id="final" role="tabpanel">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="final-info">
-                    {{ final_form.original_order }}
-                    
                     <div class="row">
                         <div class="col-md-6">
-                            <h3>FINAL DIGITIZING DETAILS</h3>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Width</span>
-                                {{ final_form.width }}
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Height</span>
-                                {{ final_form.height }}
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Stitches</span>
-                                {{ final_form.stitches }}
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Price</span>
-                                {{ final_form.price }}
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Completed Date</span>
-                                {{ final_form.completed_date }}
+                            <label class="form-label">Width</label>
+                            <input type="number" step="0.01" name="width" class="form-control" value="{{ order.width }}">
+
+                            <label class="form-label mt-3">Height</label>
+                            <input type="number" step="0.01" name="height" class="form-control" value="{{ order.height }}">
+
+                            <label class="form-label mt-3">Stitches</label>
+                            <input type="number" name="stitches" class="form-control" value="{{ finalized_order.stitches }}">
+
+                            <label class="form-label mt-3">Price</label>
+                            <input type="number" step="0.01" name="price" class="form-control" value="{{ finalized_order.price }}">
+
+                            <label class="form-label mt-3">Completed Date</label>
+                            <input type="date" name="completed_date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+
+                            <label class="form-label mt-3">Admin Notes</label>
+                            <textarea name="admin_notes" rows="4" class="form-control"></textarea>
+
+                            <!-- Email checkbox -->
+                            <div class="card email-card mt-4">
+                                <div class="card-header bg-light"><strong>Email Notification</strong></div>
+                                <div class="card-body">
+                                    {% for email in order.user.get_all_emails %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="send_email_to" value="{{ email }}" id="email_{{ forloop.counter }}" checked>
+                                            <label class="form-check-label" for="email_{{ forloop.counter }}">{{ email }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
-                            <h3>FILES</h3>
-                            <div class="input-group mb-3">
-                                
-                                <input type="file" name="file1" class="form-control">
-                            </div>
-                            <div class="input-group mb-3">
-                                
-                                <input type="file" name="file2" class="form-control">
-                            </div>
-                            <div class="input-group mb-3">
-                                
-                                <input type="file" name="file3" class="form-control">
-                            </div>
-                            <div class="input-group mb-3">
-                                
-                                <input type="file" name="file4" class="form-control">
-                            </div>
-                            <div class="input-group mb-3">
-                                
-                                <input type="file" name="file4" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Admin Notes</span>
-                                {{ final_form.admin_notes }}
-                            </div>
-                        </div>
-                    </div>
+                            <label class="form-label">Design File</label>
+                            <input type="file" name="file1" class="form-control mb-2">
 
-                    <!-- Email Notification Section -->
-                    <div class="card email-card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">Email Notification</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-muted small mb-2">Select email addresses to notify when order is completed:</p>
-                            {% for email in order.user.get_all_emails %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       name="send_email_to" value="{{ email }}" 
-                                       id="email_{{ forloop.counter }}" checked>
-                                <label class="form-check-label" for="email_{{ forloop.counter }}">
-                                    {{ email }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-primary btn-block">
-                                {% if finalized_order %}Update Finalized Order{% else %}Release Order & Send Email{% endif %}
-                            </button>
-                        </div>
-                    </div>
-                </form>
+                            <label class="form-label">Stitch File</label>
+                            <input type="file" name="file2" class="form-control mb-2">
 
-                {% if finalized_files %}
-                <div class="mt-4">
-                    <h4>Uploaded Files</h4>
-                    <div class="list-group">
-                        {% for file in finalized_files %}
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="{{ file.file.url }}" target="_blank" class="text-decoration-none">
-                                    <i class="fas fa-file-download me-2"></i>{{ file.get_file_type_display }}
-                                </a>
-                                <span class="text-muted small">{{ file.uploaded_at|date:"m-d-Y H:i" }}</span>
+                            <label class="form-label">Color Sheet</label>
+                            <input type="file" name="file3" class="form-control mb-2">
+
+                            <label class="form-label">Additional File</label>
+                            <input type="file" name="file4" class="form-control mb-2">
+
+                            {% if finalized_files %}
+                            <div class="card mt-3">
+                                <div class="card-header">Uploaded Files</div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        {% for file in finalized_files %}
+                                            <div class="list-group-item">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <a href="{{ file.file.url }}" target="_blank">{{ file.get_file_type_display }}</a>
+                                                    <span class="text-muted small">{{ file.uploaded_at|date:"m-d-Y H:i" }}</span>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
-                            {% if file.notes %}
-                            <div class="small text-muted mt-1">{{ file.notes }}</div>
                             {% endif %}
                         </div>
-                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-success mt-3">Finalize & Email</button>
+                </form>
+            </div>
+
+            <!-- Previous Info Tab (readonly) -->
+            <div class="tab-pane fade" id="previous" role="tabpanel">
+                {% if previous_info %}
+                <div class="row">
+                    <div class="col-md-6 mb-3"><label class="form-label">Design Name</label>
+                        <input type="text" class="form-control" value="{{ previous_info.name }}" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3"><label class="form-label">P.O #</label>
+                        <input type="text" class="form-control" value="{{ previous_info.po_number }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Width</label>
+                        <input type="text" class="form-control" value="{{ previous_info.width }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Height</label>
+                        <input type="text" class="form-control" value="{{ previous_info.height }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Colors</label>
+                        <input type="text" class="form-control" value="{{ previous_info.colors }}" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Placement</label>
+                        <input type="text" class="form-control" value="{{ previous_info.logo_placement }}" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Fabric Type</label>
+                        <input type="text" class="form-control" value="{{ previous_info.fabric_type }}" readonly>
                     </div>
                 </div>
+                {% else %}
+                    <div class="alert alert-info">No Edits on this Order yet.</div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">        
+    <!-- Right Sidebar -->
+    <div class="col-md-4">
         <div class="card mb-3">
-            <div class="card-header">
-              Customer Instructions
-            </div>
+            <div class="card-header">Customer Instructions</div>
             <div class="card-body">
                 <p class="card-text">{{ order.instructions|default:"No instructions provided" }}</p>
             </div>
         </div>
-
-        <div class="card mb-3" id="adminInstructionsCard">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Admin Instructions</span>
-                <button class="btn btn-sm btn-outline-primary" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#adminInstructionsModal">
-                    Update
-                </button>
-            </div>
+        <div class="card mb-3">
+            <div class="card-header">Admin Instructions</div>
             <div class="card-body">
-                <p class="card-text">{{ order.admin_instruction|default:"No instructions provided" }}</p>
+                <p class="card-text">{{ order.admin_instruction|default:"No admin instructions yet." }}</p>
             </div>
         </div>
-
         <div class="card">
-            <div class="card-header">
-              Customer Information
-            </div>
+            <div class="card-header">Customer Info</div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Name: </strong>{{ user.get_full_name }}</li>
-                    <li class="list-group-item"><strong>Email: </strong>{{ user.email }}</li>
-                    <li class="list-group-item"><strong>Phone: </strong>{{ user.phone_number|default:"Not provided" }}</li>
+                    <li class="list-group-item"><strong>Name:</strong> {{ user.get_full_name }}</li>
+                    <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                    <li class="list-group-item"><strong>Phone:</strong> {{ user.phone_number|default:"Not provided" }}</li>
                 </ul>
             </div>
         </div>
     </div>
-
-    <!-- Admin Instructions Modal -->
-    <div class="modal fade" id="adminInstructionsModal" tabindex="-1" aria-labelledby="adminInstructionsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="adminInstructionsModalLabel">Update Admin Instructions</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="adminInstructionsForm" method="post" action="{% url 'users:update_admin_instructions' pk=order.pk %}">
-                    {% csrf_token %}
-                    <div class="modal-body">
-                        <textarea name="admin_instructions" class="form-control" rows="5">{{ order.admin_instruction|default:"" }}</textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Price calculation script
-    const priceA = document.getElementById('id_price_option_a');
-    const total = document.getElementById('id_total_price');
-    
-    function calculateTotal() {
-        const a = parseFloat(priceA.value) || 0;
-        total.value = a.toFixed(2);
-    }
-    
-    if (priceA && total) {
-        priceA.addEventListener('change', calculateTotal);
-        calculateTotal(); // Calculate on page load
-    }
-
-    // Admin instructions form handling
-    const adminForm = document.getElementById('adminInstructionsForm');
-    if (adminForm) {
-        adminForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        });
-    }
-});
-</script>
-{% endblock content %}
+{% endblock %}

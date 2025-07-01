@@ -1,6 +1,5 @@
 {% extends "users/admin/base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block content %}
 <style>
@@ -14,172 +13,150 @@
         background-color: #fff;
         border-color: #dee2e6 #dee2e6 #fff;
     }
+    .email-card {
+        border-left: 4px solid #3498db;
+    }
 </style>
 
-<h3 class="text-center mt-3 mb-2">VECTOR ORDER #{{ order.order_number }} | DATE: {{ order.created_at|date:"m-d-Y" }} | {{ order.status|upper }}</h3>
+<h3 class="text-center mt-3 mb-2">
+    VECTOR ORDER #{{ order.order_number }} | DATE: {{ order.created_at|date:"m-d-Y" }} | {{ order.status|upper }}
+</h3>
 
-<div class="row">
+<div class="row mt-5">
     <div class="col-md-8">
         <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="given-tab" data-bs-toggle="tab" data-bs-target="#given" type="button" role="tab" aria-controls="given" aria-selected="true">
-                    Given Info
-                </button>
+            <li class="nav-item">
+                <button class="nav-link active" id="given-tab" data-bs-toggle="tab" data-bs-target="#given" type="button" role="tab">Given Info</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="final-tab" data-bs-toggle="tab" data-bs-target="#final" type="button" role="tab" aria-controls="final" aria-selected="false">
-                    Final Info
-                </button>
+            <li class="nav-item">
+                <button class="nav-link" id="final-tab" data-bs-toggle="tab" data-bs-target="#final" type="button" role="tab">Final Info</button>
             </li>
         </ul>
 
         <div class="tab-content" id="orderTabsContent">
-            <!-- Given Tab -->
-            <div class="tab-pane fade show active mt-1" id="given" role="tabpanel" aria-labelledby="given-tab">
-                <form action="" method="post" enctype="multipart/form-data" class="mt-3">
+            <!-- Given Info Tab -->
+            <div class="tab-pane fade show active mt-3" id="given" role="tabpanel">
+                <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="given-info">
-
                     <div class="row">
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Design Name</span>
-                                {{ form.design_name }}
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Design Name</label>
+                            <input type="text" name="name" class="form-control" value="{{ order.name }}">
                         </div>
-                        <div class="col-md-6">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">P.O #</span>
-                                {{ form.po_number }}
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">P.O #</label>
+                            <input type="number" name="po_number" class="form-control" value="{{ order.po_number }}">
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Required Format</span>
-                                {{ form.required_format }}
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Required Format</label>
+                            <input type="text" name="required_format" class="form-control" value="{{ order.required_format }}">
                         </div>
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Color Type</span>
-                                <input type="text" class="form-control" value="{{ order.color_types }}" readonly>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Color Type</label>
+                            <input type="text" name="color_types" class="form-control" value="{{ order.color_types }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Colors</label>
+                            <input type="number" name="colors" class="form-control" value="{{ order.colors }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Other Instructions</label>
+                            <input type="text" name="others" class="form-control" value="{{ order.others }}">
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Colors</span>
-                                {{ form.colors }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Other Details</span>
-                                <input type="text" class="form-control" value="{{ order.others|default:'-' }}" readonly>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row bg-light py-3">
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Price</span>
-                                {{ form.price_option_a }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">                        
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Total Price</span>
-                                {{ form.total_price }}
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-3">Update</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
                 </form>
             </div>
 
-            <!-- Final Tab -->
-            <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">            
-                <form action="" method="post">
+            <!-- Final Info Tab -->
+            <div class="tab-pane fade mt-3" id="final" role="tabpanel">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    <input type="hidden" name="form_type" value="final-info">
                     <div class="row">
                         <div class="col-md-6">
-                            <h3>VECTOR DETAILS</h3>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Format</span>
-                                <input type="text" class="form-control" value="{{ order.required_format }}" readonly>
+                            <label class="form-label">Price</label>
+                            <input type="number" step="0.01" name="price" class="form-control" value="{{ finalized_order.price }}">
+
+                            <label class="form-label mt-3">Admin Notes</label>
+                            <textarea name="admin_notes" rows="4" class="form-control">{{ finalized_order.admin_notes }}</textarea>
+
+                            <label class="form-label mt-3">Completed Date</label>
+                            <input type="date" name="finalized_at" class="form-control" value="{{ finalized_order.finalized_at|date:'Y-m-d' }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            {% for key, label in file_labels.items %}
+                                <label class="form-label">{{ label }}</label>
+                                <input type="file" name="{{ key }}" class="form-control mb-2">
+                            {% endfor %}
+
+                            {% if vector_files %}
+                            <div class="card mt-3">
+                                <div class="card-header">Uploaded Files</div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        {% for file in vector_files %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <a href="{{ file.file.url }}" target="_blank">
+                                                    {{ file.get_file_type_display }}
+                                                </a>
+                                                <span class="text-muted small">{{ file.uploaded_at|date:"m-d-Y H:i" }}</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Color Type</span>
-                                <input type="text" class="form-control" value="{{ order.color_types }}" readonly>
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Price</span>
-                                {{ final_form.price_a }}
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="col-md-12">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Total Price</span>
-                            {{ final_form.total_price }}
+                    <div class="card email-card mt-4">
+                        <div class="card-header bg-light">
+                            <strong>Email Notification</strong>
+                        </div>
+                        <div class="card-body">
+                            {% for email in order.user.get_all_emails %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="send_email_to" value="{{ email }}" id="email_{{ forloop.counter }}" checked>
+                                <label class="form-check-label" for="email_{{ forloop.counter }}">{{ email }}</label>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
-                    <div class="col-md-12">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">Comments</span>
-                            {{ final_form.comments }}
-                        </div>
-                    </div>
-                    <div class="col-md-12">
-                        <button type="submit" class="btn btn-primary btn-block">Release</button>
-                    </div>
+                    <button type="submit" class="btn btn-success mt-3">Finalize</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">        
-        <div class="card">
-            <div class="card-header">
-              Customer Instructions
-            </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header">Customer Instructions</div>
             <div class="card-body">
                 <p class="card-text">{{ order.instructions|default:"No instructions provided" }}</p>
             </div>
         </div>
 
-        <div class="card mt-1">
-            <div class="card-header">
-              Customer Information
+        <div class="card mb-3">
+            <div class="card-header">Admin Instructions</div>
+            <div class="card-body">
+                <p class="card-text">{{ order.admin_instruction|default:"No admin instructions yet." }}</p>
             </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Customer Info</div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Name: </strong>{{ user.get_full_name }}</li>
-                    <li class="list-group-item"><strong>Email: </strong>{{ user.email }}</li>
-                    <li class="list-group-item"><strong>Phone: </strong>{{ user.phone_number|default:"Not provided" }}</li>
+                    <li class="list-group-item"><strong>Name:</strong> {{ user.get_full_name }}</li>
+                    <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                    <li class="list-group-item"><strong>Phone:</strong> {{ user.phone_number|default:"Not provided" }}</li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const priceA = document.getElementById('id_price_option_a');
-        const total = document.getElementById('id_total_price');
-        
-        function calculateTotal() {
-            const a = parseFloat(priceA.value) || 0;
-            total.value = a.toFixed(2);
-        }
-        
-        priceA.addEventListener('change', calculateTotal);
-    });
-</script>
-{% endblock content %}
+{% endblock %}

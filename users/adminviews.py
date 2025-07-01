@@ -1,5 +1,6 @@
 from datetime import date
-from email.message import EmailMessage
+from django.core.mail import EmailMessage
+from django.conf import settings
 from django.utils import timezone
 from django.http import Http404, JsonResponse
 from django.db.models import Sum, Max
@@ -10,7 +11,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.loader import render_to_string
 
-from crafting.models import DigitizingOrder, FinalizedDigitizingFiles, FinalizedDigitizingOrder, FinalizedPatchFiles, FinalizedPatchOrder, FinalizedVectorFiles, FinalizedVectorOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
+from crafting.models import DigitizingOrder, DigitizingOrderEdit, FinalizedDigitizingFiles, FinalizedDigitizingOrder, FinalizedPatchFiles, FinalizedVectorFiles, FinalizedVectorOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 from finance.models import Invoice, Payment
 from users.models import CreditCard, User
 
@@ -73,6 +74,8 @@ def all_digitizing_orders(request):
     }
     return render(request, 'users/admin/all-digitizing-orders.html', context)
 
+
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def inprocess_patch_orders(request):
@@ -100,10 +103,8 @@ def all_patch_orders(request):
 @user_passes_test(lambda u: u.is_superuser)
 def inprocess_vector_orders(request):
     orders = VectorOrder.objects.select_related('user').prefetch_related('files').filter(status='Processing').order_by('-created_at')
-    
     context = {
         'orders': orders,
-        'order_type': 'Vector',
     }
     return render(request, 'users/admin/inprocess-vector-orders.html', context)
 
@@ -115,187 +116,108 @@ def all_vector_orders(request):
     
     context = {
         'orders': orders,
-        'order_type': 'Vector',
     }
     return render(request, 'users/admin/all-vector-orders.html', context)
 
-
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
-def admin_order_details(request, pk, order_type):
-    ORDER_MAPPING = {
-        'digitizing': {
-            'model': DigitizingOrder,
-            'template': 'users/admin/digitizing-order-details.html',
-            'final_model': FinalizedDigitizingOrder,
-            'file_relation': 'digitizing_files'  # matches related_name
-        },
-        'patch': {
-            'model': PatchOrder,
-            'template': 'users/admin/patch-order-details.html',
-            'final_model': FinalizedPatchOrder,
-            'file_relation': 'patch_files'  # matches related_name
-        },
-        'vector': {
-            'model': VectorOrder,
-            'template': 'users/admin/vector-order-details.html',
-            'final_model': FinalizedVectorOrder,
-            'file_relation': 'vector_files'  # matches related_name
-        },
-    }
-
-    order_config = ORDER_MAPPING.get(order_type.lower())
-    if not order_config:
-        raise Http404("Invalid order type")
-    
-    order = get_object_or_404(order_config['model'], pk=pk)
-    user = order.user
-    finalized_order = None
-    finalized_files = []
-    
-    # Check if finalized version exists
-    if hasattr(order, 'finalized_version'):
-        finalized_order = order.finalized_version
-        # Use the correct related_name from our mapping
-        finalized_files = getattr(finalized_order, order_config['file_relation']).all()
-
-    # Initialize final_form outside of POST handling
-    final_form_initial = {
-        'original_order': order,
-        'completed_date': timezone.now().date()
-    }
-    if finalized_order:
-        final_form_initial.update({
-            'height': finalized_order.height,
-            'width': finalized_order.width,
-            'stitches': finalized_order.stitches,
-            'price': finalized_order.price,
-            'admin_notes': finalized_order.admin_notes,
-            'completed_date': finalized_order.completed_date
-        })
-    form = GivenInfoForm()
-    final_form = FinalDigitizingForm(initial=final_form_initial)
+def vector_orders_details(request, pk):
+    order = get_object_or_404(VectorOrder, pk=pk)
+    finalized_order = getattr(order, 'finalized_version', None)
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
-        
+
         if form_type == 'given-info':
-            form = GivenInfoForm(request.POST)
-            if form.is_valid():
-                # Update original order
-                order.name = form.cleaned_data['design_name']
-                order.po_number = form.cleaned_data['po_number']
-                order.save()
-                messages.success(request, "Order updated successfully")
-                return redirect('users:admin_order_details', pk=pk, order_type=order_type)
-                
+            order.name = request.POST.get('name')
+            order.po_number = request.POST.get('po_number')
+            order.required_format = request.POST.get('required_format')
+            order.color_types = request.POST.get('color_types')
+            order.colors = request.POST.get('colors')
+            order.others = request.POST.get('others')
+            order.save()
+
         elif form_type == 'final-info':
-            final_form = FinalDigitizingForm(request.POST)
-            if final_form.is_valid():
-                # Create or update finalized order
-                finalized_order, created = order_config['final_model'].objects.update_or_create(
-                    original_order=order,
-                    defaults={
-                        **final_form.cleaned_data,
-                        'finalized_by': request.user,
-                        'price': final_form.cleaned_data.get('price', 0)
-                    }
-                )
+            price = request.POST.get('price') or 0
+            admin_notes = request.POST.get('admin_notes')
+            finalized_at = request.POST.get('finalized_at') or timezone.now().date()
 
-                # Handle file uploads
-                file_mapping = {
-                    'file1': 'DESIGN',
-                    'file2': 'STITCH',
-                    'file3': 'COLOR',
-                    'file4': 'ADDITIONAL'
-                }
-                
-                for field_name, file_type in file_mapping.items():
-                    if field_name in request.FILES:
-                        # Use the correct file model based on order type
-                        if order_type == 'digitizing':
-                            FinalizedDigitizingFiles.objects.create(
-                                finalized_order=finalized_order,
-                                file=request.FILES[field_name],
-                                file_type=file_type
-                            )
-                        elif order_type == 'patch':
-                            FinalizedPatchFiles.objects.create(
-                                finalized_order=finalized_order,
-                                file=request.FILES[field_name],
-                                file_type=file_type
-                            )
-                        elif order_type == 'vector':
-                            FinalizedVectorFiles.objects.create(
-                                finalized_order=finalized_order,
-                                file=request.FILES[field_name],
-                                file_type=file_type
-                            )
+            finalized = finalized_order or FinalizedVectorOrder(original_order=order)
+            finalized.price = price
+            finalized.admin_notes = admin_notes
+            finalized.finalized_at = finalized_at
+            finalized.save()
 
-                # Create invoice if this is a new finalized order
-                if created and not finalized_order.invoice:
-                    finalized_order.create_invoice()
+            order.status = 'Delivered'
+            order.save()
 
-                # Send completion email if this is a new finalized order
-                if created:
-                    files = getattr(finalized_order, order_config['file_relation']).all()
-                    send_to_emails = request.POST.getlist('send_email_to')
-                    print(send_to_emails)
-                    
-                    if send_to_emails and files.exists():
-                        # rendered HTML version
-                        html_content = render_to_string('emails/order_completed.html', {
-                            'order': order,
-                            'user': user,
-                            'order_type': order_type,
-                            'finalized_order': finalized_order,
-                            'finalized_files': files,
-                            'site_url': request.build_absolute_uri('/')
-                        })
-                        
-                        # fallback plain text
-                        text_content = f"Your {order_type} order #{order.order_number} is ready. Please check your account for details."
-                        
-                        email = EmailMultiAlternatives(
-                            subject=f"Your {order_type} order #{order.order_number} is ready",
-                            body=text_content,
-                            from_email='digitizingpluss@gmail.com',
-                            to=send_to_emails,
-                        )
-                        email.attach_alternative(html_content, "text/html")
+            file_map = {
+                'vector_file': 'VECTOR',
+                'source_file': 'SOURCE',
+                'proof_file': 'PROOF',
+                'revision_file': 'REVISION',
+                'additional_file': 'ADDITIONAL',
+            }
 
-                        for file in files:
-                            email.attach_file(file.file.path)
-                                                
+            for field_name, file_type in file_map.items():
+                uploaded_file = request.FILES.get(field_name)
+                if uploaded_file:
+                    FinalizedVectorFiles.objects.create(
+                        finalized_order=finalized,
+                        file=uploaded_file,
+                        file_type=file_type
+                    )
+
+                # Send email to customer
+                selected_emails = request.POST.getlist('send_email_to')
+                if selected_emails:
+                    subject = f"Vector Order #{order.order_number} Finalized"
+                    message = render_to_string('emails/order_completed.html', {
+                        'order': order,
+                        'finalized_order': finalized,
+                        'user': order.user,
+                        'order_type': 'vector'
+                    })
+
+                    email = EmailMessage(
+                        subject=subject,
+                        body=message,
+                        from_email='digitizingpluss@gmail.com',
+                        to=selected_emails
+                    )
+                    email.content_subtype = "html"
+
+                    for file in finalized.vector_files.all():
+                        if file.file:
+                            try:
+                                email.attach_file(file.file.path)
+                            except Exception as e:
+                                print(f"Attachment error: {e}")
+
+                    try:
                         email.send()
+                    except Exception as e:
+                        print("Email send error:", e)
 
-                order.status = 'Delivered'
-                order.save()
-                messages.success(request, "Order finalized and email sent successfully")
-                return redirect('users:admin-all-digitizing-orders')
+            return redirect('users:admin-all-vector-orders', pk=order.pk)
 
-    # Initialize form (moved after POST handling to avoid overwriting POST data)
-    form = GivenInfoForm(initial={
-        'design_name': order.name,
-        'po_number': order.po_number,
-        'height': order.height,
-        'width': order.width,
-        'colors': order.colors,
-        'placement': order.logo_placement,
-        'fabric_type': order.fabric_type
-    })
-
-    context = {
-        'order': order,
-        'user': user,
-        'form': form,
-        'final_form': final_form,
-        'order_type': order_type,
-        'finalized_order': finalized_order,
-        'finalized_files': finalized_files
+    vector_files = finalized_order.vector_files.all() if finalized_order else []
+    file_labels = {
+        'vector_file': 'Final Vector File',
+        'source_file': 'Source File',
+        'proof_file': 'Approval Proof',
+        'revision_file': 'Revision File',
+        'additional_file': 'Additional File',
     }
-    return render(request, order_config['template'], context)
+
+    return render(request, 'users/admin/vector-order-details.html', {
+        'order': order,
+        'user': order.user,
+        'finalized_order': finalized_order,
+        'vector_files': vector_files,
+        'file_labels': file_labels,
+    })
+    return render(request, 'users/admin/all-vector-orders.html', context)
 
 
 
@@ -314,43 +236,113 @@ def update_admin_instructions(request, pk):
 
 
 
-def finalize_order(request, pk):
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def finalize_digitizing_order(request, pk):
     order = get_object_or_404(DigitizingOrder, pk=pk)
+    edit = order.edits.order_by('-edited_at').first()  # Get latest edit if exists
+    finalized_order = getattr(order, 'finalized_version', None)
+
     
+
+    # Given info is either edited version or the original
+    current_info = edit if edit else order
+    previous_info = order if edit else None
+
+    print(f"Current Edited Order {current_info}")
+    print(f"Previous Original Order {previous_info}")
     if request.method == 'POST':
-        form = FinalDigitizingForm(request.POST, request.FILES)
-        if form.is_valid():
-            finalized_order = form.save(commit=False)
-            finalized_order.original_order = order
-            finalized_order.finalized_by = request.user
-            finalized_order.save()
-            
-            # Handle each file upload separately
-            files = [
-                ('design', form.cleaned_data.get('file1')),
-                ('stitch', form.cleaned_data.get('file2')),
-                ('color', form.cleaned_data.get('file3')),
-                ('additional', form.cleaned_data.get('file4')),
-            ]
-            
-            for file_type, file in files:
-                if file:  # Only create records for files that were uploaded
+        form_type = request.POST.get('form_type')
+
+        if form_type == 'given-info':
+            print("given-info form")
+            # Always create a new edit instead of modifying original
+            DigitizingOrderEdit.objects.create(
+                original_order=order,
+                name=request.POST.get('design_name'),
+                po_number=request.POST.get('po_number'),
+                width=request.POST.get('width'),
+                height=request.POST.get('height'),
+                colors=request.POST.get('colors'),
+                logo_placement=request.POST.get('logo_placement'),
+                fabric_type=request.POST.get('fabric_type')
+            )
+
+        elif form_type == 'final-info':
+            finalized = finalized_order or FinalizedDigitizingOrder(original_order=order)
+
+            finalized.width = request.POST.get('width')
+            finalized.height = request.POST.get('height')
+            finalized.stitches = request.POST.get('stitches') or 0
+            finalized.price = request.POST.get('price') or 0
+            finalized.completed_date = request.POST.get('completed_date') or timezone.now().date()
+            finalized.admin_notes = request.POST.get('admin_notes')
+            finalized.save()
+
+            order.status = 'Delivered'
+            order.save()
+
+            file_map = {
+                'file1': 'DESIGN',
+                'file2': 'STITCH',
+                'file3': 'COLOR',
+                'file4': 'ADDITIONAL',
+            }
+
+            for field_name, file_type in file_map.items():
+                uploaded_file = request.FILES.get(field_name)
+                if uploaded_file:
                     FinalizedDigitizingFiles.objects.create(
-                        finalized_order=finalized_order,
-                        file=file,
-                        description=file_type.upper()  # Or use a more descriptive label
+                        finalized_order=finalized,
+                        file=uploaded_file,
+                        file_type=file_type
                     )
-            
-            return redirect('success_url')
-    else:
-        form = FinalDigitizingForm(initial={
-            'original_order': order.id,
-            'height': order.height,
-            'width': order.width,
-            'completed_date': timezone.now().date()
-        })
-    
-    return render(request, 'template.html', {'form': form})
+
+            selected_emails = request.POST.getlist('send_email_to')
+            if selected_emails:
+                subject = f"Digitizing Order #{order.order_number} Finalized"
+                message = render_to_string('emails/order_completed.html', {
+                    'order': order,
+                    'finalized_order': finalized,
+                    'user': order.user,
+                    'order_type': 'digitizing'
+                })
+
+                email = EmailMessage(
+                    subject=subject,
+                    body=message,
+                    from_email='digitizingpluss@gmail.com',
+                    to=selected_emails
+                )
+                email.content_subtype = "html"
+
+                for file in finalized.digitizing_files.all():
+                    if file.file:
+                        try:
+                            email.attach_file(file.file.path)
+                        except Exception as e:
+                            print(f"Attachment error: {e}")
+
+                try:
+                    email.send()
+                except Exception as e:
+                    print("Email send error:", e)
+
+            return redirect('users:admin-digitizing-details', pk=order.pk, order_type='digitizing')
+
+    finalized_files = finalized_order.digitizing_files.all() if finalized_order else []
+    today = timezone.now()
+
+    return render(request, 'users/admin/digitizing-order-details.html', {
+        'order': order,
+        'user': order.user,
+        'finalized_order': finalized_order,
+        'finalized_files': finalized_files,
+        'today': today,
+        'current_info': current_info,
+        'previous_info': previous_info,
+    })
+
 
 
 
