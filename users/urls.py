@@ -85,7 +85,13 @@ urlpatterns = [
 
 
     #Admin Panel
+
+    path('admin/impersonate/<int:user_id>/', adminviews.start_impersonate, name='start-impersonate'),
+    path('admin/stop-impersonate/', adminviews.stop_impersonate, name='stop-impersonate'),
+
+
     path('admin/dashboard/', adminviews.admin_dashboard, name='admin-dashboard'),
+    path('admin/company-info/', adminviews.update_company_info, name='admin-company-info'),
     path('admin/all-receivables/', adminviews.admin_all_receivables, name='admin-all-receivables'),
     path('admin/user-list/', adminviews.user_list, name='admin-user-list'),
     path('admin/user-details/<int:pk>/', adminviews.user_detail, name='admin-user-detail'),

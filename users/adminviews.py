@@ -13,12 +13,33 @@ from django.template.loader import render_to_string
 
 from crafting.models import DigitizingOrder, DigitizingOrderEdit, FinalizedDigitizingFiles, FinalizedDigitizingOrder, FinalizedPatchFiles, FinalizedVectorFiles, FinalizedVectorOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 from finance.models import Invoice, Payment
+from frontend.models import CompanyInfo
 from users.models import CreditCard, User
 
 from .forms import FinalDigitizingForm, UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
 
 from crafting.forms import DigitizingOrderForm, PatchOrderForm, VectorOrderForm, DigitizingQuoteForm, PatchQuoteForm, VectorQuoteForm
 from django.core.mail import EmailMultiAlternatives
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import get_user_model
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def start_impersonate(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    request.session['impersonate_id'] = target_user.id
+    messages.success(request, f"Now impersonating {target_user.get_full_name()}")
+    return redirect('users:customer-dashboard')
+
+@login_required
+def stop_impersonate(request):
+    if 'impersonate_id' in request.session:
+        del request.session['impersonate_id']
+        messages.success(request, "Stopped impersonating")
+    return redirect('users:admin-dashboard')  # or wherever you want to redirect after
 
 
 @login_required
@@ -49,6 +70,29 @@ def admin_dashboard(request):
     }
     return render(request, 'users/admin/dashboard.html', context)
 
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def update_company_info(request):
+    company = CompanyInfo.objects.first()  # Get the single instance
+    
+    if request.method == 'POST':
+        # Update fields from POST data
+        company.phone = request.POST.get('phone')
+        company.email = request.POST.get('email')
+        company.address = request.POST.get('address')
+        company.whatsapp = request.POST.get('whatsapp')
+        company.facebook = request.POST.get('facebook')
+        company.instagram = request.POST.get('instagram')
+        company.twitter = request.POST.get('twitter')
+        company.tiktok = request.POST.get('tiktok')
+        
+        company.save()
+        messages.success(request, 'Company information updated successfully!')
+        return redirect('users:admin-dashboard')
+    
+    return render(request, 'users/admin/company-info.html', {'company': company})
 
 
 @login_required
@@ -226,7 +270,7 @@ def vector_orders_details(request, pk):
 def update_admin_instructions(request, pk):
     order = get_object_or_404(DigitizingOrder, pk=pk)
     if request.method == 'POST':
-        order.admin_instruction = request.POST.get('admin_instructions', '')
+        order.admin_instruction = request.POST.get('admin_instructions')
         order.save()
         return JsonResponse({
             'success': True,

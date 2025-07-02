@@ -22,8 +22,10 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+from .utils import get_effective_user
 
 # Create your views here.
+
 
 
 def register(request):
@@ -78,14 +80,24 @@ def log_out(request):
 # Customer Panel Views
 @login_required
 def customer_dashboard(request):
+    effective_user = get_effective_user(request)
+    print("EFFECTIVE USER:", effective_user)
+    print("IS_IMPERSONATING:", request.is_impersonating)
+    print("Impersonated user:", effective_user.get_full_name())
+    print("User email:", effective_user.email)
+    return render(request, 'users/customer/dashboard.html', {
+        'is_impersonating': request.is_impersonating,
+        'original_user': getattr(request, 'original_user', None)
+    })
     return render(request, 'users/customer/dashboard.html')
 
 
 
 @login_required
 def customer_profile(request):
+    effective_user = get_effective_user(request)
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=request.user)
+        form = UserProfileForm(request.POST, instance=effective_user)
         if form.is_valid():
             user = form.save(commit=False)
             password_changed = False
@@ -96,7 +108,7 @@ def customer_profile(request):
             confirm_password = form.cleaned_data.get('confirm_password')
             
             if new_password:
-                if not request.user.check_password(current_password):
+                if not effective_user.check_password(current_password):
                     form.add_error('current_password', 'Current password is incorrect')
                     return render(request, 'users/customer/profile.html', {'form': form})
                 
@@ -142,26 +154,27 @@ def customer_profile(request):
             
             return redirect('users:customer-dashboard')
     else:
-        form = UserProfileForm(instance=request.user)
+        form = UserProfileForm(instance=effective_user)
     
     return render(request, 'users/customer/profile.html', {'form': form})
 
 
 @login_required
 def orders(request):
-    digitizing_form = DigitizingOrderForm(user=request.user)
-    patch_form = PatchOrderForm(user=request.user)
-    vector_form = VectorOrderForm(user=request.user)
+    effective_user = get_effective_user(request)
+    digitizing_form = DigitizingOrderForm(user=effective_user)
+    patch_form = PatchOrderForm(user=effective_user)
+    vector_form = VectorOrderForm(user=effective_user)
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         
         if form_type == 'digitizing':
-            form = DigitizingOrderForm(request.POST, request.FILES, user=request.user)
+            form = DigitizingOrderForm(request.POST, request.FILES, user=effective_user)
         elif form_type == 'patch':
-            form = PatchOrderForm(request.POST, request.FILES, user=request.user)
+            form = PatchOrderForm(request.POST, request.FILES, user=effective_user)
         elif form_type == 'vector':
-            form = VectorOrderForm(request.POST, request.FILES, user=request.user)
+            form = VectorOrderForm(request.POST, request.FILES, user=effective_user)
         else:
             messages.error(request, "Invalid form submission")
             return redirect('users:place-order')
@@ -172,7 +185,7 @@ def orders(request):
             # Prepare email context
             context = {
                 'order_number': order.order_number,
-                'customer_name': request.user.get_full_name(),
+                'customer_name': effective_user.get_full_name(),
                 'order': order,
                 'order_type': form_type.capitalize()
             }
@@ -186,7 +199,7 @@ def orders(request):
                 subject_customer,
                 text_content_customer,
                 'digitizingplus@gmail.com',
-                [request.user.email]
+                [effective_user.email]
             )
             email_customer.attach_alternative(html_content_customer, "text/html")
             email_customer.send()
@@ -229,19 +242,20 @@ def orders(request):
 
 @login_required
 def edit_order(request, type, id):
+    effective_user = get_effective_user(request)
     # Get the order object
     if type == 'Vector':
-        order = get_object_or_404(VectorOrder, pk=id, user=request.user)
+        order = get_object_or_404(VectorOrder, pk=id, user=effective_user)
         form_class = VectorOrderForm
         file_model = VectorOrder_Files
         active_tab = 'vector'
     elif type == 'Digitizing':
-        order = get_object_or_404(DigitizingOrder, pk=id, user=request.user)
+        order = get_object_or_404(DigitizingOrder, pk=id, user=effective_user)
         form_class = DigitizingOrderForm
         file_model = DigitizingOrder_Files
         active_tab = 'digitizing'
     elif type == 'Patch':
-        order = get_object_or_404(PatchOrder, pk=id, user=request.user)
+        order = get_object_or_404(PatchOrder, pk=id, user=effective_user)
         form_class = PatchOrderForm
         file_model = PatchOrder_Files
         active_tab = 'patch'
@@ -249,7 +263,7 @@ def edit_order(request, type, id):
         raise Http404("Invalid order type")
 
     if request.method == 'POST':
-        form = form_class(request.POST, request.FILES, instance=order, user=request.user)
+        form = form_class(request.POST, request.FILES, instance=order, user=effective_user)
         if form.is_valid():
             order = form.save()
             
@@ -269,7 +283,7 @@ def edit_order(request, type, id):
             messages.success(request, "Order updated successfully!")
             return redirect('users:customer-order-details', type=type, id=id)
     else:
-        form = form_class(instance=order, user=request.user)
+        form = form_class(instance=order, user=effective_user)
         # Get existing files to display in the form
         existing_files = file_model.objects.filter(order=order)
         if existing_files.exists():
@@ -279,9 +293,9 @@ def edit_order(request, type, id):
 
     # Create empty forms for other tabs
     forms = {
-        'digitizing_form': DigitizingOrderForm(user=request.user) if active_tab != 'digitizing' else form,
-        'patch_form': PatchOrderForm(user=request.user) if active_tab != 'patch' else form,
-        'vector_form': VectorOrderForm(user=request.user) if active_tab != 'vector' else form,
+        'digitizing_form': DigitizingOrderForm(user=effective_user) if active_tab != 'digitizing' else form,
+        'patch_form': PatchOrderForm(user=effective_user) if active_tab != 'patch' else form,
+        'vector_form': VectorOrderForm(user=effective_user) if active_tab != 'vector' else form,
     }
 
     context = {
@@ -296,10 +310,11 @@ def edit_order(request, type, id):
 
 @login_required
 def order_records(request):
+    effective_user = get_effective_user(request)
     # Get all orders for current user
-    digitizing = DigitizingOrder.objects.filter(user=request.user)
-    patch = PatchOrder.objects.filter(user=request.user)
-    vector = VectorOrder.objects.filter(user=request.user)
+    digitizing = DigitizingOrder.objects.filter(user=effective_user)
+    patch = PatchOrder.objects.filter(user=effective_user)
+    vector = VectorOrder.objects.filter(user=effective_user)
 
     # Add type labels
     for order in digitizing:
@@ -323,7 +338,7 @@ def order_records(request):
 
 @login_required
 def order_details(request, type, id):
-
+    effective_user = get_effective_user(request)
     if type == 'Vector':
         order = VectorOrder.objects.get(pk=id)
         template_name = 'users/customer/vector-order-details.html'
@@ -352,21 +367,22 @@ def order_details(request, type, id):
 
 @login_required
 def quotes(request):
+    effective_user = get_effective_user(request)
     # Initialize empty forms
-    digitizing_form = DigitizingQuoteForm(user=request.user)
-    patch_form = PatchQuoteForm(user=request.user)
-    vector_form = VectorQuoteForm(user=request.user)
+    digitizing_form = DigitizingQuoteForm(user=effective_user)
+    patch_form = PatchQuoteForm(user=effective_user)
+    vector_form = VectorQuoteForm(user=effective_user)
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         
         # Handle each form type
         if form_type == 'digitizing':
-            form = DigitizingQuoteForm(request.POST, user=request.user)
+            form = DigitizingQuoteForm(request.POST, user=effective_user)
         elif form_type == 'patch':
-            form = PatchQuoteForm(request.POST, user=request.user)
+            form = PatchQuoteForm(request.POST, user=effective_user)
         elif form_type == 'vector':
-            form = VectorQuoteForm(request.POST, user=request.user)
+            form = VectorQuoteForm(request.POST, user=effective_user)
         else:
             messages.error(request, "Invalid form submission")
             return redirect('users:place-quote')
@@ -395,10 +411,11 @@ def quotes(request):
 
 @login_required
 def quote_records(request):
+    effective_user = get_effective_user(request)
     # Get all quotes for current user
-    digitizing = DigitizingQuote.objects.filter(user=request.user)
-    patch = PatchQuote.objects.filter(user=request.user)
-    vector = VectorQuote.objects.filter(user=request.user)
+    digitizing = DigitizingQuote.objects.filter(user=effective_user)
+    patch = PatchQuote.objects.filter(user=effective_user)
+    vector = VectorQuote.objects.filter(user=effective_user)
 
     # Add type labels and convert to list of dicts for easier processing
     all_quotes = []
@@ -424,8 +441,9 @@ def quote_records(request):
 
 @login_required
 def digitizing_quote_details(request, pk):
+    effective_user = get_effective_user(request)
     try:
-        quote = DigitizingQuote.objects.get(pk=pk, user=request.user)
+        quote = DigitizingQuote.objects.get(pk=pk, user=effective_user)
         files = DigitizingQuote_Files.objects.filter(quote=quote)
         
         context = {
@@ -441,8 +459,9 @@ def digitizing_quote_details(request, pk):
 
 @login_required
 def patch_quote_details(request, pk):
+    effective_user = get_effective_user(request)
     try:
-        quote = PatchQuote.objects.get(pk=pk, user=request.user)
+        quote = PatchQuote.objects.get(pk=pk, user=effective_user)
         files = PatchQuote_Files.objects.filter(quote=quote)
         
         context = {
@@ -458,8 +477,9 @@ def patch_quote_details(request, pk):
 
 @login_required
 def vector_quote_details(request, pk):
+    effective_user = get_effective_user(request)
     try:
-        quote = VectorQuote.objects.get(pk=pk, user=request.user)
+        quote = VectorQuote.objects.get(pk=pk, user=effective_user)
         files = VectorQuote_Files.objects.filter(quote=quote)
         
         context = {
@@ -475,21 +495,22 @@ def vector_quote_details(request, pk):
 
 @login_required
 def accept_quote(request, quote_type, pk):
+    effective_user = get_effective_user(request)
     try:
         if quote_type == 'digitizing':
-            quote = DigitizingQuote.objects.get(pk=pk, user=request.user)
+            quote = DigitizingQuote.objects.get(pk=pk, user=effective_user)
             order = quote.convert_to_order()
             messages.success(request, 'Quote accepted and converted to order successfully!')
             return redirect('digitizing-order-details', pk=order.id)
             
         elif quote_type == 'patch':
-            quote = PatchQuote.objects.get(pk=pk, user=request.user)
+            quote = PatchQuote.objects.get(pk=pk, user=effective_user)
             order = quote.convert_to_order()
             messages.success(request, 'Quote accepted and converted to order successfully!')
             return redirect('patch-order-details', pk=order.id)
             
         elif quote_type == 'vector':
-            quote = VectorQuote.objects.get(pk=pk, user=request.user)
+            quote = VectorQuote.objects.get(pk=pk, user=effective_user)
             order = quote.convert_to_order()
             messages.success(request, 'Quote accepted and converted to order successfully!')
             return redirect('vector-order-details', pk=order.id)
@@ -506,10 +527,11 @@ def accept_quote(request, quote_type, pk):
 
 @login_required
 def invoice_list(request):
+    effective_user = get_effective_user(request)
     """
     Show all invoices for the logged-in user with order type
     """
-    invoices = Invoice.objects.filter(customer=request.user).order_by('-created_at')
+    invoices = Invoice.objects.filter(customer=effective_user).order_by('-created_at')
     
     # Add order type to each invoice
     for invoice in invoices:
@@ -533,11 +555,12 @@ def invoice_list(request):
 
 @login_required
 def invoice_detail(request, invoice_id):
+    effective_user = get_effective_user(request)
     """
     Simple view to show details of one invoice
     """
     # Get the invoice or show 404 error
-    invoice = get_object_or_404(Invoice, id=invoice_id, customer=request.user)
+    invoice = get_object_or_404(Invoice, id=invoice_id, customer=effective_user)
     user = invoice.customer
     if invoice.digitizing_order:
         invoice.order_type = "Digitizing"

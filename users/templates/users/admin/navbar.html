@@ -104,10 +104,14 @@
                         </a></li>
                         <li><a class="dropdown-item" href="{% url "users:admin-user-list" %}">
                             <i class="fas fa-user user-icon"></i> User Management
-                        </a></li>
-                        <li><a class="dropdown-item" href="#">
-                            <i class="fas fa-tshirt"></i> Apparel
-                        </a></li>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="{% url "users:admin-company-info" %}">
+                            <i class="fas fa-user user-icon"></i> Company Infomation
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 
@@ -117,9 +121,11 @@
             <!-- Right-aligned items -->
             <ul class="navbar-nav ms-auto me-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-phone-alt"></i> Contact
+                    {% if request.user.is_authenticated %}
+                    <a class="nav-link" href="{% url "users:logout" %}">
+                        <i class="fas fa-phone-alt"></i> Logout
                     </a>
+                    {% endif %}
                 </li>
             </ul>
         </div>

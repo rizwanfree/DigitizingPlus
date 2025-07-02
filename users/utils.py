@@ -33,3 +33,12 @@ def send_invoice_email(invoice, request=None):
     # email.attach(f'invoice_{invoice.invoice_number}.pdf', pdf, 'application/pdf')
     
     email.send()
+
+
+
+# users/utils.py
+def get_effective_user(request):
+    """Returns the original user if impersonating, otherwise the current user"""
+    if hasattr(request, 'is_impersonating') and request.is_impersonating:
+        return request.original_user  # We'll set this in the middleware
+    return request.user

@@ -43,7 +43,16 @@ input[type="number"] {
     </div>
 </header>
 
+
+
     <!-- Main Content -->
+     <!-- Add this to your base template -->
+{% if request.is_impersonating %}
+<div class="impersonation-banner">
+    You are currently viewing as {{ request.user.get_full_name }}.
+    <a href="{% url 'users:stop-impersonate' %}" class="btn btn-warning btn-sm">Stop Impersonating</a>
+</div>
+{% endif %}
     <div class="main-content mt-3 mb-3">
         <!-- Side Navigation -->
         <nav class="sidebar">

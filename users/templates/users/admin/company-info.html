@@ -1,0 +1,68 @@
+{% extends 'users/admin/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Company Information</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <!-- Contact Info -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="text" id="phone" name="phone" class="form-control" value="{{ company.phone|default:'' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" id="email" name="email" class="form-control" value="{{ company.email|default:'' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Address</label>
+                                    <textarea id="address" name="address" class="form-control" rows="3">{{ company.address|default:'' }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="whatsapp" class="form-label">WhatsApp Number</label>
+                                    <input type="text" id="whatsapp" name="whatsapp" class="form-control" value="{{ company.whatsapp|default:'' }}">
+                                </div>
+                            </div>
+
+                            <!-- Social Media -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="facebook" class="form-label">Facebook URL</label>
+                                    <input type="url" id="facebook" name="facebook" class="form-control" value="{{ company.facebook|default:'' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="instagram" class="form-label">Instagram URL</label>
+                                    <input type="url" id="instagram" name="instagram" class="form-control" value="{{ company.instagram|default:'' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="twitter" class="form-label">Twitter URL</label>
+                                    <input type="url" id="twitter" name="twitter" class="form-control" value="{{ company.twitter|default:'' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="tiktok" class="form-label">TikTok URL</label>
+                                    <input type="url" id="tiktok" name="tiktok" class="form-control" value="{{ company.tiktok|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

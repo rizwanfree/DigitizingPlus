@@ -36,8 +36,9 @@
                 <td class="text-center align-middle">
                     {% if order.user.country_code %}
                     <span class="flag-icon flag-icon-{{ order.user.country_code }}"></span>
-                    {% endif %}<br>  
-                    {{ order.user.get_full_name|title }}                  
+                    {% endif %}<br>
+                    <a href="{% url 'users:start-impersonate' order.user.id %}">{{ order.user.get_full_name|title }}</a></td>  
+                                      
                 </td>
                 <td class="text-center align-middle">{{ order.name }}</td>
                 <td class="text-center align-middle">
