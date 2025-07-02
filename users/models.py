@@ -46,7 +46,7 @@ class User(AbstractUser):
     user_id = models.CharField(max_length=100, unique=True, blank=False, null=False)
     
     # Main email field (now optional)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     # Additional email fields
     email2 = models.EmailField(blank=True, null=True, verbose_name="Secondary Email")
     email3 = models.EmailField(blank=True, null=True, verbose_name="Tertiary Email")
