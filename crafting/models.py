@@ -97,7 +97,7 @@ BACKING_TYPE = [
 EMBROIDERY_FILL = [
     ('50% Embroidery', '50% Embroidery'),
     ('75% Embroidery', '75% Embroidery'),
-    ('10% Embroidery', '100% Embroidery'),
+    ('100% Embroidery', '100% Embroidery'),
 ]
 
 STATUS_CHOICES = [
@@ -183,8 +183,9 @@ class DigitizingOrderEdit(models.Model):
     colors = models.IntegerField(null=True, blank=True)
     logo_placement = models.CharField(max_length=255, null=True, blank=True)
     fabric_type = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
     edited_at = models.DateTimeField(auto_now_add=True)
-
+    created_at = models.DateTimeField(auto_now_add=True)
     def save(self, *args, **kwargs):
         if not self.order_number:
             last_id = DigitizingOrderEdit.objects.count() + 1
@@ -234,6 +235,32 @@ class PatchOrder(models.Model):
         super().save(*args, **kwargs)
     
 
+class PatchOrderEdit(models.Model):
+    original_order = models.ForeignKey(PatchOrder, on_delete=models.CASCADE, related_name='edits')
+    order_number = models.CharField(max_length=20, unique=True, blank=True)
+    name = models.CharField(max_length=255)
+    po_number = models.IntegerField(null=True, blank=True)
+    height = models.DecimalField(decimal_places=2, max_digits=5)
+    width = models.DecimalField(decimal_places=2, max_digits=5)
+    patch_type = models.CharField(max_length=50, choices=PATCH_TYPE, null=True, blank=True)
+    backing_type = models.CharField(max_length=50, choices=BACKING_TYPE, null=True, blank=True)
+    border_type = models.CharField(max_length=50, choices=BORDER_TYPE, null=True, blank=True)
+    embroidery_fill = models.CharField(max_length=50, choices=EMBROIDERY_FILL, null=True, blank=True)
+    quantity = models.IntegerField(default=1)
+    color_details = models.CharField(max_length=255, blank=True, null=True)
+    contact_name = models.CharField(max_length=255)
+    contact_number = models.CharField(max_length=50)
+    shipping_address = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
+    instructions = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            last_id = PatchOrderEdit.objects.count() + 1
+            self.order_number = f"PE-{last_id:04d}"
+        super().save(*args, **kwargs)
 
 
 
@@ -272,6 +299,25 @@ class VectorOrder(models.Model):
         super().save(*args, **kwargs)
 
 
+class VectorOrderEdit(models.Model):
+    original_order = models.ForeignKey(VectorOrder, on_delete=models.CASCADE, related_name='edits')
+    order_number = models.CharField(max_length=20, unique=True, blank=True)
+    name = models.CharField(max_length=255)
+    po_number = models.IntegerField(null=True, blank=True)
+    required_format = models.CharField(max_length=50, choices=VECTOR_ORDER_FORMAT)
+    color_types = models.CharField(max_length=50, choices=VECTOR_ORDER_COLOR_TYPES)
+    colors = models.IntegerField(default=1)
+    others = models.CharField(max_length=255, blank=True, null=True)
+    instructions = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            last_id = VectorOrderEdit.objects.count() + 1
+            self.order_number = f"VE-{last_id:04d}"
+        super().save(*args, **kwargs)
 
 
 class DigitizingOrder_Files(models.Model):

@@ -8,7 +8,23 @@
         <div class="col-md-6 pe-4">
             <div class="card border-maroon mb-4">
                 <div class="card-header bg-maroon text-white">
-                    <h4><i class="fas fa-edit me-2"></i> Original Digitizing Order</h4>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4><i class="fas fa-edit me-2"></i> Original Patch Order</h4>
+                        </div>
+                    
+                        <div class="col-md-4">
+                            {% if order.status == 'Processing' %}
+                                <div class="text-end mb-3">
+                                    <a href="{% url 'users:edit-order' type=type id=order.id %}" 
+                                    class="btn btn-secondary">
+                                        Edit Order
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
@@ -36,29 +52,34 @@
                         <div class="col-md-8">{{ order.width }}" x {{ order.height }}"</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Stitch Count:</div>
-                        <div class="col-md-8">{{ order.stitches|default:"Not specified" }}</div>
+                        <div class="col-md-4 fw-bold">Patch Type:</div>
+                        <div class="col-md-8">{{ order.patch_type }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Backing Type:</div>
+                        <div class="col-md-8">{{ order.backing_type }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Border Type:</div>
+                        <div class="col-md-8">{{ order.border_type }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Embroidery Fill:</div>
+                        <div class="col-md-8">{{ order.embroidery_fill }}</div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Colors:</div>
-                        <div class="col-md-8">{{ order.colors|default:"Not specified" }}</div>
+                        <div class="col-md-8">{{ order.color_details }}</div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">PO Number:</div>
                         <div class="col-md-8">{{ order.po_number|default:"Not specified" }}</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">File Format:</div>
-                        <div class="col-md-8">{{ order.get_file_format_display|default:"Not specified" }}</div>
+                        <div class="col-md-4 fw-bold">Quantity:</div>
+                        <div class="col-md-8">{{ order.quantity }}</div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Fabric Type:</div>
-                        <div class="col-md-8">{{ order.get_fabric_type_display|default:"Not specified" }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Logo Placement:</div>
-                        <div class="col-md-8">{{ order.get_logo_placement_display|default:"Not specified" }}</div>
-                    </div>
+                    
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Urgent:</div>
                         <div class="col-md-8">
@@ -69,10 +90,10 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="row mb-3">
+                    {% comment %} <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Price:</div>
                         <div class="col-md-8">${{ order.price|default:"Not specified" }}</div>
-                    </div>
+                    </div> {% endcomment %}
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Instructions:</div>
                         <div class="col-md-8">{{ order.instructions|default:"None provided" }}</div>

@@ -74,6 +74,10 @@ urlpatterns = [
     path('patch-quote/<int:pk>/', views.patch_quote_details, name='patch-quote-detail'),
     path('vector-quote/<int:pk>/', views.vector_quote_details, name='vector-quote-detail'),
 
+    path('quotes/digitizing/edit/<int:id>/', views.edit_digitizing_quote, name='edit-digitizing-quote'),
+    path('quotes/patch/edit/<int:id>/', views.edit_patch_quote, name='edit-patch-quote'),
+    path('quotes/vector/edit/<int:id>/', views.edit_vector_quote, name='edit-vector-quote'),
+
     path('accept-quote/<str:quote_type>/<int:pk>/', views.accept_quote, name='accept-quote'),
 
 

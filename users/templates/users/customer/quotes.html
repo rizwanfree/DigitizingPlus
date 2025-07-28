@@ -2,67 +2,61 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <!-- Custom CSS for Inactive Tabs -->
-    <style>
-        .nav-tabs .nav-link {
-            color: #000; /* Set the text color for inactive tabs */
-            background-color: #f8f9fa; /* Set the background color for inactive tabs */
-            border-color: #dee2e6 #dee2e6 #fff; /* Match the border color */
-        }
-        .nav-tabs .nav-link.active {
-            color: #000; /* Set the text color for active tabs */
-            background-color: #fff; /* Set the background color for active tabs */
-            border-color: #dee2e6 #dee2e6 #fff; /* Match the border color */
-        }
-    </style>
-    <h1 class="text-center mb-3">PLACE NEW QUOTE</h1>
+<style>
+    .nav-tabs .nav-link {
+        color: #000;
+        background-color: #f8f9fa;
+        border-color: #dee2e6 #dee2e6 #fff;
+    }
+    .nav-tabs .nav-link.active {
+        color: #000;
+        background-color: #fff;
+        border-color: #dee2e6 #dee2e6 #fff;
+    }
+</style>
 
-    <!-- Tab Navigation -->
-    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="digitizing-tab" data-bs-toggle="tab" data-bs-target="#digitizing" type="button" role="tab" aria-controls="digitizing" aria-selected="true">
-                Digitizing Quote
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="patch-tab" data-bs-toggle="tab" data-bs-target="#patch" type="button" role="tab" aria-controls="patch" aria-selected="false">
-                Patch Quote
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="vector-tab" data-bs-toggle="tab" data-bs-target="#vector" type="button" role="tab" aria-controls="vector" aria-selected="false">
-                Vector Quote
-            </button>
-        </li>
-    </ul>
+<h1 class="text-center mb-3">PLACE NEW QUOTE</h1>
 
-    <!-- Tab Content -->
-    <div class="tab-content" id="orderTabsContent">
-        <!-- Digitizing Order Tab -->
-        <div class="tab-pane fade show active mt-5" id="digitizing" role="tabpanel" aria-labelledby="digitizing-tab">
-            <form action="" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="digitizing">
-                {% crispy digitizing_form %}
-            </form>
-        </div>
+<!-- Tab Navigation -->
+<ul class="nav nav-tabs" id="orderTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if active_tab == 'digitizing' %}active{% endif %}" id="digitizing-tab" data-bs-toggle="tab" data-bs-target="#digitizing" type="button" role="tab">Digitizing Quote</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if active_tab == 'patch' %}active{% endif %}" id="patch-tab" data-bs-toggle="tab" data-bs-target="#patch" type="button" role="tab">Patch Quote</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if active_tab == 'vector' %}active{% endif %}" id="vector-tab" data-bs-toggle="tab" data-bs-target="#vector" type="button" role="tab">Vector Quote</button>
+    </li>
+</ul>
 
-        <!-- Patch Order Tab -->
-        <div class="tab-pane fade mt-5" id="patch" role="tabpanel" aria-labelledby="patch-tab">
-            <form action="" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="patch">
-                {% crispy patch_form %}
-            </form>
-        </div>
-
-        <!-- Vector Order Tab -->
-        <div class="tab-pane fade mt-5" id="vector" role="tabpanel" aria-labelledby="vector-tab">
-            <form action="" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="vector">
-                {% crispy vector_form %}
-            </form>
-        </div>
+<!-- Tab Content -->
+<div class="tab-content mt-5" id="orderTabsContent">
+    <!-- Digitizing Quote Form -->
+    <div class="tab-pane fade show {% if active_tab == 'digitizing' %}active{% endif %}" id="digitizing" role="tabpanel">
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="digitizing">
+            {% crispy digitizing_form %}
+        </form>
     </div>
-{% endblock content %}
+
+    <!-- Patch Quote Form -->
+    <div class="tab-pane fade show {% if active_tab == 'patch' %}active{% endif %}" id="patch" role="tabpanel">
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="patch">
+            {% crispy patch_form %}
+        </form>
+    </div>
+
+    <!-- Vector Quote Form -->
+    <div class="tab-pane fade show {% if active_tab == 'vector' %}active{% endif %}" id="vector" role="tabpanel">
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="vector">
+            {% crispy vector_form %}
+        </form>
+    </div>
+</div>
+{% endblock %}

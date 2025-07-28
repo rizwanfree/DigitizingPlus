@@ -221,9 +221,9 @@ class VectorOrderForm(BaseOrderForm, forms.ModelForm):
                 Column('color_types', css_class='col-md-4'),
                 Column('colors', css_class='col-md-4'),
             ),
-            Row(
-                Column('others', css_class='col-md-12'),
-            ),
+            # Row(
+            #     Column('others', css_class='col-md-12'),
+            # ),
             Row(
                 Column('instructions', css_class='col-md-6'),
                 Column(Row(

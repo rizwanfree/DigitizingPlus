@@ -42,3 +42,27 @@ def get_effective_user(request):
     if hasattr(request, 'is_impersonating') and request.is_impersonating:
         return request.original_user  # We'll set this in the middleware
     return request.user
+
+
+
+def send_quote_confirmation_email(quote, quote_type, request=None):
+    """Send confirmation email after quote submission"""
+    user = quote.user
+    subject = f"Quote Confirmation - {quote_type} - {quote.name}"
+    
+    html_content = render_to_string('emails/quote_confirmation.html', {
+        'customer_name': user.get_full_name() or user.username,
+        'quote': quote,
+        'quote_type': quote_type
+    }, request=request)
+    
+    text_content = f"Thanks {user.get_full_name() or user.username}, your {quote_type} quote has been received."
+
+    email = EmailMultiAlternatives(
+        subject,
+        text_content,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email]
+    )
+    email.attach_alternative(html_content, "text/html")
+    email.send()

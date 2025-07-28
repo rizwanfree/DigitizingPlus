@@ -8,7 +8,25 @@
         <div class="col-md-6 pe-4">
             <div class="card border-maroon mb-4">
                 <div class="card-header bg-maroon text-white">
-                    <h4><i class="fas fa-pencil-ruler me-2"></i> Original Vector Order</h4>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4><i class="fas fa-pencil-ruler me-2"></i> Original Vector Order</h4>
+                        </div>
+
+                        
+                            <div class="col-md-3">
+                            {% if order.status == 'Processing' %}
+                                <div class="text-end mb-3">
+                                    <a href="{% url 'users:edit-order' type=type id=order.id %}" 
+                                    class="btn btn-secondary">
+                                        Edit Order
+                                    </a>
+                                </div>
+                            {% endif %}
+                        
+                        </div>
+                    </div>
+                    
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">

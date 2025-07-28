@@ -24,7 +24,7 @@
 
                 <div class="col-md-3 text-end">
                     {% if quote.quote_status != 'Accepted' %}
-                    <a href="#" class="btn btn-sm btn-warning me-2">
+                    <a href="{% url 'users:edit-digitizing-quote' quote.id %}" class="btn btn-sm btn-warning me-2">
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
                     {% endif %}
@@ -88,10 +88,10 @@
                                 <p class="text-truncate">{{ file.file.name|cut:"digitizing_quote_files/" }}</p>
                                 <div class="btn-group w-100">
                                     <a href="{{ file.file.url }}" class="btn btn-sm btn-outline-primary" download>
-                                        <i class="fas fa-download"></i>
+                                        <i class="bi bi-download"></i>
                                     </a>
                                     <a href="{{ file.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="bi bi-eye"></i>
                                     </a>
                                 </div>
                             </div>

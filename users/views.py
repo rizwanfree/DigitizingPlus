@@ -10,7 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from crafting.models import DigitizingOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote, VectorQuote_Files, DigitizingQuote_Files, PatchQuote_Files, DigitizingOrder_Files, VectorOrder_Files, PatchOrder_Files
+from crafting.models import DigitizingOrder, DigitizingOrderEdit, PatchOrder, PatchOrderEdit, VectorOrder, DigitizingQuote, PatchQuote, VectorOrderEdit, VectorQuote, VectorQuote_Files, DigitizingQuote_Files, PatchQuote_Files, DigitizingOrder_Files, VectorOrder_Files, PatchOrder_Files
 from finance.models import Invoice
 
 from .forms import FinalDigitizingForm, UserRegistrationForm, UserProfileForm, GivenInfoForm, OptionsForm
@@ -22,7 +22,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from .utils import get_effective_user
+from .utils import get_effective_user, send_quote_confirmation_email
 
 # Create your views here.
 
@@ -240,58 +240,53 @@ def orders(request):
 
 
 
+
 @login_required
 def edit_order(request, type, id):
     effective_user = get_effective_user(request)
-    # Get the order object
-    if type == 'Vector':
-        order = get_object_or_404(VectorOrder, pk=id, user=effective_user)
-        form_class = VectorOrderForm
-        file_model = VectorOrder_Files
-        active_tab = 'vector'
-    elif type == 'Digitizing':
-        order = get_object_or_404(DigitizingOrder, pk=id, user=effective_user)
+
+    # Set context variables depending on order type
+    if type == 'Digitizing':
+        original_order = get_object_or_404(DigitizingOrder, pk=id, user=effective_user)
         form_class = DigitizingOrderForm
-        file_model = DigitizingOrder_Files
+        edit_model = DigitizingOrderEdit
         active_tab = 'digitizing'
+    elif type == 'Vector':
+        original_order = get_object_or_404(VectorOrder, pk=id, user=effective_user)
+        form_class = VectorOrderForm
+        edit_model = VectorOrderEdit
+        active_tab = 'vector'
     elif type == 'Patch':
-        order = get_object_or_404(PatchOrder, pk=id, user=effective_user)
+        original_order = get_object_or_404(PatchOrder, pk=id, user=effective_user)
         form_class = PatchOrderForm
-        file_model = PatchOrder_Files
+        edit_model = PatchOrderEdit
         active_tab = 'patch'
     else:
-        raise Http404("Invalid order type")
+        raise Http404("Invalid order type.")
 
     if request.method == 'POST':
-        form = form_class(request.POST, request.FILES, instance=order, user=effective_user)
+        form = form_class(request.POST, user=effective_user)
         if form.is_valid():
-            order = form.save()
-            
-            # Handle file updates
-            file1 = form.cleaned_data.get('file1')
-            file2 = form.cleaned_data.get('file2')
-            
-            # Clear existing files if new ones are uploaded
-            if file1 or file2:
-                file_model.objects.filter(order=order).delete()
-                
-            if file1:
-                file_model.objects.create(order=order, file=file1)
-            if file2:
-                file_model.objects.create(order=order, file=file2)
-                
-            messages.success(request, "Order updated successfully!")
+            # Build fields dynamically
+            cleaned_data = form.cleaned_data
+            edit_fields = {
+                field.name: cleaned_data.get(field.name)
+                for field in edit_model._meta.fields
+                if field.name != 'id' and field.name != 'order_number' and field.name != 'original_order'
+            }
+
+            # Save as new edit entry
+            edit_model.objects.create(
+                original_order=original_order,
+                **edit_fields
+            )
+
+            messages.success(request, "Changes saved as a new version.")
             return redirect('users:customer-order-details', type=type, id=id)
     else:
-        form = form_class(instance=order, user=effective_user)
-        # Get existing files to display in the form
-        existing_files = file_model.objects.filter(order=order)
-        if existing_files.exists():
-            form.fields['file1'].help_text = f"Current file: {existing_files.first().file.name}"
-            if existing_files.count() > 1:
-                form.fields['file2'].help_text = f"Current file: {existing_files[1].file.name}"
+        form = form_class(instance=original_order, user=effective_user)
 
-    # Create empty forms for other tabs
+    # Optional: pre-fill empty forms for tabs
     forms = {
         'digitizing_form': DigitizingOrderForm(user=effective_user) if active_tab != 'digitizing' else form,
         'patch_form': PatchOrderForm(user=effective_user) if active_tab != 'patch' else form,
@@ -306,6 +301,74 @@ def edit_order(request, type, id):
         **forms
     }
     return render(request, 'users/customer/orders.html', context)
+
+
+# @login_required
+# def edit_order(request, type, id):
+#     effective_user = get_effective_user(request)
+#     # Get the order object
+#     if type == 'Vector':
+#         order = get_object_or_404(VectorOrder, pk=id, user=effective_user)
+#         form_class = VectorOrderForm
+#         file_model = VectorOrder_Files
+#         active_tab = 'vector'
+#     elif type == 'Digitizing':
+#         order = get_object_or_404(DigitizingOrder, pk=id, user=effective_user)
+#         form_class = DigitizingOrderForm
+#         file_model = DigitizingOrder_Files
+#         active_tab = 'digitizing'
+#     elif type == 'Patch':
+#         order = get_object_or_404(PatchOrder, pk=id, user=effective_user)
+#         form_class = PatchOrderForm
+#         file_model = PatchOrder_Files
+#         active_tab = 'patch'
+#     else:
+#         raise Http404("Invalid order type")
+
+#     if request.method == 'POST':
+#         form = form_class(request.POST, request.FILES, instance=order, user=effective_user)
+#         if form.is_valid():
+#             order = form.save()
+            
+#             # Handle file updates
+#             file1 = form.cleaned_data.get('file1')
+#             file2 = form.cleaned_data.get('file2')
+            
+#             # Clear existing files if new ones are uploaded
+#             if file1 or file2:
+#                 file_model.objects.filter(order=order).delete()
+                
+#             if file1:
+#                 file_model.objects.create(order=order, file=file1)
+#             if file2:
+#                 file_model.objects.create(order=order, file=file2)
+                
+#             messages.success(request, "Order updated successfully!")
+#             return redirect('users:customer-order-details', type=type, id=id)
+#     else:
+#         form = form_class(instance=order, user=effective_user)
+#         # Get existing files to display in the form
+#         existing_files = file_model.objects.filter(order=order)
+#         if existing_files.exists():
+#             form.fields['file1'].help_text = f"Current file: {existing_files.first().file.name}"
+#             if existing_files.count() > 1:
+#                 form.fields['file2'].help_text = f"Current file: {existing_files[1].file.name}"
+
+#     # Create empty forms for other tabs
+#     forms = {
+#         'digitizing_form': DigitizingOrderForm(user=effective_user) if active_tab != 'digitizing' else form,
+#         'patch_form': PatchOrderForm(user=effective_user) if active_tab != 'patch' else form,
+#         'vector_form': VectorOrderForm(user=effective_user) if active_tab != 'vector' else form,
+#     }
+
+#     context = {
+#         'edit_mode': True,
+#         'active_tab': active_tab,
+#         'type': type,
+#         'order_id': id,
+#         **forms
+#     }
+#     return render(request, 'users/customer/orders.html', context)
 
 
 @login_required
@@ -339,22 +402,32 @@ def order_records(request):
 @login_required
 def order_details(request, type, id):
     effective_user = get_effective_user(request)
+
     if type == 'Vector':
-        order = VectorOrder.objects.get(pk=id)
+        original_order = get_object_or_404(VectorOrder, pk=id, user=effective_user)
+        edit_model = VectorOrderEdit
         template_name = 'users/customer/vector-order-details.html'
     elif type == 'Digitizing':
-        order = DigitizingOrder.objects.get(pk=id)
+        original_order = get_object_or_404(DigitizingOrder, pk=id, user=effective_user)
+        edit_model = DigitizingOrderEdit
         template_name = 'users/customer/digitizing-order-details.html'
     elif type == 'Patch':
-        order = PatchOrder.objects.get(pk=id)
+        original_order = get_object_or_404(PatchOrder, pk=id, user=effective_user)
+        edit_model = PatchOrderEdit
         template_name = 'users/customer/patch-order-details.html'
     else:
         raise Http404("Invalid order type")
 
+    # Check for latest edit
+    latest_edit = edit_model.objects.filter(original_order=original_order).order_by('-edited_at').first()
+
     context = {
-        'order': order,
-        'type': type
+        'order': latest_edit if latest_edit else original_order,
+        'is_edit': bool(latest_edit),
+        'type': type,
+        'original_order': original_order
     }
+
     return render(request, template_name, context)
 
 
@@ -368,32 +441,40 @@ def order_details(request, type, id):
 @login_required
 def quotes(request):
     effective_user = get_effective_user(request)
-    # Initialize empty forms
+
+    # Initialize empty forms for GET and error fallback
     digitizing_form = DigitizingQuoteForm(user=effective_user)
     patch_form = PatchQuoteForm(user=effective_user)
     vector_form = VectorQuoteForm(user=effective_user)
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
-        
-        # Handle each form type
+        form = None
+        quote_type = None
+
+        # Bind the submitted form based on type (include request.FILES)
         if form_type == 'digitizing':
-            form = DigitizingQuoteForm(request.POST, user=effective_user)
+            form = DigitizingQuoteForm(request.POST, request.FILES, user=effective_user)
+            quote_type = 'Digitizing'
         elif form_type == 'patch':
-            form = PatchQuoteForm(request.POST, user=effective_user)
+            form = PatchQuoteForm(request.POST, request.FILES, user=effective_user)
+            quote_type = 'Patch'
         elif form_type == 'vector':
-            form = VectorQuoteForm(request.POST, user=effective_user)
+            form = VectorQuoteForm(request.POST, request.FILES, user=effective_user)
+            quote_type = 'Vector'
         else:
-            messages.error(request, "Invalid form submission")
+            messages.error(request, "Invalid form submission.")
             return redirect('users:place-quote')
 
+        # Validate and process
         if form.is_valid():
-            form.save()
-            messages.success(request, "Quote request submitted!")
+            quote = form.save()
+            send_quote_confirmation_email(quote, quote_type, request=request)  # ✅ send email
+            messages.success(request, f"{quote_type} quote submitted! A confirmation email has been sent.")
             return redirect('users:customer-quote-records')
         else:
-            messages.error(request, "Please fix the errors below")
-            # Keep the submitted form to show errors
+            messages.error(request, "Please fix the errors below.")
+            # Reassign the form with errors to the right context
             if form_type == 'digitizing':
                 digitizing_form = form
             elif form_type == 'patch':
@@ -404,7 +485,8 @@ def quotes(request):
     context = {
         'digitizing_form': digitizing_form,
         'patch_form': patch_form,
-        'vector_form': vector_form
+        'vector_form': vector_form,
+        'active_tab': form_type if request.method == "POST" else "digitizing",  # default tab
     }
     return render(request, 'users/customer/quotes.html', context)
 
@@ -491,6 +573,87 @@ def vector_quote_details(request, pk):
     
     except VectorQuote.DoesNotExist:
         raise Http404("Quote not found or you don't have permission to view it")
+
+
+
+@login_required
+def edit_digitizing_quote(request, id):
+    quote = get_object_or_404(DigitizingQuote, pk=id, user=request.user)
+
+    if quote.quote_status == 'Accepted':
+        messages.error(request, "Accepted quotes cannot be edited.")
+        return redirect('users:digitizing-quote-detail', pk=id)
+
+    if request.method == 'POST':
+        form = DigitizingQuoteForm(request.POST, request.FILES, instance=quote, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Digitizing quote updated successfully.")
+            return redirect('users:digitizing-quote-detail', pk=id)
+    else:
+        form = DigitizingQuoteForm(instance=quote, user=request.user)
+
+    context = {
+        'digitizing_form': form,
+        'patch_form': PatchQuoteForm(user=request.user),
+        'vector_form': VectorQuoteForm(user=request.user),
+        'active_tab': 'digitizing',
+    }
+    return render(request, 'users/customer/quotes.html', context)
+
+
+@login_required
+def edit_patch_quote(request, id):
+    quote = get_object_or_404(PatchQuote, pk=id, user=request.user)
+
+    if quote.quote_status == 'Accepted':
+        messages.error(request, "Accepted quotes cannot be edited.")
+        return redirect('users:patch-quote-detail', pk=id)
+
+    if request.method == 'POST':
+        form = PatchQuoteForm(request.POST, request.FILES, instance=quote, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Patch quote updated successfully.")
+            return redirect('users:patch-quote-detail', pk=id)
+    else:
+        form = PatchQuoteForm(instance=quote, user=request.user)
+
+    context = {
+        'digitizing_form': DigitizingQuoteForm(user=request.user),
+        'patch_form': form,
+        'vector_form': VectorQuoteForm(user=request.user),
+        'active_tab': 'patch',
+    }
+    return render(request, 'users/customer/quotes.html', context)
+
+
+
+
+@login_required
+def edit_vector_quote(request, id):
+    quote = get_object_or_404(VectorQuote, pk=id, user=request.user)
+
+    if quote.quote_status == 'Accepted':
+        messages.error(request, "Accepted quotes cannot be edited.")
+        return redirect('users:vector-quote-detail', pk=id)
+
+    if request.method == 'POST':
+        form = VectorQuoteForm(request.POST, request.FILES, instance=quote, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Vector quote updated successfully.")
+            return redirect('users:vector-quote-detail', pk=id)
+    else:
+        form = VectorQuoteForm(instance=quote, user=request.user)
+
+    context = {
+        'digitizing_form': DigitizingQuoteForm(user=request.user),
+        'patch_form': PatchQuoteForm(user=request.user),
+        'vector_form': form,
+        'active_tab': 'vector',
+    }
+    return render(request, 'users/customer/quotes.html', context)
 
 
 @login_required
