@@ -43,32 +43,48 @@ def stop_impersonate(request):
 
 
 @login_required
-@user_passes_test(lambda u: u.is_superuser)  # Restrict to admin only
+@user_passes_test(lambda u: u.is_superuser)
 def admin_dashboard(request):
-    # Get all orders with user data and prefetch files
-    digitizing_orders = DigitizingOrder.objects.select_related('user').prefetch_related('files')
-    patch_orders = PatchOrder.objects.select_related('user').prefetch_related('files')
-    vector_orders = VectorOrder.objects.select_related('user').prefetch_related('files')
+    in_process_digitizing = DigitizingOrder.objects.filter(status='Processing').count()
+    in_process_vector = VectorOrder.objects.filter(status='Processing').count()
+    in_process_patch = PatchOrder.objects.filter(status='Processing').count()
 
-    # Combine all orders with their types
-    all_orders = []
-    for order in digitizing_orders:
-        order.order_type = 'Digitizing'
-        all_orders.append(order)
-    for order in patch_orders:
-        order.order_type = 'Patch'
-        all_orders.append(order)
-    for order in vector_orders:
-        order.order_type = 'Vector'
-        all_orders.append(order)
+    
 
-    # Sort by creation date (newest first)
-    all_orders.sort(key=lambda x: x.created_at, reverse=True)
+    # Total invoiced amount (all invoices)
+    total_invoiced = Invoice.objects.aggregate(total=Sum('total'))['total'] or 0
+
+    # Total received payments
+    total_paid = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
+
+    # Unpaid = total invoiced - total paid
+    unpaid = total_invoiced - total_paid
+    #print(total_revenue)
+
+    completed_tasks = (
+        DigitizingOrder.objects.filter(status='Delivered').count() +
+        VectorOrder.objects.filter(status='Delivered').count() +
+        PatchOrder.objects.filter(status='Delivered').count()
+    )
+
+    active_users = User.objects.filter(is_active=True, is_superuser=False)
+    new_users = active_users.filter(date_joined__month=request.user.date_joined.month)
 
     context = {
-        'orders': all_orders,
+        "in_process_digitizing": in_process_digitizing,
+        "in_process_vector": in_process_vector,
+        "in_process_patch": in_process_patch,
+        "revenue": total_invoiced,
+        "unpaid": unpaid,
+        "paid": total_paid,
+        "active_users": active_users,
+        "new_users": new_users,
+        "completed_tasks": completed_tasks,  # Replace with actual logic
+        "pending_tasks": 250,
+        "total_tasks": 1500,
     }
-    return render(request, 'users/admin/dashboard.html', context)
+
+    return render(request, "users/admin/dashboard.html", context)
 
 
 
@@ -192,6 +208,17 @@ def vector_orders_details(request, pk):
             finalized.finalized_at = finalized_at
             finalized.save()
 
+            # Create invoice only if not already created
+            if not hasattr(finalized, 'invoice') or finalized.invoice is None:
+                invoice = Invoice.objects.create(
+                    customer=order.user,
+                    vector_order=order,
+                    total=price,
+                    status='draft'
+                )
+                finalized.invoice = invoice
+                finalized.save(update_fields=['invoice'])
+
             order.status = 'Delivered'
             order.save()
 
@@ -203,6 +230,7 @@ def vector_orders_details(request, pk):
                 'additional_file': 'ADDITIONAL',
             }
 
+            # Handle file uploads
             for field_name, file_type in file_map.items():
                 uploaded_file = request.FILES.get(field_name)
                 if uploaded_file:
@@ -212,38 +240,39 @@ def vector_orders_details(request, pk):
                         file_type=file_type
                     )
 
-                # Send email to customer
-                selected_emails = request.POST.getlist('send_email_to')
-                if selected_emails:
-                    subject = f"Vector Order #{order.order_number} Finalized"
-                    message = render_to_string('emails/order_completed.html', {
-                        'order': order,
-                        'finalized_order': finalized,
-                        'user': order.user,
-                        'order_type': 'vector'
-                    })
+            # ✅ Send email only ONCE
+            selected_emails = request.POST.getlist('send_email_to')
+            if selected_emails:
+                subject = f"Vector Order #{order.order_number} Finalized"
+                message = render_to_string('emails/order_completed.html', {
+                    'order': order,
+                    'finalized_order': finalized,
+                    'user': order.user,
+                    'order_type': 'vector'
+                })
 
-                    email = EmailMessage(
-                        subject=subject,
-                        body=message,
-                        from_email='digitizingpluss@gmail.com',
-                        to=selected_emails
-                    )
-                    email.content_subtype = "html"
+                email = EmailMessage(
+                    subject=subject,
+                    body=message,
+                    from_email='digitizingpluss@gmail.com',
+                    to=selected_emails
+                )
+                email.content_subtype = "html"
 
-                    for file in finalized.vector_files.all():
-                        if file.file:
-                            try:
-                                email.attach_file(file.file.path)
-                            except Exception as e:
-                                print(f"Attachment error: {e}")
+                # Attach files
+                for file in finalized.vector_files.all():
+                    if file.file:
+                        try:
+                            email.attach_file(file.file.path)
+                        except Exception as e:
+                            print(f"Attachment error: {e}")
 
-                    try:
-                        email.send()
-                    except Exception as e:
-                        print("Email send error:", e)
+                try:
+                    email.send()
+                except Exception as e:
+                    print("Email send error:", e)
 
-            return redirect('users:admin-all-vector-orders', pk=order.pk)
+            return redirect('users:admin-all-vector-orders')
 
     vector_files = finalized_order.vector_files.all() if finalized_order else []
     file_labels = {
@@ -267,7 +296,7 @@ def vector_orders_details(request, pk):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
-def update_admin_instructions(request, pk):
+def update_digitizing_admin_instructions(request, pk):
     order = get_object_or_404(DigitizingOrder, pk=pk)
     if request.method == 'POST':
         order.admin_instruction = request.POST.get('admin_instructions')
@@ -279,28 +308,48 @@ def update_admin_instructions(request, pk):
     return JsonResponse({'success': False}, status=400)
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def update_vector_admin_instructions(request, pk):
+    order = get_object_or_404(VectorOrder, pk=pk)
+    if request.method == 'POST':
+        order.admin_instruction = request.POST.get('admin_instructions')
+        order.save()
+        return JsonResponse({
+            'success': True,
+            'admin_instructions': order.admin_instruction
+        })
+    return JsonResponse({'success': False}, status=400)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def update_patch_admin_instructions(request, pk):
+    order = get_object_or_404(PatchOrder, pk=pk)
+    if request.method == 'POST':
+        order.admin_instruction = request.POST.get('admin_instructions')
+        order.save()
+        return JsonResponse({
+            'success': True,
+            'admin_instructions': order.admin_instruction
+        })
+    return JsonResponse({'success': False}, status=400)
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def finalize_digitizing_order(request, pk):
     order = get_object_or_404(DigitizingOrder, pk=pk)
-    edit = order.edits.order_by('-edited_at').first()  # Get latest edit if exists
+    edit = order.edits.order_by('-edited_at').first()
     finalized_order = getattr(order, 'finalized_version', None)
 
-    
-
-    # Given info is either edited version or the original
     current_info = edit if edit else order
     previous_info = order if edit else None
 
-    print(f"Current Edited Order {current_info}")
-    print(f"Previous Original Order {previous_info}")
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
 
         if form_type == 'given-info':
-            print("given-info form")
-            # Always create a new edit instead of modifying original
             DigitizingOrderEdit.objects.create(
                 original_order=order,
                 name=request.POST.get('design_name'),
@@ -323,9 +372,13 @@ def finalize_digitizing_order(request, pk):
             finalized.admin_notes = request.POST.get('admin_notes')
             finalized.save()
 
+            # ✅ Create invoice only after save, and only if not already linked
+            finalized.create_invoice()
+
             order.status = 'Delivered'
             order.save()
 
+            # Handle file uploads
             file_map = {
                 'file1': 'DESIGN',
                 'file2': 'STITCH',
@@ -342,6 +395,7 @@ def finalize_digitizing_order(request, pk):
                         file_type=file_type
                     )
 
+            # Handle email sending
             selected_emails = request.POST.getlist('send_email_to')
             if selected_emails:
                 subject = f"Digitizing Order #{order.order_number} Finalized"
@@ -372,7 +426,7 @@ def finalize_digitizing_order(request, pk):
                 except Exception as e:
                     print("Email send error:", e)
 
-            return redirect('users:admin-digitizing-details', pk=order.pk, order_type='digitizing')
+            return redirect('users:admin-all-digitizing-orders')
 
     finalized_files = finalized_order.digitizing_files.all() if finalized_order else []
     today = timezone.now()
@@ -389,6 +443,71 @@ def finalize_digitizing_order(request, pk):
 
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def finalize_vector_order(request, pk):
+    order = get_object_or_404(VectorOrder, pk=pk)
+    finalized_order = getattr(order, 'finalized_version', None)
+
+    if request.method == 'POST':
+        if not finalized_order:
+            finalized_order = FinalizedVectorOrder(original_order=order)
+
+        finalized_order.price = request.POST.get('price') or 0
+        finalized_order.admin_notes = request.POST.get('admin_notes')
+        finalized_order.finalized_at = timezone.now()
+
+        if 'final_files' in request.FILES:
+            finalized_order.final_files = request.FILES['final_files']
+
+        finalized_order.save()
+
+        # Mark order as Delivered
+        order.status = 'Delivered'
+        order.save()
+
+        # Create invoice if not already attached
+        finalized_order.create_invoice()
+
+        # Optional: send email with attached file (if needed)
+        send_to = request.POST.getlist('send_email_to')
+        if send_to:
+            subject = f"Vector Order #{order.order_number} Finalized"
+            message = render_to_string('emails/order_completed.html', {
+                'order': order,
+                'finalized_order': finalized_order,
+                'user': order.user,
+                'order_type': 'vector',
+            })
+
+            email = EmailMessage(
+                subject=subject,
+                body=message,
+                from_email='digitizingpluss@gmail.com',
+                to=send_to
+            )
+            email.content_subtype = 'html'
+
+            if finalized_order.final_files:
+                try:
+                    email.attach_file(finalized_order.final_files.path)
+                except Exception as e:
+                    print(f"Attachment error: {e}")
+
+            try:
+                email.send()
+            except Exception as e:
+                print("Email send error:", e)
+
+        return redirect('users:admin-all-vector-orders')  # adjust route name
+
+    today = timezone.now()
+
+    return render(request, 'users/admin/vector-order-details.html', {
+        'order': order,
+        'finalized_order': finalized_order,
+        'today': today,
+    })
 
 
 @login_required
@@ -408,8 +527,8 @@ def admin_all_receivables(request):
             'user': user,
             'dues': unpaid_total,
             'last_invoice_date': last_invoice.date if last_invoice else None,
-            'last_invoice_status': last_invoice.status if last_invoice else 'N/A',
-            'last_status_date': last_invoice.date if last_invoice else None,  # Assuming created_at == status change
+            'last_invoice_status': last_invoice.status if last_invoice else None,
+            'last_status_date': last_invoice.date if last_invoice else None,
             'last_payment_date': last_payment.payment_date if last_payment else None,
         })
 
@@ -627,15 +746,15 @@ def customer_unpaid_invoices(request, user_id):
 @user_passes_test(lambda u: u.is_superuser)
 def manual_payment(request, invoice_id, payment_id=None):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
-
     payment = None
+
     if payment_id:
         payment = get_object_or_404(Payment, pk=payment_id, invoice=invoice)
 
     if request.method == "POST":
         amount = request.POST.get("amount")
         method = request.POST.get("method")
-        payment_date = request.POST.get("payment_date")
+        payment_date = request.POST.get("payment_date") or date.today()
         note = request.POST.get("note")
 
         if payment:
@@ -656,6 +775,14 @@ def manual_payment(request, invoice_id, payment_id=None):
                 note=note,
             )
             messages.success(request, "Payment recorded successfully.")
+
+        # Update invoice status if total paid >= invoice total
+        total_paid = invoice.payments.aggregate(total=Sum("amount"))["total"] or 0
+        if total_paid >= invoice.total:
+            invoice.status = "paid"
+        else:
+            invoice.status = "sent"
+        invoice.save()
 
         return redirect("users:admin-invoice-list")
 

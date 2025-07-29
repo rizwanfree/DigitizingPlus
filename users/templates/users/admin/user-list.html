@@ -56,9 +56,20 @@
     {% for user in users %}
         {% if not user.is_staff %}
         <tr>
-            <td>{{ user.user_id }}</td>
+            <td>
+            <a href="{% url 'users:admin-user-detail' user.id %}" title="View User Details">
+                <i class="bi bi-person-lines-fill"></i>
+            </a> {{ user.user_id }}
+            </td>
+
             <td>{{ user.created_at }}</td>
-            <td>{{ user.first_name }} {{ user.last_name }}</td>
+
+            <td>
+            {{ user.first_name }} {{ user.last_name }}
+            <a href="{% url 'users:start-impersonate' user.id %}" class="ms-2 text-primary" title="Impersonate User">
+                <i class="bi bi-person-fill-lock"></i>
+            </a>
+            </td>
             <td>{{ user.country }}</td>
             <td>{{ user.phone_number|default:'N/A' }}</td>
             <td>{{ user.email }}{% if user.email2 %}, {{ user.email2 }}{% endif %}{% if user.email3 %}, {{ user.email3 }}{% endif %}</td>

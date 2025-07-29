@@ -4,6 +4,8 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
+from finance.models import Invoice
+
 
 # Create your models here.
 
@@ -579,36 +581,33 @@ class FinalizedDigitizingOrder(models.Model):
     stitches = models.IntegerField(null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    # Additional finalized-specific fields
+
     admin_notes = models.TextField(null=True, blank=True)
     completed_date = models.DateField()
 
     invoice = models.OneToOneField(
-        'finance.Invoice',  # Use string reference
+        'finance.Invoice',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='digitizing_finalization'
     )
 
+    def create_invoice(self):
+        """Create invoice only if not already linked"""
+        if not self.invoice:
+            invoice = Invoice.objects.create(
+                customer=self.original_order.user,
+                digitizing_order=self.original_order,
+                total=self.price,
+                status='draft'
+            )
+            self.invoice = invoice
+            self.save(update_fields=['invoice'])
+
     @cached_property
     def invoice_instance(self):
-        """Lazy load the invoice to avoid circular imports"""
-        from finance.models import Invoice
-        return Invoice.objects.get(pk=self.invoice_id) if self.invoice_id else None
-
-    def create_invoice(self):
-        """Lazy import Invoice model when needed"""
-        from finance.models import Invoice
-        invoice = Invoice.objects.create(
-            customer=self.original_order.user,
-            digitizing_order=self.original_order,
-            total=self.price,
-            status='draft'
-        )
-        self.invoice = invoice
-        self.save()
+        return self.invoice
 
 
 
@@ -620,17 +619,39 @@ class FinalizedVectorOrder(models.Model):
         related_name='finalized_version'
     )
     finalized_at = models.DateTimeField(default=timezone.now)
-    
     price = models.DecimalField(decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    # Additional finalized-specific fields
+
     admin_notes = models.TextField(null=True, blank=True)
     final_files = models.FileField(upload_to='finalized/vector/', null=True, blank=True)
     revisions = models.PositiveIntegerField(default=0)
 
+    invoice = models.OneToOneField(
+        'finance.Invoice',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vector_finalization'
+    )
+
     def __str__(self):
-        return f"Finalized {self.order_number}"
+        return f"Finalized Vector Order #{self.original_order.pk}"
+
+    def create_invoice(self):
+        """Create invoice only if not already attached"""
+        if not self.invoice:
+            invoice = Invoice.objects.create(
+                customer=self.original_order.user,
+                vector_order=self.original_order,
+                total=self.price,
+                status='draft'
+            )
+            self.invoice = invoice
+            self.save(update_fields=['invoice'])
+
+    @cached_property
+    def invoice_instance(self):
+        return self.invoice
     
 
 

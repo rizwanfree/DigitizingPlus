@@ -90,15 +90,18 @@
                       {% with u=item.user %}
                       <tr>
                         <td scope="row" class="text-center">{{ forloop.counter }}</td>
-                        <td class="text-center">{{ u.id }}  <a href="{% url 'users:admin-user-detail' pk=u.id %}" class="text-decoration-none">
-                          <i class="fa-regular fa-square-caret-right"></i>
-                          </a>
-                        </td>
-                        <td>{{ u.first_name }} {{ u.last_name }}
-                          <a href="" class="text-decoration-none">
-                          <i class="fa-regular fa-square-caret-right"></i>
-                          </a>
-                        </td>
+                      <td>
+                      <a href="{% url 'users:admin-user-detail' user.id %}" title="View User Details">
+                          <i class="bi bi-person-lines-fill"></i>
+                      </a> {{ u.user_id }}
+                      </td>
+
+                      <td>
+                      {{ u.first_name }} {{ u.last_name }}
+                      <a href="{% url 'users:start-impersonate' u.id %}" class="ms-2 text-primary" title="Impersonate User">
+                          <i class="bi bi-person-fill-lock"></i>
+                      </a>
+                      </td>
 
                         <td class="text-center">${{ item.dues|floatformat:2 }}</td>
 

@@ -140,12 +140,19 @@
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header">Admin Instructions</div>
-            <div class="card-body">
-                <p class="card-text">{{ order.admin_instruction|default:"No admin instructions yet." }}</p>
-            </div>
-        </div>
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Admin Instructions</span>
+      <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateInstructionModal">
+          Update Instruction
+      </button>
+  </div>
+  <div class="card-body">
+      <p id="adminInstructionText" class="card-text">
+          {{ order.admin_instruction|default:"No admin instructions yet." }}
+      </p>
+  </div>
+</div>
 
         <div class="card">
             <div class="card-header">Customer Info</div>
@@ -159,4 +166,61 @@
         </div>
     </div>
 </div>
+
+
+<!-- Update Instruction Modal -->
+<div class="modal fade" id="updateInstructionModal" tabindex="-1" aria-labelledby="updateInstructionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="updateInstructionForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateInstructionModalLabel">Update Admin Instructions</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <textarea name="admin_instructions" class="form-control" rows="4">{{ order.admin_instruction }}</textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("updateInstructionForm");
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    fetch("{% url 'users:update-vector-admin-instructions' pk=order.pk %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById("adminInstructionText").textContent = data.admin_instructions;
+        const modal = bootstrap.Modal.getInstance(document.getElementById("updateInstructionModal"));
+        modal.hide();
+      } else {
+        alert("Failed to update.");
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("An error occurred.");
+    });
+  });
+});
+</script>
 {% endblock %}

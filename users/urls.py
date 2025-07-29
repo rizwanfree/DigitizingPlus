@@ -122,7 +122,11 @@ urlpatterns = [
 
     path('admin/digitizing-order-details/<int:pk>/', adminviews.finalize_digitizing_order, name='admin-digitizing-order-details'),
     path('admin/vector-order-details/<int:pk>/', adminviews.vector_orders_details, name='admin-vector-order-details'),
-    path('orders/<int:pk>/update-admin-instructions/', adminviews.update_admin_instructions, name='update_admin_instructions'),
+    
+    # Admin Instructions
+    path('orders/<int:pk>/update-digitizing-admin-instructions/', adminviews.update_digitizing_admin_instructions, name='update-digitizing-admin-instructions'),
+    path('orders/<int:pk>/update-vector-admin-instructions/', adminviews.update_vector_admin_instructions, name='update-vector-admin-instructions'),
+    path('orders/<int:pk>/update-patch-admin-instructions/', adminviews.update_patch_admin_instructions, name='update-patch-admin-instructions'),
 
 
 
