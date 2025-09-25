@@ -295,17 +295,12 @@ class VectorOrder(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        if not self.order_number:
-            with transaction.atomic():
-                # Lock the table to prevent concurrent inserts
-                last_order = VectorOrder.objects.select_for_update().order_by('-id').first()
-                if last_order and last_order.order_number:
-                    last_number = int(last_order.order_number[2:])
-                else:
-                    last_number = 0
-                self.order_number = f"VO-{last_number + 1:04d}"
-        super().save(*args, **kwargs)
+        def save(self, *args, **kwargs):
+            if not self.pk and not self.order_number:
+                # Simple count-based approach (safe and reliable)
+                count = VectorOrder.objects.count()
+                self.order_number = f"VO-{count + 1:04d}"
+            super().save(*args, **kwargs)
 
 
 class VectorOrderEdit(models.Model):
