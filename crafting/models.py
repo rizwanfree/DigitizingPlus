@@ -225,12 +225,17 @@ class PatchOrder(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        if not self.order_number:
+        # Only generate order number for NEW objects (when the object doesn't have a primary key yet)
+        if not self.pk and not self.order_number:
             with transaction.atomic():
                 # Lock the table to prevent concurrent inserts
                 last_order = PatchOrder.objects.select_for_update().order_by('-id').first()
                 if last_order and last_order.order_number:
-                    last_number = int(last_order.order_number[2:])
+                    try:
+                        # Extract number from "PO-0001" format
+                        last_number = int(last_order.order_number[3:])
+                    except ValueError:
+                        last_number = 0
                 else:
                     last_number = 0
                 self.order_number = f"PO-{last_number + 1:04d}"
