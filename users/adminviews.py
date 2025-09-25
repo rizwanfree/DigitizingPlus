@@ -10,6 +10,9 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django import forms
+
 
 from crafting.models import DigitizingOrder, DigitizingOrderEdit, FinalizedDigitizingFiles, FinalizedDigitizingOrder, FinalizedPatchFiles, FinalizedVectorFiles, FinalizedVectorOrder, PatchOrder, VectorOrder, DigitizingQuote, PatchQuote, VectorQuote
 from finance.models import Invoice, Payment
@@ -294,6 +297,274 @@ def vector_orders_details(request, pk):
 
 
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def patch_orders_details(request, pk):
+    """
+    View for admin to view and manage patch order details
+    Handles both updating order info and finalizing orders
+    """
+    
+    # Get the patch order or return 404 if not found
+    order = get_object_or_404(PatchOrder, pk=pk)
+    
+    # Get any existing finalized files for this order
+    finalized_files = FinalizedPatchFiles.objects.filter(finalized_order=order)
+    
+    # Handle POST requests (form submissions)
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type')
+
+        # Handle "Given Info" form submission
+        if form_type == 'given-info':
+            # Update basic order information from the form
+            order.name = request.POST.get('design_name', order.name)
+            order.po_number = request.POST.get('po_number', order.po_number)
+            order.width = request.POST.get('width', order.width)
+            order.height = request.POST.get('height', order.height)
+            order.save()
+            messages.success(request, "Order information updated successfully.")
+
+        # Handle "Final Info" form submission (order finalization)
+        elif form_type == 'final-info':
+            # Get data from the finalization form
+            width_a = request.POST.get('width_a')
+            height_a = request.POST.get('height_a')
+            price_a = request.POST.get('price_a') or 0
+            total_price = request.POST.get('total_price') or 0
+            comments = request.POST.get('comments', '')
+            
+            # Update order status to "Delivered" and save admin comments
+            order.status = 'Delivered'
+            order.admin_instruction = comments
+            order.save()
+
+            # Create an invoice for the completed order
+            invoice = Invoice.objects.create(
+                customer=order.user,
+                patch_order=order,
+                total=total_price,
+                status='draft'
+            )
+
+            # Map form field names to file types for final files
+            file_map = {
+                'design_file': 'DESIGN',
+                'stitch_file': 'STITCH',
+                'color_file': 'COLOR',
+                'proof_file': 'PROOF',
+                'additional_file': 'ADDITIONAL',
+            }
+
+            # List to store uploaded files for email attachments
+            uploaded_files = []
+
+            # Process each file upload field
+            for field_name, file_type in file_map.items():
+                uploaded_file = request.FILES.get(field_name)
+                if uploaded_file:
+                    # Create FinalizedPatchFiles record for each uploaded file
+                    finalized_file = FinalizedPatchFiles.objects.create(
+                        finalized_order=order,
+                        file=uploaded_file,
+                        file_type=file_type
+                    )
+                    uploaded_files.append(finalized_file)
+
+            # Email notification section
+            # Get list of selected email addresses to send notification to
+            send_to = request.POST.getlist('send_email_to')
+            
+            if send_to:
+                # Email subject with order number
+                subject = f"Patch Order #{order.order_number} Completed"
+                
+                # Render email template with order details
+                message = render_to_string('emails/patch_order_completed.html', {
+                    'order': order,
+                    'order_type': 'patch',
+                    'user': order.user,
+                    'comments': comments,
+                    'total_price': total_price
+                })
+
+                # Create email message
+                email = EmailMessage(
+                    subject=subject,
+                    body=message,
+                    from_email='digitizingpluss@gmail.com',
+                    to=send_to  # Send to selected addresses
+                )
+                email.content_subtype = "html"  # Set as HTML email
+
+                # Attach all uploaded files to the email
+                for file_obj in uploaded_files:
+                    if file_obj.file:
+                        try:
+                            email.attach_file(file_obj.file.path)
+                        except Exception as e:
+                            # Log error but don't crash if attachment fails
+                            print(f"Attachment error: {e}")
+
+                # Send the email
+                try:
+                    email.send()
+                    messages.success(request, "Order finalized and email sent successfully.")
+                except Exception as e:
+                    # Show error message if email fails to send
+                    messages.error(request, f"Order finalized but email failed to send: {e}")
+            else:
+                # No email addresses selected
+                messages.success(request, "Order finalized successfully (no email sent).")
+
+            # Redirect to patch orders list after finalization
+            return redirect('users:admin-all-patch-orders')
+
+    # FORM DEFINITIONS FOR THE TEMPLATE
+
+    # Form for "Given Info" tab - basic order information
+    class GivenInfoForm(forms.Form):
+        design_name = forms.CharField(
+            initial=order.name, 
+            required=False, 
+            widget=forms.TextInput(attrs={'class': 'form-control'}),
+            label="Design Name"
+        )
+        po_number = forms.CharField(
+            initial=order.po_number or '', 
+            required=False, 
+            widget=forms.TextInput(attrs={'class': 'form-control'}),
+            label="PO Number"
+        )
+        width = forms.DecimalField(
+            initial=order.width, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Width"
+        )
+        height = forms.DecimalField(
+            initial=order.height, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Height"
+        )
+        price_option_a = forms.DecimalField(
+            initial=0, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Price Option A"
+        )
+        total_price = forms.DecimalField(
+            initial=0, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Total Price"
+        )
+
+    # Form for "Final Info" tab - order finalization
+    class FinalInfoForm(forms.Form):
+        width_a = forms.DecimalField(
+            initial=order.width, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Final Width"
+        )
+        height_a = forms.DecimalField(
+            initial=order.height, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Final Height"
+        )
+        price_a = forms.DecimalField(
+            initial=0, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Final Price"
+        )
+        total_price = forms.DecimalField(
+            initial=0, 
+            required=False, 
+            widget=forms.NumberInput(attrs={'class': 'form-control'}),
+            label="Final Total Price"
+        )
+        comments = forms.CharField(
+            initial=order.admin_instruction or '',
+            required=False,
+            widget=forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            label="Admin Comments"
+        )
+        
+        # File upload fields for final files
+        design_file = forms.FileField(
+            required=False, 
+            widget=forms.FileInput(attrs={'class': 'form-control'}),
+            label="Design File"
+        )
+        stitch_file = forms.FileField(
+            required=False, 
+            widget=forms.FileInput(attrs={'class': 'form-control'}),
+            label="Stitch File"
+        )
+        color_file = forms.FileField(
+            required=False, 
+            widget=forms.FileInput(attrs={'class': 'form-control'}),
+            label="Color File"
+        )
+        proof_file = forms.FileField(
+            required=False, 
+            widget=forms.FileInput(attrs={'class': 'form-control'}),
+            label="Proof File"
+        )
+        additional_file = forms.FileField(
+            required=False, 
+            widget=forms.FileInput(attrs={'class': 'form-control'}),
+            label="Additional File"
+        )
+
+        # Email selection field - checkboxes for choosing where to send notification
+        send_email_to = forms.MultipleChoiceField(
+            required=False,
+            widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+            choices=[],
+            label="Send email notification to:"
+        )
+
+    # Create form instances
+    given_form = GivenInfoForm()
+    final_form = FinalInfoForm()
+    
+    # DYNAMICALLY POPULATE EMAIL CHOICES
+    email_choices = []
+    
+    # Add primary email if available
+    if order.user.email:
+        email_choices.append((order.user.email, f"{order.user.email}"))
+    
+    # Add secondary email if available in user model
+    if hasattr(order.user, 'email2') and order.user.email2:
+        email_choices.append((order.user.email2, f"Secondary: {order.user.email2}"))
+    
+    # Add tertiary email if available in user model
+    if hasattr(order.user, 'email3') and order.user.email3:
+        email_choices.append((order.user.email3, f"Tertiary: {order.user.email3}"))
+    
+    # Set the choices for the email selection field
+    final_form.fields['send_email_to'].choices = email_choices
+
+    # Render the template with all context data
+    return render(request, 'users/admin/patch-order-details.html', {
+        'order': order,                    # The patch order object
+        'user': order.user,                # The customer user object
+        'finalized_files': finalized_files, # Any existing finalized files
+        'form': given_form,                # Form for Given Info tab
+        'final_form': final_form,          # Form for Final Info tab
+    })
+
+
+
+
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def update_digitizing_admin_instructions(request, pk):
@@ -522,6 +793,7 @@ def admin_all_receivables(request):
         unpaid_total = invoices.exclude(status='paid').aggregate(total_due=Sum('total'))['total_due'] or 0
         last_invoice = invoices.order_by('-date').first()
         last_payment = Payment.objects.filter(invoice__customer=user).order_by('-payment_date').first()
+        has_credit_card = CreditCard.objects.filter(user=user).exists()
 
         data.append({
             'user': user,
@@ -530,6 +802,7 @@ def admin_all_receivables(request):
             'last_invoice_status': last_invoice.status if last_invoice else None,
             'last_status_date': last_invoice.date if last_invoice else None,
             'last_payment_date': last_payment.payment_date if last_payment else None,
+            'has_credit_card': has_credit_card,
         })
 
     return render(request, 'users/admin/all-receivables.html', {"data": data})
@@ -593,6 +866,177 @@ def inprocess_patch_quotes(request):
 
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def digitizing_quote_details(request, pk):
+    quote = get_object_or_404(DigitizingQuote, pk=pk)
+    files = quote.files.all()
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "finalize":
+            # Save price/status
+            price = request.POST.get("price") or 0
+            admin_message = request.POST.get("admin_message", "").strip()
+
+            quote.price = price
+            quote.quote_status = "Quoted"
+            quote.save()
+
+            # Optionally send email
+            if request.POST.get("send_email"):
+                subject = f"Digitizing Quote #{quote.id} — Quoted Price"
+                html_message = render_to_string("emails/quote_finalized.html", {
+                    "quote": quote,
+                    "admin_message": admin_message,
+                })
+                plain_message = strip_tags(html_message)
+                from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "digitizingpluss@gmail.com")
+                to_email = [quote.user.email] if quote.user.email else []
+
+                if to_email:
+                    email = EmailMultiAlternatives(subject, plain_message, from_email, to_email)
+                    email.attach_alternative(html_message, "text/html")
+
+                    # Attach any uploaded quote files
+                    for f in files:
+                        try:
+                            if f.file and hasattr(f.file, "path"):
+                                email.attach_file(f.file.path)
+                        except Exception as e:
+                            # don't crash — log/print and continue
+                            print(f"Attachment error for file {getattr(f.file, 'name', '')}: {e}")
+
+                    try:
+                        email.send()
+                        messages.success(request, "Quote finalized and email sent to customer.")
+                    except Exception as e:
+                        messages.error(request, f"Quote finalized but email failed to send: {e}")
+                else:
+                    messages.warning(request, "Quote finalized but customer has no email address on file.")
+            else:
+                messages.success(request, f"Quote #{quote.id} finalized (no email sent).")
+
+            return redirect("users:admin-inprocess-digitizing-quotes")
+
+    context = {
+        "quote": quote,
+        "files": files,
+        "can_finalize": quote.quote_status == "Requested",
+    }
+    return render(request, "users/admin/digitizing-quote-details.html", context)
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def vector_quote_details(request, pk):
+    quote = get_object_or_404(VectorQuote, pk=pk)
+    files = quote.files.all()
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "finalize":
+            price = request.POST.get("price") or 0
+            admin_message = request.POST.get("admin_message", "").strip()
+
+            quote.price = price
+            quote.quote_status = "Quoted"
+            quote.save()
+
+            if request.POST.get("send_email"):
+                subject = f"Vector Quote #{quote.id} — Quoted Price"
+                html_message = render_to_string("emails/quote_finalized.html", {
+                    "quote": quote,
+                    "admin_message": admin_message,
+                })
+                plain_message = strip_tags(html_message)
+                from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "digitizingpluss@gmail.com")
+                to_email = [quote.user.email] if quote.user.email else []
+
+                if to_email:
+                    email = EmailMultiAlternatives(subject, plain_message, from_email, to_email)
+                    email.attach_alternative(html_message, "text/html")
+                    for f in files:
+                        try:
+                            if f.file and hasattr(f.file, "path"):
+                                email.attach_file(f.file.path)
+                        except Exception as e:
+                            print(f"Attachment error for file {getattr(f.file, 'name', '')}: {e}")
+                    try:
+                        email.send()
+                        messages.success(request, "Quote finalized and email sent to customer.")
+                    except Exception as e:
+                        messages.error(request, f"Quote finalized but email failed: {e}")
+                else:
+                    messages.warning(request, "Quote finalized but no email address found.")
+            else:
+                messages.success(request, f"Quote #{quote.id} finalized (no email sent).")
+
+            return redirect("users:admin-inprocess-vector-quotes")
+
+    return render(request, "users/admin/vector-quote-details.html", {
+        "quote": quote,
+        "files": files,
+        "can_finalize": quote.quote_status == "Requested",
+    })
+
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def patch_quote_details(request, pk):
+    quote = get_object_or_404(PatchQuote, pk=pk)
+    files = quote.files.all()
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "finalize":
+            price = request.POST.get("price") or 0
+            admin_message = request.POST.get("admin_message", "").strip()
+
+            quote.price = price
+            quote.quote_status = "Quoted"
+            quote.save()
+
+            if request.POST.get("send_email"):
+                subject = f"Patch Quote #{quote.id} — Quoted Price"
+                html_message = render_to_string("emails/quote_finalized.html", {
+                    "quote": quote,
+                    "admin_message": admin_message,
+                })
+                plain_message = strip_tags(html_message)
+                from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "digitizingpluss@gmail.com")
+                to_email = [quote.user.email] if quote.user.email else []
+
+                if to_email:
+                    email = EmailMultiAlternatives(subject, plain_message, from_email, to_email)
+                    email.attach_alternative(html_message, "text/html")
+                    for f in files:
+                        try:
+                            if f.file and hasattr(f.file, "path"):
+                                email.attach_file(f.file.path)
+                        except Exception as e:
+                            print(f"Attachment error for file {getattr(f.file, 'name', '')}: {e}")
+                    try:
+                        email.send()
+                        messages.success(request, "Quote finalized and email sent to customer.")
+                    except Exception as e:
+                        messages.error(request, f"Quote finalized but email failed: {e}")
+                else:
+                    messages.warning(request, "Quote finalized but no email address found.")
+            else:
+                messages.success(request, f"Quote #{quote.id} finalized (no email sent).")
+
+            return redirect("users:admin-inprocess-patch-quotes")
+
+    return render(request, "users/admin/patch-quote-details.html", {
+        "quote": quote,
+        "files": files,
+        "can_finalize": quote.quote_status == "Requested",
+    })
 
 
 

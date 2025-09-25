@@ -117,9 +117,13 @@
                           {{ item.last_invoice_date|date:"M d, Y" }}
                         </td>
 
-                        <td class="text-center">
-                          <a class="btn btn-sm btn-success" href="{% url "users:admin-add-card" u.id %}">Add Card</a>
-                        </td>
+                      <td class="text-center">
+                          {% if item.has_credit_card %}
+                              <a class="btn btn-sm btn-success" href="{% url 'users:admin-add-card' u.id %}">View Card</a>
+                          {% else %}
+                              <a class="btn btn-sm btn-success" href="{% url 'users:admin-add-card' u.id %}">Add Card</a>
+                          {% endif %}
+                      </td>
 
                         <td class="text-center">
                           {{ item.last_invoice_status|capfirst }}

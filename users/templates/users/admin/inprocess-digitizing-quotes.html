@@ -52,7 +52,8 @@
                     {{ order.files.count }}
                 </td>
                 <td class="text-center align-middle">
-                    {% comment %} <a href="{% url "users:admin-order-details" order.id 'Digitizing' %}" class="btn btn-sm btn-secondary">View</a> {% endcomment %}
+                    <a href="{% url 'users:admin-digitizing-quote-details' order.id %}" 
+                    class="btn btn-sm btn-secondary">View</a>
                 </td>
             </tr>
             {% endfor %}

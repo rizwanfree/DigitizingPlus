@@ -119,9 +119,16 @@ urlpatterns = [
     path('admin/inprocess-patch-quotes/', adminviews.inprocess_patch_quotes, name='admin-inprocess-patch-quotes'),
     path('admin/inprocess-vector-quotes/', adminviews.inprocess_vector_quotes, name='admin-inprocess-vector-quotes'),
 
+    path("admin/digitizing-quotes/<int:pk>/", adminviews.digitizing_quote_details, name="admin-digitizing-quote-details"),
+    path("admin/vector-quotes/<int:pk>/", adminviews.vector_quote_details, name="admin-vector-quote-details"),
+    path("admin/patch-quotes/<int:pk>/", adminviews.patch_quote_details, name="admin-patch-quote-details"),
+
+
+
 
     path('admin/digitizing-order-details/<int:pk>/', adminviews.finalize_digitizing_order, name='admin-digitizing-order-details'),
     path('admin/vector-order-details/<int:pk>/', adminviews.vector_orders_details, name='admin-vector-order-details'),
+    path('admin/patch-order-details/<int:pk>/', adminviews.patch_orders_details, name='admin-patch-order-details'),
     
     # Admin Instructions
     path('orders/<int:pk>/update-digitizing-admin-instructions/', adminviews.update_digitizing_admin_instructions, name='update-digitizing-admin-instructions'),

@@ -64,7 +64,7 @@
     <h2>Dear {{ customer_name }},</h2>
     
     <h3>Your {{ order_type }} order has been received</h3>
-    <p>We're processing your order and will notify you when it's ready (typically within 2-12 hours).</p>
+    <p>We're processing your order and will notify you when it's ready.</p>
     
     <div class="order-info">
         <h3 style="margin-top: 0; color: #2c3e50;">Order Summary</h3>
@@ -183,9 +183,22 @@
                 </tr>
             {% endif %}
             
+
             <tr>
                 <td><strong>Estimated Completion</strong></td>
-                <td>7-10 Working Days</td>
+                {% if order_type == 'Vector' %}
+                    <td>2-12 Hours</td>
+                {% endif %}
+
+                {% if order_type == 'Digitizing' %}
+                    <td>2-12 Hours</td>
+                {% endif %}
+
+                {% if order_type == 'Patch' %}
+                    <td>7-10 Working Days</td>
+                {% endif %}
+
+                    
             </tr>
             
             {% comment %} {% if order.instructions %}

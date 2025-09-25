@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <body>
+    <p>Hi {{ quote.user.get_full_name }},</p>
+
+    <p>Your quote for "<strong>{{ quote.name }}</strong>" has been finalized.</p>
+
+    <p><strong>Quoted Price:</strong> {{ quote.price }}</p>
+
+    {% if admin_message %}
+      <p><strong>Note from our admin:</strong></p>
+      <p>{{ admin_message|linebreaksbr }}</p>
+    {% endif %}
+
+    <p>If you'd like to accept this quote and convert it into an order, please log in to your account and accept the quote.</p>
+
+    <p>Thanks,<br/>DigitizingPlus Team</p>
+  </body>
+</html>

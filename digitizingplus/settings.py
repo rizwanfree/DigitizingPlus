@@ -27,7 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-yq@k!mpgp0@6zhr7g3wp*+60ej-88mkb()ful2_^89$1&qv!(5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
+
+if 'runserver' in sys.argv:
+    DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = ['www.digitizingplus.com', 'localhost', '127.0.0.1']
 
@@ -173,6 +178,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'digitizingpluss@gmail.com'
-EMAIL_HOST_PASSWORD = 'ajvl udkm cvjs xfsd'  # Use App Password, not your regular password
+EMAIL_HOST_PASSWORD = 'mluz brbs guqa kfqn'  # Use App Password, not your regular password
 DEFAULT_FROM_EMAIL = 'digitizingpluss@gmail.com'
 SERVER_EMAIL = 'digitizingpluss@gmail.com'

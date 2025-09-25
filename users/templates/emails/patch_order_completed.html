@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #f4f4f4; padding: 10px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { text-align: center; padding: 10px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Order Completed</h2>
+        </div>
+        <div class="content">
+            <p>Hello {{ user.get_full_name }},</p>
+            <p>Your patch order <strong>#{{ order.order_number }}</strong> has been completed.</p>
+            
+            {% if comments %}
+            <p><strong>Comments:</strong> {{ comments }}</p>
+            {% endif %}
+            
+            {% if total_price %}
+            <p><strong>Total Price:</strong> ${{ total_price }}</p>
+            {% endif %}
+            
+            <p>Thank you for your business!</p>
+        </div>
+        <div class="footer">
+            <p>Digitizing Plus</p>
+        </div>
+    </div>
+</body>
+</html>

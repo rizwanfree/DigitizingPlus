@@ -111,10 +111,8 @@
 
             <!-- Final Tab -->
             <div class="tab-pane fade mt-5" id="final" role="tabpanel" aria-labelledby="final-tab">            
-                <form action="" method="post" enctype="multipart/form-data">
+                <form action="" method="post">
                     {% csrf_token %}
-                    <input type="hidden" name="form_type" value="final-info">
-                    
                     <div class="row">
                         <div class="col-md-6">
                             <h3>PATCH DETAILS</h3>
@@ -131,38 +129,7 @@
                                 {{ final_form.price_a }}
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <h3>FINAL FILES</h3>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Design File</span>
-                                {{ final_form.design_file }}
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Stitch File</span>
-                                {{ final_form.stitch_file }}
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Color File</span>
-                                {{ final_form.color_file }}
-                            </div>
-                        </div>
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Proof File</span>
-                                {{ final_form.proof_file }}
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Additional File</span>
-                                {{ final_form.additional_file }}
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="col-md-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Total Price</span>
@@ -175,30 +142,6 @@
                             {{ final_form.comments }}
                         </div>
                     </div>
-                    <!-- Add this before the submit button in the final tab -->
-                    {% if final_form.send_email_to.field.choices %}
-                    <div class="col-md-12">
-                        <div class="card mt-3">
-                            <div class="card-header">
-                                <h5>Send Email Notification</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    {% for choice in final_form.send_email_to %}
-                                    <div class="form-check">
-                                        {{ choice.tag }}
-                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                            {{ choice.choice_label }}
-                                        </label>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                <br>
-                                <p class="text-muted">Select email addresses to send completion notification</p>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
                     <div class="col-md-12">
                         <button type="submit" class="btn btn-primary btn-block">Release</button>
                     </div>
@@ -217,19 +160,19 @@
             </div>
         </div>
 
-        <div class="card mb-3">
-          <div class="card-header d-flex justify-content-between align-items-center">
-              <span>Admin Instructions</span>
-              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateInstructionModal">
-                  Update Instruction
-              </button>
-          </div>
-          <div class="card-body">
-              <p id="adminInstructionText" class="card-text">
-                  {{ order.admin_instruction|default:"No admin instructions yet." }}
-              </p>
-          </div>
-        </div>
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Admin Instructions</span>
+      <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateInstructionModal">
+          Update Instruction
+      </button>
+  </div>
+  <div class="card-body">
+      <p id="adminInstructionText" class="card-text">
+          {{ order.admin_instruction|default:"No admin instructions yet." }}
+      </p>
+  </div>
+</div>
 
         <div class="card mt-1">
             <div class="card-header">
@@ -252,50 +195,6 @@
                 </ul>
             </div>
         </div>
-        
-        <!-- Show finalized files if any -->
-        {% if finalized_files %}
-        <div class="card mt-1">
-            <div class="card-header">
-              Finalized Files
-            </div>
-            <div class="card-body">
-                <ul class="list-group">
-                    {% for file in finalized_files %}
-                    <li class="list-group-item">
-                        <a href="{{ file.file.url }}" target="_blank">{{ file.get_file_type_display }}</a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
-
-
-<!-- Update Instruction Modal -->
-<div class="modal fade" id="updateInstructionModal" tabindex="-1" aria-labelledby="updateInstructionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="updateInstructionModalLabel">Update Admin Instructions</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="updateInstructionForm" method="post" action="{% url 'users:update-patch-admin-instructions' order.id %}">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="admin_instructions" class="form-label">Instructions:</label>
-                        <textarea class="form-control" id="admin_instructions" name="admin_instructions" rows="5">{{ order.admin_instruction|default:'' }}</textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </div>
-            </form>
-        </div>
     </div>
 </div>
 
@@ -309,30 +208,7 @@
             total.value = a.toFixed(2);
         }
         
-        if (priceA && total) {
-            priceA.addEventListener('change', calculateTotal);
-        }
-
-        // Handle admin instructions form submission
-        $('#updateInstructionForm').on('submit', function(e) {
-            e.preventDefault();
-            
-            $.ajax({
-                type: 'POST',
-                url: $(this).attr('action'),
-                data: $(this).serialize(),
-                success: function(response) {
-                    if (response.success) {
-                        $('#adminInstructionText').text(response.admin_instructions || 'No admin instructions yet.');
-                        $('#updateInstructionModal').modal('hide');
-                        alert('Instructions updated successfully!');
-                    }
-                },
-                error: function() {
-                    alert('Error updating instructions.');
-                }
-            });
-        });
+        priceA.addEventListener('change', calculateTotal);
     });
 </script>
 {% endblock content %}
