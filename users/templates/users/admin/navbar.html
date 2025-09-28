@@ -100,7 +100,7 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{% url "users:admin-all-receivables" %}">
-                            <i class="fas fa-thread"></i> All Receiables
+                            <i class="fas fa-thread"></i> All Receivables
                         </a></li>
                         <li><a class="dropdown-item" href="{% url "users:admin-user-list" %}">
                             <i class="fas fa-user user-icon"></i> User Management
@@ -123,7 +123,7 @@
                 <li class="nav-item">
                     {% if request.user.is_authenticated %}
                     <a class="nav-link" href="{% url "users:logout" %}">
-                        <i class="fas fa-phone-alt"></i> Logout
+                        <i class="fas fa-exit"></i> Logout
                     </a>
                     {% endif %}
                 </li>

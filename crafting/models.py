@@ -192,6 +192,10 @@ class DigitizingOrderEdit(models.Model):
         if not self.order_number:
             last_id = DigitizingOrderEdit.objects.count() + 1
             self.order_number = f"DE-{last_id:04d}"
+        
+        # Ensure status has a value
+        if not self.status:
+            self.status = 'Processing'
         super().save(*args, **kwargs)
 
 class PatchOrder(models.Model):
@@ -266,9 +270,25 @@ class PatchOrderEdit(models.Model):
     edited_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        if not self.order_number:
-            last_id = PatchOrderEdit.objects.count() + 1
-            self.order_number = f"PE-{last_id:04d}"
+        if not self.pk and not self.order_number:
+            # Get the maximum order number by parsing all existing ones safely
+            max_number = 0
+            for order in PatchOrderEdit.objects.all():
+                try:
+                    # Extract numbers from order_number safely
+                    if order.order_number and '-' in order.order_number:
+                        num_part = order.order_number.split('-')[1]
+                        order_num = int(num_part)
+                        if order_num > max_number:
+                            max_number = order_num
+                except (ValueError, IndexError):
+                    continue
+                    
+            self.order_number = f"PE-{max_number + 1:04d}"
+
+        # Ensure status has a value
+        if not self.status:
+            self.status = 'Processing'
         super().save(*args, **kwargs)
 
 
@@ -295,12 +315,12 @@ class VectorOrder(models.Model):
     def __str__(self):
         return self.name
 
-        def save(self, *args, **kwargs):
-            if not self.pk and not self.order_number:
-                # Simple count-based approach (safe and reliable)
-                count = VectorOrder.objects.count()
-                self.order_number = f"VO-{count + 1:04d}"
-            super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.order_number:
+            # Simple count-based approach (safe and reliable)
+            count = VectorOrder.objects.count()
+            self.order_number = f"VO-{count + 1:04d}"
+        super().save(*args, **kwargs)
 
 
 class VectorOrderEdit(models.Model):
@@ -321,6 +341,10 @@ class VectorOrderEdit(models.Model):
         if not self.order_number:
             last_id = VectorOrderEdit.objects.count() + 1
             self.order_number = f"VE-{last_id:04d}"
+        
+        # Ensure status has a value
+        if not self.status:
+            self.status = 'Processing'
         super().save(*args, **kwargs)
 
 

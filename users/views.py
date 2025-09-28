@@ -198,7 +198,7 @@ def orders(request):
             email_customer = EmailMultiAlternatives(
                 subject_customer,
                 text_content_customer,
-                'digitizingplus@gmail.com',
+                'digitizingpluss@gmail.com',
                 [effective_user.email]
             )
             email_customer.attach_alternative(html_content_customer, "text/html")
@@ -212,8 +212,8 @@ def orders(request):
             email_admin = EmailMultiAlternatives(
                 subject_admin,
                 text_content_admin,
-                'digitizingplus@gmail.com',
-                ['admin@digitizingplus.com']  # Replace with admin email
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.SERVER_EMAIL]  # Replace with admin email
             )
             email_admin.attach_alternative(html_content_admin, "text/html")
             email_admin.send()
@@ -274,10 +274,11 @@ def edit_order(request, type, id):
                 for field in edit_model._meta.fields
                 if field.name != 'id' and field.name != 'order_number' and field.name != 'original_order'
             }
+            
 
             # Save as new edit entry
             edit_model.objects.create(
-                original_order=original_order,
+                original_order=original_order,                
                 **edit_fields
             )
 

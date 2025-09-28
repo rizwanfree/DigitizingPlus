@@ -103,13 +103,36 @@ WSGI_APPLICATION = 'digitizingplus.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dp',           # Your database name
+        'USER': 'postgres',     # Your PostgreSQL username (default is 'postgres')
+        'PASSWORD': 'admin112',  # Your PostgreSQL password
+        'HOST': 'localhost',    # Or '127.0.0.1'
+        'PORT': '5433',         # Default PostgreSQL port
     }
 }
 
+# if 'runserver' in sys.argv:  
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': 'dp',           # Your database name
+#             'USER': 'postgres',     # Your PostgreSQL username (default is 'postgres')
+#             'PASSWORD': 'admin112',  # Your PostgreSQL password
+#             'HOST': 'localhost',    # Or '127.0.0.1'
+#             'PORT': '5433',         # Default PostgreSQL port
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

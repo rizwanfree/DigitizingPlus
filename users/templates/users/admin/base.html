@@ -34,11 +34,27 @@ input[type="number"] {
 }
     </style>
 
+
     <!-- Main Content -->
     <div class="main-content mt-3 mb-3 shadow-sm p-3 mb-5 bg-body-tertiary rounded">
         <!-- Side Navigation -->
         {% include "users/admin/navbar.html" %}
 
+        
+        <!-- Messages Display -->
+        <div id="messages-container" class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999; width: 90%; max-width: 600px;">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow auto-dismiss-message">
+                        {{ message }}
+                        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
         <!-- Content Area -->
         <main class="container">
             {% block content %}
@@ -59,6 +75,31 @@ input[type="number"] {
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
+        <!-- Auto-dismiss Messages -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-dismiss messages after 5 seconds
+            const messages = document.querySelectorAll('.auto-dismiss-message');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(message);
+                    bsAlert.close();
+                }, 5000);
+            });
+            
+            // Remove message element from DOM after collapse animation completes
+            const alertList = document.querySelectorAll('.alert');
+            alertList.forEach(function(alert) {
+                alert.addEventListener('closed.bs.alert', function() {
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.parentNode.removeChild(alert);
+                        }
+                    }, 300);
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
